@@ -88,6 +88,8 @@ export function Dock({
     onToggleRecord()
   }, [onToggleRecord])
 
+  const recordDisabled = !canRecord && !recording
+
   return (
     <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
       <motion.div
@@ -136,27 +138,45 @@ export function Dock({
         )}
 
         <div className="relative inline-flex items-center">
-          <DockButton
-            label={recording ? 'Stop recording' : 'Start recording'}
-            onClick={onRecordClick}
-            active={recording}
-            disabled={!canRecord && !recording}
-          >
-            <Video className="h-4 w-4" />
-          </DockButton>
-          <button
-            ref={inputsAnchorRef}
-            type="button"
-            aria-label="Inputs"
-            title="Inputs"
-            onClick={onToggleInputs}
+          <div
             className={cn(
-              '-ml-2 inline-flex h-11 w-7 items-center justify-center rounded-r-2xl border border-white/10 bg-white/6 text-white/70',
-              'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+              'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
+              'focus-within:outline-none focus-within:ring-2 focus-within:ring-white/30',
+              recording ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 bg-white/6 text-white/80',
+              recordDisabled && 'opacity-40'
             )}
           >
-            <ChevronUp className={cn('h-4 w-4 transition-transform', inputsOpen && 'rotate-180')} />
-          </button>
+            <button
+              type="button"
+              onClick={onRecordClick}
+              disabled={recordDisabled}
+              className={cn(
+                'inline-flex h-11 w-11 items-center justify-center transition-colors',
+                'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+              )}
+              aria-label={recording ? 'Stop recording' : 'Start recording'}
+              title={recording ? 'Stop recording' : 'Start recording'}
+            >
+              <Video className="h-4 w-4" />
+            </button>
+
+            <div className="h-full w-px bg-white/10" aria-hidden="true" />
+
+            <button
+              ref={inputsAnchorRef}
+              type="button"
+              aria-label="Inputs"
+              title="Inputs"
+              onClick={onToggleInputs}
+              disabled={recordDisabled}
+              className={cn(
+                'inline-flex h-11 w-10 items-center justify-center transition-colors',
+                'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+              )}
+            >
+              <ChevronUp className={cn('h-4 w-4 transition-transform', inputsOpen && 'rotate-180')} />
+            </button>
+          </div>
           <InputsPopover
             open={inputsOpen}
             anchorEl={inputsAnchorRef.current}
