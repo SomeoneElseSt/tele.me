@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useCallback, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
+import { Tooltip } from '../../components/Tooltip'
 import { InputsPopover, type InputDevice } from './InputsPopover'
 
 type Props = {
@@ -28,29 +29,33 @@ type Props = {
 
 type DockButtonProps = {
   label: string
+  shortcut?: string
   onClick: () => void
   disabled?: boolean
   active?: boolean
   children: ReactNode
 }
 
-function DockButton({ label, onClick, disabled, active, children }: DockButtonProps) {
+function DockButton({ label, shortcut, onClick, disabled, active, children }: DockButtonProps) {
   return (
-    <button
-      type="button"
-      aria-label={label}
-      title={label}
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
-        disabled && 'cursor-not-allowed opacity-40',
-        active ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 bg-white/6 text-white/80 hover:bg-white/10'
-      )}
-    >
-      {children}
-    </button>
+    <Tooltip label={label} shortcut={shortcut}>
+      <button
+        type="button"
+        aria-label={label}
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
+          disabled && 'cursor-not-allowed opacity-40',
+          active
+            ? 'border-white/20 bg-white/10 text-white'
+            : 'border-white/10 bg-white/6 text-white/80 hover:bg-white/10'
+        )}
+      >
+        {children}
+      </button>
+    </Tooltip>
   )
 }
 
@@ -110,7 +115,7 @@ export function Dock({
           <span className="tabular-nums">{elapsedLabel}</span>
         </div>
 
-        <DockButton label="Text" onClick={onOpenDrawer}>
+        <DockButton label="Text" shortcut="?" onClick={onOpenDrawer}>
           <Type className="h-4 w-4" />
         </DockButton>
 
@@ -127,6 +132,7 @@ export function Dock({
         ) : (
           <DockButton
             label={prompterPlaying ? 'Pause prompter' : 'Play prompter'}
+            shortcut="Space"
             onClick={() => {
               setInputsOpen(false)
               onTogglePrompter()
@@ -146,36 +152,38 @@ export function Dock({
               recordDisabled && 'opacity-40'
             )}
           >
-            <button
-              type="button"
-              onClick={onRecordClick}
-              disabled={recordDisabled}
-              className={cn(
-                'inline-flex h-11 w-11 items-center justify-center transition-colors',
-                'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
-              )}
-              aria-label={recording ? 'Stop recording' : 'Start recording'}
-              title={recording ? 'Stop recording' : 'Start recording'}
-            >
-              <Video className="h-4 w-4" />
-            </button>
+            <Tooltip label={recording ? 'Stop recording' : 'Record'} shortcut="R">
+              <button
+                type="button"
+                onClick={onRecordClick}
+                disabled={recordDisabled}
+                className={cn(
+                  'inline-flex h-11 w-11 items-center justify-center transition-colors',
+                  'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+                )}
+                aria-label={recording ? 'Stop recording' : 'Start recording'}
+              >
+                <Video className="h-4 w-4" />
+              </button>
+            </Tooltip>
 
             <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-            <button
-              ref={inputsAnchorRef}
-              type="button"
-              aria-label="Inputs"
-              title="Inputs"
-              onClick={onToggleInputs}
-              disabled={recordDisabled}
-              className={cn(
-                'inline-flex h-11 w-10 items-center justify-center transition-colors',
-                'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
-              )}
-            >
-              <ChevronUp className={cn('h-4 w-4 transition-transform', inputsOpen && 'rotate-180')} />
-            </button>
+            <Tooltip label="Inputs">
+              <button
+                ref={inputsAnchorRef}
+                type="button"
+                aria-label="Inputs"
+                onClick={onToggleInputs}
+                disabled={recordDisabled}
+                className={cn(
+                  'inline-flex h-11 w-10 items-center justify-center transition-colors',
+                  'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+                )}
+              >
+                <ChevronUp className={cn('h-4 w-4 transition-transform', inputsOpen && 'rotate-180')} />
+              </button>
+            </Tooltip>
           </div>
           <InputsPopover
             open={inputsOpen}
@@ -193,18 +201,19 @@ export function Dock({
         </div>
 
         {downloadUrl && (
-          <a
-            href={downloadUrl}
-            download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
-            className={cn(
-              'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
-              'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
-            )}
-            aria-label="Download"
-            title="Download"
-          >
-            <Download className="h-4 w-4" />
-          </a>
+          <Tooltip label="Download">
+            <a
+              href={downloadUrl}
+              download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
+              className={cn(
+                'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
+                'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+              )}
+              aria-label="Download"
+            >
+              <Download className="h-4 w-4" />
+            </a>
+          </Tooltip>
         )}
       </motion.div>
     </div>

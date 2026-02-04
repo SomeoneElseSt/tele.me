@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom'
 import { Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
+import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
@@ -327,37 +328,41 @@ export function FloatingPrompter(props: Props) {
         style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
         onPointerDown={drag.onPointerDown}
       >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Hide prompter"
-          title="Hide prompter"
-          onPointerDown={(e) => e.stopPropagation()}
-          className={cn(
-            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-            'hover:bg-white/10 hover:text-white'
-          )}
-        >
-          <X className="h-4 w-4" />
-        </button>
-        <div className="flex items-center gap-1">
+        <Tooltip label="Hide prompter">
           <button
             type="button"
-            onClick={() => setQuickOpen((v) => !v)}
-            aria-label="Prompter controls"
-            title="Prompter controls"
+            onClick={onClose}
+            aria-label="Hide prompter"
             onPointerDown={(e) => e.stopPropagation()}
             className={cn(
               'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-              'hover:bg-white/10 hover:text-white',
-              quickOpen && 'border-white/18 bg-white/10 text-white'
+              'hover:bg-white/10 hover:text-white'
             )}
           >
-            <SlidersHorizontal className="h-4 w-4" />
+            <X className="h-4 w-4" />
           </button>
-          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6">
-            <Move className="h-4 w-4 text-white/60" />
-          </span>
+        </Tooltip>
+        <div className="flex items-center gap-1">
+          <Tooltip label="Controls">
+            <button
+              type="button"
+              onClick={() => setQuickOpen((v) => !v)}
+              aria-label="Prompter controls"
+              onPointerDown={(e) => e.stopPropagation()}
+              className={cn(
+                'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                'hover:bg-white/10 hover:text-white',
+                quickOpen && 'border-white/18 bg-white/10 text-white'
+              )}
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+            </button>
+          </Tooltip>
+          <Tooltip label="Drag">
+            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6">
+              <Move className="h-4 w-4 text-white/60" />
+            </span>
+          </Tooltip>
         </div>
       </div>
 
