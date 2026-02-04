@@ -143,7 +143,10 @@ function ControlsBarPortal({
     frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
   )
 
-  const portalEl = typeof document === 'undefined' ? null : (document.getElementById('root') ?? document.body)
+  const portalEl =
+    typeof document === 'undefined'
+      ? null
+      : (document.getElementById('studio-portal') ?? document.body)
 
   if (!portalEl) return null
 
@@ -151,7 +154,7 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <div
-          className="fixed z-[35]"
+          className="pointer-events-auto fixed z-[35]"
           style={{
             left: frame.x,
             top,

@@ -216,6 +216,8 @@ export function Studio() {
         script={script}
         onScriptChange={setScript}
       />
+
+      <div id="studio-portal" className="pointer-events-none" />
     </div>
   )
 }
