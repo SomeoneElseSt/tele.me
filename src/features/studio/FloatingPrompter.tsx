@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Eye, FlipHorizontal2, Gauge, Move, SlidersHorizontal, X } from 'lucide-react'
+import { Eye, FlipHorizontal2, Gauge, GaugeCircle, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -36,7 +35,7 @@ const GRIP_VISUAL_SIZE_PX = 38
 const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
 const CONTROLS_BAR_GAP_PX = 10
 const CONTROLS_BAR_MIN_MARGIN_PX = 12
-const CONTROLS_BAR_HEIGHT_PX = 78
+const CONTROLS_BAR_HEIGHT_PX = 64
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
@@ -65,7 +64,7 @@ function ControlCell({
   onChange,
   formatValue
 }: {
-  icon: ReactNode
+  icon: React.ReactNode
   title: string
   value: number
   min: number
@@ -75,16 +74,14 @@ function ControlCell({
   formatValue?: (value: number) => string
 }) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-2 px-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/4 text-white/70">
+    <div className="flex h-full min-w-0 flex-1 items-center gap-3 px-4">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/4 text-white/70">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-3 pb-1.5">
-          <div className="truncate text-[10px] font-medium tracking-[0.08em] text-white/55">
-            {title.toUpperCase()}
-          </div>
-          <div className="shrink-0 tabular-nums text-[10px] font-medium text-white/50">
+        <div className="flex items-center justify-between gap-3">
+          <div className="truncate text-[11px] font-medium text-white/60">{title}</div>
+          <div className="shrink-0 tabular-nums text-[11px] font-medium text-white/45">
             {formatValue ? formatValue(value) : `${value}`}
           </div>
         </div>
@@ -102,12 +99,12 @@ function ControlCell({
             onChange(next)
           }}
           className={cn(
-            'h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 outline-none',
-            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5',
-            '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/80 [&::-webkit-slider-thumb]:shadow',
+            'mt-2 h-1 w-full cursor-pointer appearance-none rounded-full bg-white/10 outline-none',
+            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3',
+            '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/75',
             '[&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white/25',
             '[&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110',
-            '[&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white/80',
+            '[&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white/75',
             '[&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-white/25'
           )}
         />
@@ -223,12 +220,12 @@ function ControlsBarPortal({
             >
               <div
                 className={cn(
-                  'relative flex h-[78px] items-stretch',
+                  'relative flex h-[64px] items-stretch',
                   'divide-x divide-white/10'
                 )}
               >
                 <ControlCell
-                  icon={<Gauge className="h-4 w-4" />}
+                  icon={<GaugeCircle className="h-4 w-4" />}
                   title="Speed"
                   value={speed}
                   min={10}
@@ -258,20 +255,34 @@ function ControlsBarPortal({
                   onChange={onOpacityChange}
                 />
 
-                <div className="flex w-[78px] items-center justify-center px-2">
+                <div className="flex w-[104px] items-center justify-center px-3">
                   <Tooltip label="Mirror text">
                     <button
                       type="button"
                       onClick={() => onMirrorTextChange(!mirrorText)}
                       aria-label="Mirror text"
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-xl border text-xs transition-all',
+                        'inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-xs transition-colors',
                         mirrorText
                           ? 'border-white/18 bg-white/10 text-white'
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                       )}
                     >
-                      <FlipHorizontal2 className="h-4 w-4" />
+                      <FlipHorizontal2 className="h-4 w-4 text-white/70" />
+                      <span
+                        className={cn(
+                          'relative inline-flex h-5 w-8 items-center rounded-full border border-white/10 bg-white/8 transition-colors',
+                          mirrorText && 'bg-white/15'
+                        )}
+                        aria-hidden="true"
+                      >
+                        <span
+                          className={cn(
+                            'absolute left-[2px] top-[2px] h-[14px] w-[14px] rounded-full bg-white/70 transition-transform',
+                            mirrorText ? 'translate-x-[14px]' : 'translate-x-0'
+                          )}
+                        />
+                      </span>
                     </button>
                   </Tooltip>
                 </div>
