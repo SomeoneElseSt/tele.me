@@ -72,6 +72,7 @@ export function Studio() {
   const [mirrorText, setMirrorText] = useState(DEFAULT_MIRROR_TEXT)
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
+  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number }[]>([])
 
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,
@@ -133,15 +134,27 @@ export function Studio() {
     setFrame((prev) => clampFrame({ ...prev, ...update }))
   }, [])
 
+  useEffect(() => {
+    const url = recorder.url
+    if (!url) return
+    setTakes((prev) => {
+      if (prev[0]?.url === url) return prev
+      const createdAt = Date.now()
+      const next = [{ id: `take-${createdAt}`, url, createdAt }, ...prev]
+      return next.slice(0, 3)
+    })
+  }, [recorder.url])
+
   const onDownloadRecording = useCallback(() => {
-    if (!recorder.url) return
+    const latest = takes[0]
+    if (!latest) return
     const link = document.createElement('a')
-    link.href = recorder.url
-    link.download = `teleme-${new Date().toISOString().replaceAll(':', '')}.webm`
+    link.href = latest.url
+    link.download = `teleme-${new Date(latest.createdAt).toISOString().replaceAll(':', '')}.webm`
     document.body.appendChild(link)
     link.click()
     link.remove()
-  }, [recorder.url])
+  }, [takes])
 
   useHotkeys(
     useMemo(
@@ -204,8 +217,7 @@ export function Studio() {
         canRecord={canRecord}
         recording={recorder.status === 'recording'}
         elapsedLabel={elapsedLabel}
-        downloadUrl={recorder.url}
-        onDownload={onDownloadRecording}
+        takes={takes}
         onToggleRecord={onToggleRecord}
         cameras={cameras}
         mics={mics}

@@ -1,16 +1,16 @@
 import { AlignLeft, ChevronUp, Download, Pause, Play, Type, Video } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { InputsPopover, type InputDevice } from './InputsPopover'
+import { DownloadPopover, type DownloadTake } from './DownloadPopover'
 
 type Props = {
   canRecord: boolean
   recording: boolean
   elapsedLabel: string
-  downloadUrl?: string
+  takes: DownloadTake[]
   onToggleRecord: () => void
   cameras: InputDevice[]
   mics: InputDevice[]
@@ -25,7 +25,6 @@ type Props = {
   onTogglePrompter: () => void
   onShowPrompter: () => void
   onToggleDrawer: () => void
-  onDownload?: () => void
 }
 
 type DockButtonProps = {
@@ -40,12 +39,11 @@ type DockButtonProps = {
 function DockButton({ label, shortcut, onClick, disabled, active, children }: DockButtonProps) {
   return (
     <Tooltip label={label} shortcut={shortcut}>
-      <motion.button
+      <button
         type="button"
         aria-label={label}
         onClick={onClick}
         disabled={disabled}
-        layout="position"
         className={cn(
           'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
@@ -56,7 +54,7 @@ function DockButton({ label, shortcut, onClick, disabled, active, children }: Do
         )}
       >
         {children}
-      </motion.button>
+      </button>
     </Tooltip>
   )
 }
@@ -65,7 +63,7 @@ export function Dock({
   canRecord,
   recording,
   elapsedLabel,
-  downloadUrl,
+  takes,
   onToggleRecord,
   cameras,
   mics,
@@ -79,11 +77,13 @@ export function Dock({
   prompterPlaying,
   onTogglePrompter,
   onShowPrompter,
-  onToggleDrawer,
-  onDownload
+  onToggleDrawer
 }: Props) {
   const [inputsOpen, setInputsOpen] = useState(false)
   const inputsAnchorRef = useRef<HTMLButtonElement | null>(null)
+  const [downloadsOpen, setDownloadsOpen] = useState(false)
+  const downloadAnchorRef = useRef<HTMLButtonElement | null>(null)
+  const closeTimerRef = useRef<number | null>(null)
 
   const onToggleInputs = useCallback(() => setInputsOpen((v) => !v), [])
   const onOpenDrawer = useCallback(() => {
@@ -96,22 +96,39 @@ export function Dock({
     onToggleRecord()
   }, [onToggleRecord])
 
+  const closeDownloads = useCallback(() => setDownloadsOpen(false), [])
+  const openDownloads = useCallback(() => setDownloadsOpen(true), [])
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimerRef.current == null) return
+    window.clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = null
+  }, [])
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer()
+    closeTimerRef.current = window.setTimeout(() => {
+      closeDownloads()
+    }, 140)
+  }, [clearCloseTimer, closeDownloads])
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current == null) return
+      window.clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
   const recordDisabled = !canRecord && !recording
 
   return (
     <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
-        <motion.div
-          className={cn(
-            'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
-          )}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          layout
-          layoutId="dock-bar"
-          transition={{ duration: 0.25, layout: { type: 'spring', stiffness: 320, damping: 32, mass: 0.8 } }}
-        >
-        <motion.div
-          layout="position"
+      <div
+        className={cn(
+          'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
+        )}
+      >
+        <div
           className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
         >
           <span
@@ -121,7 +138,7 @@ export function Dock({
             )}
           />
           <span className="tabular-nums">{elapsedLabel}</span>
-        </motion.div>
+        </div>
 
         <DockButton label="Text" shortcut="T" onClick={onOpenDrawer}>
           <Type className="h-4 w-4" />
@@ -151,7 +168,7 @@ export function Dock({
           </DockButton>
         )}
 
-        <motion.div layout="position" className="relative inline-flex items-center">
+        <div className="relative inline-flex items-center">
           <div
             className={cn(
               'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
@@ -206,39 +223,35 @@ export function Dock({
             mirrorVideo={mirrorVideo}
             onMirrorVideoChange={onMirrorVideoChange}
           />
-        </motion.div>
+        </div>
 
-        <AnimatePresence mode="sync" initial={false}>
-          {downloadUrl && (
-            <motion.div
-              key="download"
-              layout="position"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: 0.18 },
-                layout: { type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }
-              }}
+        <div className="relative inline-flex items-center">
+          <Tooltip label="Downloads" shortcut="D">
+            <button
+              ref={downloadAnchorRef}
+              type="button"
+              aria-label="Downloads"
+              onClick={() => setDownloadsOpen((v) => !v)}
+              onMouseEnter={openDownloads}
+              onMouseLeave={scheduleClose}
+              className={cn(
+                'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
+                'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+              )}
             >
-              <Tooltip label="Download" shortcut="D">
-                <a
-                  href={downloadUrl}
-                  download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
-                  className={cn(
-                    'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
-                    'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
-                  )}
-                  aria-label="Download"
-                  onClick={onDownload}
-                >
-                  <Download className="h-4 w-4" />
-                </a>
-              </Tooltip>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+              <Download className="h-4 w-4" />
+            </button>
+          </Tooltip>
+          <DownloadPopover
+            open={downloadsOpen}
+            anchorEl={downloadAnchorRef.current}
+            takes={takes}
+            onClose={closeDownloads}
+            onInteractStart={openDownloads}
+            onInteractEnd={scheduleClose}
+          />
+        </div>
+      </div>
     </div>
   )
 }
