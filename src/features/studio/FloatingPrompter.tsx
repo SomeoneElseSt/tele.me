@@ -8,7 +8,6 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
-import { clamp } from '../../hooks/geometry'
 import { PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
 type Props = {
@@ -29,13 +28,14 @@ type Props = {
   onClose: () => void
 }
 
-const QUICK_PANEL_WIDTH = 340
-const QUICK_PANEL_GAP_PX = 10
-const QUICK_PANEL_MIN_MARGIN_PX = 12
 const GRIP_HIT_SIZE_PX = 32
 const GRIP_INSET_PX = 10
 const GRIP_VISUAL_SIZE_PX = 38
 const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
+const CONTROLS_BAR_GAP_PX = 10
+const CONTROLS_BAR_MIN_MARGIN_PX = 12
+const CONTROLS_BAR_HEIGHT_PX = 96
+const PROMPTER_HEADER_HEIGHT_PX = 52
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -43,14 +43,15 @@ function toNumber(value: string) {
   return parsed
 }
 
-function SliderRow({
+function ControlCell({
   icon,
   title,
   value,
   min,
   max,
   step,
-  onChange
+  onChange,
+  formatValue
 }: {
   icon: ReactNode
   title: string
@@ -59,13 +60,20 @@ function SliderRow({
   max: number
   step: number
   onChange: (value: number) => void
+  formatValue?: (value: number) => string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/65">
+    <div className="flex min-w-0 flex-1 items-center gap-3 px-4">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70">
         {icon}
       </div>
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center justify-between gap-3 pb-2">
+          <div className="truncate text-[11px] text-white/65">{title}</div>
+          <div className="shrink-0 tabular-nums text-[11px] text-white/50">
+            {formatValue ? formatValue(value) : `${value}`}
+          </div>
+        </div>
         <input
           aria-label={title}
           title={title}
@@ -94,14 +102,13 @@ function SliderRow({
   )
 }
 
-function QuickControlsPortal({
+function ControlsBarPortal({
   open,
   frame,
   opacity,
   speed,
   fontSize,
   mirrorText,
-  onClose,
   onOpacityChange,
   onSpeedChange,
   onFontSizeChange,
@@ -113,88 +120,103 @@ function QuickControlsPortal({
   speed: number
   fontSize: number
   mirrorText: boolean
-  onClose: () => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
   onMirrorTextChange: (value: boolean) => void
 }) {
+  const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
+  const top = Math.max(
+    CONTROLS_BAR_MIN_MARGIN_PX,
+    frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
+  )
+
   return createPortal(
-    <AnimatePresence>
+    <AnimatePresence initial={false}>
       {open && (
         <div
           className="fixed z-[70]"
           style={{
-            left: clamp(
-              frame.x + frame.width / 2 - QUICK_PANEL_WIDTH / 2,
-              QUICK_PANEL_MIN_MARGIN_PX,
-              window.innerWidth - QUICK_PANEL_WIDTH - QUICK_PANEL_MIN_MARGIN_PX
-            ),
-            top: Math.max(QUICK_PANEL_MIN_MARGIN_PX, frame.y - QUICK_PANEL_GAP_PX),
-            width: QUICK_PANEL_WIDTH,
-            transform: 'translateY(-100%)'
+            left: frame.x,
+            top,
+            width: frame.width,
+            perspective: 1200
           }}
+          onPointerDown={(e) => e.stopPropagation()}
         >
           <motion.div
-            className="rounded-2xl border border-white/10 bg-black/65 p-4 text-xs text-white/70 shadow-glow backdrop-blur"
-            initial={{ opacity: 0, y: 10, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.98 }}
-            transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
+            className="overflow-hidden rounded-2xl border border-white/12 shadow-glow backdrop-blur"
+            style={{ backgroundColor: `rgba(0,0,0,${barAlpha})` }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 14 }}
+            transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
           >
-            <div className="space-y-3">
-              <SliderRow
-                icon={<Gauge className="h-4 w-4" />}
-                title="Speed"
-                value={speed}
-                min={10}
-                max={180}
-                step={1}
-                onChange={onSpeedChange}
-              />
-              <SliderRow
-                icon={<Type className="h-4 w-4" />}
-                title="Text size"
-                value={fontSize}
-                min={22}
-                max={72}
-                step={1}
-                onChange={onFontSizeChange}
-              />
-              <SliderRow
-                icon={<Eye className="h-4 w-4" />}
-                title="Opacity"
-                value={opacity}
-                min={0.15}
-                max={0.95}
-                step={0.01}
-                onChange={onOpacityChange}
-              />
+            <motion.div
+              className="relative"
+              style={{ transformOrigin: 'bottom' }}
+              initial={{ rotateX: 76 }}
+              animate={{ rotateX: 0 }}
+              exit={{ rotateX: 76 }}
+              transition={{ type: 'spring', stiffness: 460, damping: 40, mass: 0.7 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/8 via-white/0 to-white/0" aria-hidden="true" />
 
-              <div className="flex items-center justify-between pt-1">
-                <button
-                  type="button"
-                  onClick={() => onMirrorTextChange(!mirrorText)}
-                  className={cn(
-                    'inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs transition-all',
-                    mirrorText
-                      ? 'border-white/18 bg-white/8 text-white'
-                      : 'border-white/10 bg-white/4 text-white/80 hover:bg-white/6'
-                  )}
-                >
-                  <Type className="h-3.5 w-3.5" />
-                  <span>Mirror</span>
-                </button>
+              <div
+                className={cn(
+                  'relative flex h-[96px] items-stretch',
+                  'divide-x divide-white/10'
+                )}
+              >
+                <ControlCell
+                  icon={<Gauge className="h-4 w-4" />}
+                  title="Speed"
+                  value={speed}
+                  min={10}
+                  max={180}
+                  step={1}
+                  formatValue={(v) => `${Math.round(v)}`}
+                  onChange={onSpeedChange}
+                />
+                <ControlCell
+                  icon={<Type className="h-4 w-4" />}
+                  title="Text size"
+                  value={fontSize}
+                  min={22}
+                  max={72}
+                  step={1}
+                  formatValue={(v) => `${Math.round(v)}px`}
+                  onChange={onFontSizeChange}
+                />
+                <ControlCell
+                  icon={<Eye className="h-4 w-4" />}
+                  title="Opacity"
+                  value={opacity}
+                  min={0.15}
+                  max={0.95}
+                  step={0.01}
+                  formatValue={(v) => `${Math.round(v * 100)}%`}
+                  onChange={onOpacityChange}
+                />
 
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/4 px-3 py-2 text-xs text-white/70 hover:bg-white/6 hover:text-white"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
+                <div className="flex w-[92px] items-center justify-center px-3">
+                  <button
+                    type="button"
+                    onClick={() => onMirrorTextChange(!mirrorText)}
+                    aria-label="Mirror text"
+                    title="Mirror text"
+                    className={cn(
+                      'inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-xs transition-all',
+                      mirrorText
+                        ? 'border-white/18 bg-white/10 text-white'
+                        : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
+                    )}
+                  >
+                    <Type className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       )}
@@ -282,13 +304,14 @@ export function FloatingPrompter(props: Props) {
   useEffect(() => {
     if (open) return
     setResizing(false)
+    setQuickOpen(false)
   }, [open])
 
   if (!open) return null
 
   return (
     <div
-      className={cn('fixed z-40 overflow-hidden rounded-2xl border border-white/12 shadow-glow')}
+      className={cn('fixed z-40 overflow-hidden rounded-2xl border border-white/10 shadow-glow')}
       style={{
         width: frame.width,
         height: frame.height,
@@ -298,9 +321,10 @@ export function FloatingPrompter(props: Props) {
     >
       <div
         className={cn(
-          'flex h-11 items-center justify-between gap-2 border-b border-white/10 px-3 text-white/85',
+          'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
           'cursor-grab active:cursor-grabbing select-none touch-none'
         )}
+        style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
         onPointerDown={drag.onPointerDown}
       >
         <button
@@ -309,7 +333,10 @@ export function FloatingPrompter(props: Props) {
           aria-label="Hide prompter"
           title="Hide prompter"
           onPointerDown={(e) => e.stopPropagation()}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+          className={cn(
+            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+            'hover:bg-white/10 hover:text-white'
+          )}
         >
           <X className="h-4 w-4" />
         </button>
@@ -321,19 +348,20 @@ export function FloatingPrompter(props: Props) {
             title="Prompter controls"
             onPointerDown={(e) => e.stopPropagation()}
             className={cn(
-              'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70',
-              'hover:bg-white/10 hover:text-white'
+              'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+              'hover:bg-white/10 hover:text-white',
+              quickOpen && 'border-white/18 bg-white/10 text-white'
             )}
           >
             <SlidersHorizontal className="h-4 w-4" />
           </button>
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6">
             <Move className="h-4 w-4 text-white/60" />
           </span>
         </div>
       </div>
 
-      <div className="relative h-[calc(100%-44px)]">
+      <div className="relative h-[calc(100%-52px)]">
         <div
           ref={scrollerRef}
           className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto')}
@@ -367,14 +395,13 @@ export function FloatingPrompter(props: Props) {
         onPointerDown={onResizePointerDown}
       />
 
-      <QuickControlsPortal
+      <ControlsBarPortal
         open={quickOpen}
         frame={frame}
         opacity={opacity}
         speed={speed}
         fontSize={fontSize}
         mirrorText={mirrorText}
-        onClose={() => setQuickOpen(false)}
         onOpacityChange={onOpacityChange}
         onSpeedChange={onSpeedChange}
         onFontSizeChange={onFontSizeChange}
