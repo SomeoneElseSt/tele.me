@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Download, Film } from 'lucide-react'
+import { Download, Film, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
@@ -15,8 +15,6 @@ type Props = {
   anchorEl: HTMLElement | null
   takes: DownloadTake[]
   onClose: () => void
-  onInteractStart: () => void
-  onInteractEnd: () => void
 }
 
 const POPOVER_WIDTH = 300
@@ -28,7 +26,7 @@ function formatTime(value: number) {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose, onInteractStart, onInteractEnd } = props
+  const { open, anchorEl, takes, onClose } = props
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -46,8 +44,6 @@ export function DownloadPopover(props: Props) {
             width: POPOVER_WIDTH,
             transform: 'translateY(-100%)'
           }}
-          onMouseEnter={onInteractStart}
-          onMouseLeave={onInteractEnd}
         >
           <motion.div
             className="rounded-2xl border border-white/10 bg-black/70 p-4 text-xs text-white/70 shadow-glow backdrop-blur"
@@ -58,14 +54,14 @@ export function DownloadPopover(props: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
-              <div className="text-xs font-medium text-white/75">Downloads</div>
+              <div className="text-xs font-medium text-white/75">Videos</div>
               <button
                 type="button"
                 aria-label="Close"
                 onClick={onClose}
                 className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
               >
-                <Download className="h-4 w-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -89,7 +85,10 @@ export function DownloadPopover(props: Props) {
                       <Film className="h-4 w-4 text-white/60" />
                       <span>Take {index + 1}</span>
                     </span>
-                    <span className="text-xs text-white/55">{formatTime(take.createdAt)}</span>
+                    <span className="inline-flex items-center gap-2 text-xs text-white/55">
+                      <span>{formatTime(take.createdAt)}</span>
+                      <Download className="h-3.5 w-3.5 text-white/60" />
+                    </span>
                   </a>
                 ))}
               </div>
@@ -101,4 +100,3 @@ export function DownloadPopover(props: Props) {
     document.body
   )
 }
-

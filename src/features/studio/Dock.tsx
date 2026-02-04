@@ -1,10 +1,11 @@
 import { AlignLeft, ChevronUp, Download, Pause, Play, Type, Video } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { InputsPopover, type InputDevice } from './InputsPopover'
 import { DownloadPopover, type DownloadTake } from './DownloadPopover'
+import { useHotkeys } from '../../hooks/useHotkeys'
 
 type Props = {
   canRecord: boolean
@@ -83,9 +84,9 @@ export function Dock({
   const inputsAnchorRef = useRef<HTMLButtonElement | null>(null)
   const [downloadsOpen, setDownloadsOpen] = useState(false)
   const downloadAnchorRef = useRef<HTMLButtonElement | null>(null)
-  const closeTimerRef = useRef<number | null>(null)
 
   const onToggleInputs = useCallback(() => setInputsOpen((v) => !v), [])
+  const onCloseInputs = useCallback(() => setInputsOpen(false), [])
   const onOpenDrawer = useCallback(() => {
     setInputsOpen(false)
     onToggleDrawer()
@@ -96,28 +97,31 @@ export function Dock({
     onToggleRecord()
   }, [onToggleRecord])
 
-  const closeDownloads = useCallback(() => setDownloadsOpen(false), [])
-  const openDownloads = useCallback(() => setDownloadsOpen(true), [])
+  const onToggleDownloads = useCallback(() => setDownloadsOpen((v) => !v), [])
+  const onCloseDownloads = useCallback(() => setDownloadsOpen(false), [])
 
-  const clearCloseTimer = useCallback(() => {
-    if (closeTimerRef.current == null) return
-    window.clearTimeout(closeTimerRef.current)
-    closeTimerRef.current = null
-  }, [])
-
-  const scheduleClose = useCallback(() => {
-    clearCloseTimer()
-    closeTimerRef.current = window.setTimeout(() => {
-      closeDownloads()
-    }, 140)
-  }, [clearCloseTimer, closeDownloads])
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current == null) return
-      window.clearTimeout(closeTimerRef.current)
-    }
-  }, [])
+  useHotkeys(
+    useMemo(
+      () => ({
+        i: () => {
+          if (downloadsOpen) {
+            onCloseDownloads()
+            return
+          }
+          onToggleInputs()
+        },
+        d: () => {
+          if (inputsOpen) {
+            onCloseInputs()
+            return
+          }
+          onToggleDownloads()
+        }
+      }),
+      [downloadsOpen, inputsOpen, onCloseDownloads, onCloseInputs, onToggleDownloads, onToggleInputs]
+    ),
+    true
+  )
 
   const recordDisabled = !canRecord && !recording
 
@@ -194,7 +198,7 @@ export function Dock({
 
             <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-            <Tooltip label="Inputs">
+            <Tooltip label="Inputs" shortcut="I">
               <button
                 ref={inputsAnchorRef}
                 type="button"
@@ -213,7 +217,7 @@ export function Dock({
           <InputsPopover
             open={inputsOpen}
             anchorEl={inputsAnchorRef.current}
-            onClose={() => setInputsOpen(false)}
+            onClose={onCloseInputs}
             cameras={cameras}
             mics={mics}
             cameraId={cameraId}
@@ -226,14 +230,12 @@ export function Dock({
         </div>
 
         <div className="relative inline-flex items-center">
-          <Tooltip label="Downloads" shortcut="D">
+          <Tooltip label="Videos" shortcut="D">
             <button
               ref={downloadAnchorRef}
               type="button"
-              aria-label="Downloads"
-              onClick={() => setDownloadsOpen((v) => !v)}
-              onMouseEnter={openDownloads}
-              onMouseLeave={scheduleClose}
+              aria-label="Videos"
+              onClick={onToggleDownloads}
               className={cn(
                 'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
                 'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
@@ -246,9 +248,7 @@ export function Dock({
             open={downloadsOpen}
             anchorEl={downloadAnchorRef.current}
             takes={takes}
-            onClose={closeDownloads}
-            onInteractStart={openDownloads}
-            onInteractEnd={scheduleClose}
+            onClose={onCloseDownloads}
           />
         </div>
       </div>

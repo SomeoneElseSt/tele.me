@@ -12,7 +12,7 @@ import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
 import { PROMPTER_FRAME_PADDING, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text\nC: controls\nH: hide prompter\nD: download`
+const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text\nC: controls\nH: hide prompter\nI: inputs\nD: videos`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -145,30 +145,18 @@ export function Studio() {
     })
   }, [recorder.url])
 
-  const onDownloadRecording = useCallback(() => {
-    const latest = takes[0]
-    if (!latest) return
-    const link = document.createElement('a')
-    link.href = latest.url
-    link.download = `teleme-${new Date(latest.createdAt).toISOString().replaceAll(':', '')}.webm`
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-  }, [takes])
-
   useHotkeys(
     useMemo(
       () => ({
         r: () => onToggleRecord(),
         space: () => onTogglePrompter(),
         t: () => onToggleDrawer(),
-        d: () => onDownloadRecording(),
         escape: () => {
           setDrawerOpen(false)
           setPlaying(false)
         }
       }),
-      [onDownloadRecording, onToggleDrawer, onTogglePrompter, onToggleRecord]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord]
     ),
     true
   )
