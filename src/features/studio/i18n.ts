@@ -1,7 +1,7 @@
 import { createContext, createElement, useContext } from 'react'
 import type { ReactNode } from 'react'
 
-export type LocaleCode = 'en' | 'es' | 'ja' | 'hi' | 'fr' | 'de'
+export type LocaleCode = 'en' | 'es' | 'ja' | 'hi' | 'fr' | 'de' | 'zh' | 'ar' | 'pt' | 'ru'
 
 export const LOCALES: { code: LocaleCode; label: string; short: string }[] = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -9,7 +9,11 @@ export const LOCALES: { code: LocaleCode; label: string; short: string }[] = [
   { code: 'ja', label: '日本語', short: 'JA' },
   { code: 'hi', label: 'हिन्दी', short: 'HI' },
   { code: 'fr', label: 'Français', short: 'FR' },
-  { code: 'de', label: 'Deutsch', short: 'DE' }
+  { code: 'de', label: 'Deutsch', short: 'DE' },
+  { code: 'zh', label: '中文', short: 'ZH' },
+  { code: 'ar', label: 'العربية', short: 'AR' },
+  { code: 'pt', label: 'Português', short: 'PT' },
+  { code: 'ru', label: 'Русский', short: 'RU' }
 ]
 
 type Strings = {
@@ -312,6 +316,182 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Nehmen Sie Ihr erstes Video auf, um es herunterzuladen.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Take ${index} herunterladen`
+  },
+  zh: {
+    defaultScript:
+      '你的脚本写在这里。\n\n' +
+      '空格：播放/暂停\n' +
+      'R：录制\n' +
+      'T：编辑文本\n' +
+      'C：提示器控制\n' +
+      'H：隐藏/显示提示器\n' +
+      'I：控制输入\n' +
+      'D：下载视频\n\n' +
+      '要使用 Markdown 渲染和字体，请打开文本编辑面板 (T) 并启用它 (M)',
+    language: '语言',
+    script: '脚本',
+    enableMarkdown: '启用 Markdown',
+    close: '关闭',
+    hidePrompter: '隐藏提示器',
+    showPrompter: '显示提示器',
+    controls: '控制',
+    drag: '拖动',
+    mirrorText: '镜像文本',
+    mirrorVideo: '镜像视频',
+    speed: '速度',
+    textSize: '文字大小',
+    opacity: '不透明度',
+    text: '文本',
+    camera: '摄像头',
+    mic: '麦克风',
+    inputs: '输入',
+    videos: '视频',
+    record: '录制',
+    stopRecording: '停止录制',
+    startRecording: '开始录制',
+    playPrompter: '播放提示器',
+    pausePrompter: '暂停提示器',
+    inputsTitle: '输入',
+    videosTitle: '视频',
+    noCameras: '没有摄像头',
+    noMics: '没有麦克风',
+    on: '开',
+    off: '关',
+    recordFirstVideo: '录制你的第一个视频以便下载。',
+    takeLabel: (index) => `拍摄 ${index}`,
+    downloadTakeLabel: (index) => `下载拍摄 ${index}`
+  },
+  ar: {
+    defaultScript:
+      'ضع النص هنا.\n\n' +
+      'مسافة: تشغيل/إيقاف\n' +
+      'R: تسجيل\n' +
+      'T: تعديل النص\n' +
+      'C: عناصر التحكم بالتلقين\n' +
+      'H: إظهار/إخفاء التلقين\n' +
+      'I: التحكم بالمدخلات\n' +
+      'D: تنزيل الفيديوهات\n\n' +
+      'لاستخدام عرض Markdown والخط، افتح لوحة تحرير النص (T) وفعّلها (M)',
+    language: 'اللغة',
+    script: 'النص',
+    enableMarkdown: 'تمكين Markdown',
+    close: 'إغلاق',
+    hidePrompter: 'إخفاء الملقن',
+    showPrompter: 'إظهار الملقن',
+    controls: 'عناصر التحكم',
+    drag: 'سحب',
+    mirrorText: 'عكس النص',
+    mirrorVideo: 'عكس الفيديو',
+    speed: 'السرعة',
+    textSize: 'حجم النص',
+    opacity: 'الشفافية',
+    text: 'النص',
+    camera: 'الكاميرا',
+    mic: 'الميكروفون',
+    inputs: 'المدخلات',
+    videos: 'الفيديوهات',
+    record: 'تسجيل',
+    stopRecording: 'إيقاف التسجيل',
+    startRecording: 'بدء التسجيل',
+    playPrompter: 'تشغيل الملقن',
+    pausePrompter: 'إيقاف مؤقت',
+    inputsTitle: 'المدخلات',
+    videosTitle: 'الفيديوهات',
+    noCameras: 'لا توجد كاميرات',
+    noMics: 'لا توجد ميكروفونات',
+    on: 'تشغيل',
+    off: 'إيقاف',
+    recordFirstVideo: 'سجّل أول فيديو لتنزيله.',
+    takeLabel: (index) => `لقطة ${index}`,
+    downloadTakeLabel: (index) => `تنزيل اللقطة ${index}`
+  },
+  pt: {
+    defaultScript:
+      'Seu script vai aqui.\n\n' +
+      'Espaço: reproduzir/pausar\n' +
+      'R: gravar\n' +
+      'T: editar texto\n' +
+      'C: controles do teleprompter\n' +
+      'H: mostrar/ocultar teleprompter\n' +
+      'I: controlar entradas\n' +
+      'D: baixar vídeos\n\n' +
+      'Para usar a renderização e fonte Markdown, abra o painel de edição (T) e ative (M)',
+    language: 'Idioma',
+    script: 'Script',
+    enableMarkdown: 'Ativar Markdown',
+    close: 'Fechar',
+    hidePrompter: 'Ocultar teleprompter',
+    showPrompter: 'Mostrar teleprompter',
+    controls: 'Controles',
+    drag: 'Arrastar',
+    mirrorText: 'Espelhar texto',
+    mirrorVideo: 'Espelhar vídeo',
+    speed: 'Velocidade',
+    textSize: 'Tamanho do texto',
+    opacity: 'Opacidade',
+    text: 'Texto',
+    camera: 'Câmera',
+    mic: 'Microfone',
+    inputs: 'Entradas',
+    videos: 'Vídeos',
+    record: 'Gravar',
+    stopRecording: 'Parar gravação',
+    startRecording: 'Iniciar gravação',
+    playPrompter: 'Reproduzir teleprompter',
+    pausePrompter: 'Pausar teleprompter',
+    inputsTitle: 'Entradas',
+    videosTitle: 'Vídeos',
+    noCameras: 'Sem câmeras',
+    noMics: 'Sem microfones',
+    on: 'Ligado',
+    off: 'Desligado',
+    recordFirstVideo: 'Grave seu primeiro vídeo para baixar.',
+    takeLabel: (index) => `Take ${index}`,
+    downloadTakeLabel: (index) => `Baixar take ${index}`
+  },
+  ru: {
+    defaultScript:
+      'Ваш текст здесь.\n\n' +
+      'Пробел: воспроизвести/пауза\n' +
+      'R: запись\n' +
+      'T: редактировать текст\n' +
+      'C: управление телесуфлёром\n' +
+      'H: скрыть/показать телесуфлёр\n' +
+      'I: управление входами\n' +
+      'D: скачать видео\n\n' +
+      'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)',
+    language: 'Язык',
+    script: 'Скрипт',
+    enableMarkdown: 'Включить Markdown',
+    close: 'Закрыть',
+    hidePrompter: 'Скрыть телесуфлёр',
+    showPrompter: 'Показать телесуфлёр',
+    controls: 'Управление',
+    drag: 'Перетаскивание',
+    mirrorText: 'Отразить текст',
+    mirrorVideo: 'Отразить видео',
+    speed: 'Скорость',
+    textSize: 'Размер текста',
+    opacity: 'Прозрачность',
+    text: 'Текст',
+    camera: 'Камера',
+    mic: 'Микрофон',
+    inputs: 'Входы',
+    videos: 'Видео',
+    record: 'Запись',
+    stopRecording: 'Остановить запись',
+    startRecording: 'Начать запись',
+    playPrompter: 'Запустить телесуфлёр',
+    pausePrompter: 'Пауза',
+    inputsTitle: 'Входы',
+    videosTitle: 'Видео',
+    noCameras: 'Нет камер',
+    noMics: 'Нет микрофонов',
+    on: 'Вкл',
+    off: 'Выкл',
+    recordFirstVideo: 'Запишите первое видео для скачивания.',
+    takeLabel: (index) => `Дубль ${index}`,
+    downloadTakeLabel: (index) => `Скачать дубль ${index}`
   }
 }
 
