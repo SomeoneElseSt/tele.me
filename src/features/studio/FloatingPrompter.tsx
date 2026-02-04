@@ -49,12 +49,12 @@ function clamp01(value: number) {
 function SpeedThumb({ t }: { t: MotionValue<number> }) {
   // Keep the needle within the top semicircle (avoid dipping below the baseline at the extremes).
   const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
-  const needleLength = 5.4
+  const needleLength = 5
   const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleLength)
   const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleLength)
   return (
     <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none">
-      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
       <circle cx="12" cy="14" r="1.2" fill="currentColor" fillOpacity="0.1" />
       <motion.line
         x1="12"
@@ -62,7 +62,7 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
         x2={x2}
         y2={y2}
         stroke="currentColor"
-        strokeWidth="1.6"
+        strokeWidth="2.1"
         strokeLinecap="round"
       />
     </svg>
