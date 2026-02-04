@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Film } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useMediaDevices } from '../../hooks/useMediaDevices'
 import { useMediaStream } from '../../hooks/useMediaStream'
@@ -10,6 +11,7 @@ import { Dock } from './Dock'
 import { FloatingPrompter } from './FloatingPrompter'
 import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
+import { cn } from '../../lib/cn'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -81,6 +83,23 @@ export function Studio() {
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number }[]>([])
+  const [localeOpen, setLocaleOpen] = useState(false)
+  const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
+  const localePanelRef = useRef<HTMLDivElement | null>(null)
+
+  const LOCALE_STORAGE_KEY = 'teleme:locale'
+  const LOCALES = useMemo(
+    () => [
+      { code: 'en', label: 'English', short: 'EN' },
+      { code: 'es', label: 'Español', short: 'ES' },
+      { code: 'ja', label: '日本語', short: 'JA' },
+      { code: 'hi', label: 'हिन्दी', short: 'HI' },
+      { code: 'fr', label: 'Français', short: 'FR' },
+      { code: 'de', label: 'Deutsch', short: 'DE' }
+    ],
+    []
+  )
+  const [locale, setLocale] = useState('en')
 
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,
@@ -103,6 +122,33 @@ export function Studio() {
     if (!id) return
     setVideoDeviceId(id)
   }, [videoDeviceId, videoInputs])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY)
+    if (!saved) return
+    if (LOCALES.some((item) => item.code === saved)) {
+      setLocale(saved)
+    }
+  }, [LOCALES])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+  }, [locale])
+
+  useEffect(() => {
+    if (!localeOpen) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (localePanelRef.current?.contains(target)) return
+      if (localeAnchorRef.current?.contains(target)) return
+      setLocaleOpen(false)
+    }
+    window.addEventListener('pointerdown', onPointerDown, true)
+    return () => window.removeEventListener('pointerdown', onPointerDown, true)
+  }, [localeOpen])
 
   useEffect(() => {
     const onResize = () => setFrame((prev) => clampFrame(prev))
@@ -188,6 +234,65 @@ export function Studio() {
         <div className="pointer-events-auto inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">
           <Film className="h-4 w-4 text-white/75" />
           <span className="tracking-[-0.02em]">tele.me</span>
+        </div>
+      </div>
+      <div className="pointer-events-none fixed right-6 top-6 z-30 flex items-center gap-2 text-white/80">
+        <div className="pointer-events-auto relative">
+          <button
+            ref={localeAnchorRef}
+            type="button"
+            onClick={() => setLocaleOpen((prev) => !prev)}
+            className={cn(
+              'inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur',
+              'hover:border-white/20 hover:bg-white/10'
+            )}
+            aria-label="Language"
+          >
+            <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
+              {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
+            </span>
+          </button>
+          <AnimatePresence>
+            {localeOpen && (
+              <motion.div
+                ref={localePanelRef}
+                className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
+                style={{ top: '100%' }}
+                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
+              >
+                <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
+                  Language
+                </div>
+                <div className="mt-1 space-y-1">
+                  {LOCALES.map((item) => {
+                    const active = item.code === locale
+                    return (
+                      <button
+                        key={item.code}
+                        type="button"
+                        onClick={() => {
+                          setLocale(item.code)
+                          setLocaleOpen(false)
+                        }}
+                        className={cn(
+                          'flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-sm transition-colors',
+                          active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        <span>{item.label}</span>
+                        <span className="text-[11px] font-semibold tracking-[0.14em] text-white/60">
+                          {item.short}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
