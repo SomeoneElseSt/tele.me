@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ComponentType, PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { Eye, FlipHorizontal2, Gauge, GaugeCircle, Move, SlidersHorizontal, X } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { FlipHorizontal2, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { useTooltipController } from '../../components/useTooltipController'
@@ -39,12 +40,54 @@ const CONTROLS_BAR_HEIGHT_PX = 64
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
-function TextSizeIcon({ className }: { className?: string }) {
+function clamp01(value: number) {
+  if (value <= 0) return 0
+  if (value >= 1) return 1
+  return value
+}
+
+function SpeedThumb({ t }: { t: MotionValue<number> }) {
+  // Keep the needle within the top semicircle (avoid dipping below the baseline at the extremes).
+  const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
+  const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * 6)
+  const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * 6)
   return (
-    <span className={cn('inline-flex h-4 w-4 items-end justify-center gap-[1px] leading-none', className)}>
-      <span className="text-[9px] font-semibold">A</span>
-      <span className="text-[13px] font-semibold -translate-y-[0.5px]">A</span>
-    </span>
+    <svg viewBox="0 0 24 24" className="h-[20px] w-[20px]" fill="none">
+      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      <circle cx="12" cy="14" r="1.2" fill="currentColor" />
+      <motion.line
+        x1="12"
+        y1="14"
+        x2={x2}
+        y2={y2}
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+function TextSizeThumb({ t }: { t: MotionValue<number> }) {
+  const scale = useTransform(t, (v) => (0.82 + v * 0.58) * 0.7)
+  return (
+    <motion.span
+      className="text-[13px] font-semibold leading-none text-white/60"
+      // Text renders "filled" and can read brighter than the stroked SVG icons; dial it back a bit.
+      style={{ scale, transformOrigin: 'center' }}
+    >
+      A
+    </motion.span>
+  )
+}
+
+function OpacityThumb({ t }: { t: MotionValue<number> }) {
+  const r = useTransform(t, (v) => 1.6 + v * 4.4)
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none">
+      <circle cx="12" cy="12" r="7" stroke="currentColor" strokeWidth="1.8" />
+      <motion.circle cx="12" cy="12" r={r} fill="currentColor" />
+    </svg>
   )
 }
 
@@ -55,7 +98,7 @@ function toNumber(value: string) {
 }
 
 function ControlCell({
-  icon,
+  Thumb,
   title,
   value,
   min,
@@ -64,7 +107,7 @@ function ControlCell({
   onChange,
   formatValue
 }: {
-  icon: React.ReactNode
+  Thumb: ComponentType<{ t: MotionValue<number> }>
   title: string
   value: number
   min: number
@@ -73,41 +116,145 @@ function ControlCell({
   onChange: (value: number) => void
   formatValue?: (value: number) => string
 }) {
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const activePointerIdRef = useRef<number | null>(null)
+  const [dragging, setDragging] = useState(false)
+
+  const decimals = useMemo(() => {
+    const text = `${step}`
+    const idx = text.indexOf('.')
+    return idx === -1 ? 0 : text.length - idx - 1
+  }, [step])
+
+  const t = useMemo(() => {
+    if (max === min) return 0
+    return clamp01((value - min) / (max - min))
+  }, [max, min, value])
+
+  const tTarget = useMotionValue(t)
+  const tSpring = useSpring(tTarget, { stiffness: 520, damping: 46, mass: 1.25 })
+  const left = useTransform(tSpring, (v) => `${v * 100}%`)
+  const fillWidth = useTransform(tSpring, (v) => `${v * 100}%`)
+
+  useEffect(() => {
+    tTarget.set(t)
+  }, [t, tTarget])
+
+  const setValueFromClientX = useCallback(
+    (clientX: number, el: HTMLElement) => {
+      const rect = el.getBoundingClientRect()
+      if (rect.width <= 0) return
+      const nextT = clamp01((clientX - rect.left) / rect.width)
+      const raw = min + nextT * (max - min)
+      const stepped = Math.round((raw - min) / step) * step + min
+      const clamped = Math.min(max, Math.max(min, stepped))
+      const fixed = Number(clamped.toFixed(decimals))
+      const next = Math.min(max, Math.max(min, fixed))
+      onChange(next)
+      if (max !== min) tTarget.set(clamp01((next - min) / (max - min)))
+    },
+    [decimals, max, min, onChange, step, tTarget]
+  )
+
+  const onPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (event.button !== 0) return
+      event.preventDefault()
+      activePointerIdRef.current = event.pointerId
+      setDragging(true)
+      event.currentTarget.setPointerCapture(event.pointerId)
+      setValueFromClientX(event.clientX, event.currentTarget)
+    },
+    [setValueFromClientX]
+  )
+
+  const onPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (activePointerIdRef.current !== event.pointerId) return
+      event.preventDefault()
+      setValueFromClientX(event.clientX, event.currentTarget)
+    },
+    [setValueFromClientX]
+  )
+
+  const onPointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (activePointerIdRef.current !== event.pointerId) return
+    activePointerIdRef.current = null
+    setDragging(false)
+    try {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    } catch {
+      // no-op
+    }
+  }, [])
+
   return (
-    <div className="flex h-full min-w-0 flex-1 items-center gap-3 px-4">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/4 text-white/70">
-        {icon}
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-3">
-          <div className="truncate text-[11px] font-medium text-white/60">{title}</div>
-          <div className="shrink-0 tabular-nums text-[11px] font-medium text-white/45">
-            {formatValue ? formatValue(value) : `${value}`}
-          </div>
+    <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-3 pb-1.5">
+      <div className="flex items-end justify-between gap-3">
+        <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
+        <div className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55">
+          {formatValue ? formatValue(value) : `${value}`}
         </div>
-        <input
-          aria-label={title}
-          title={title}
-          type="range"
-          value={value}
-          min={min}
-          max={max}
-          step={step}
-          onChange={(e) => {
-            const next = toNumber(e.target.value)
-            if (next == null) return
-            onChange(next)
-          }}
+      </div>
+
+      <div className="relative mt-2 h-8">
+        <div
           className={cn(
-            'mt-2 h-1 w-full cursor-pointer appearance-none rounded-full bg-white/10 outline-none',
-            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3',
-            '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/75',
-            '[&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white/25',
-            '[&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110',
-            '[&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white/75',
-            '[&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-white/25'
+            'relative mx-4 h-full touch-none select-none',
+            'cursor-pointer outline-none'
           )}
-        />
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+        >
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-white/10" />
+          <motion.div
+            className="absolute left-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-white/18"
+            style={{ width: fillWidth }}
+          />
+
+          <motion.div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left }}>
+            <div
+              className={cn(
+                'relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20',
+                // "Liquid glass" thumb: heavy blur + darker tint so the track doesn't read through the thumb.
+                'bg-black/75 text-white/95',
+                'backdrop-blur-[72px] backdrop-brightness-[0.35] backdrop-contrast-[0.35] backdrop-saturate-150',
+                'shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_14px_30px_rgba(0,0,0,0.45)]',
+                'cursor-grab',
+                dragging
+                  ? // Slightly brighter while dragging, keep blur/tint intact.
+                    'scale-[1.07] cursor-grabbing border-white/45 text-white/95 bg-white/8 shadow-[0_0_0_1px_rgba(255,255,255,0.18),0_18px_34px_rgba(0,0,0,0.55)]'
+                  : 'transition-[transform,background-color,border-color] duration-150 ease-out'
+              )}
+            >
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full bg-black/45" />
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-white/0"
+              />
+              <Thumb t={tSpring} />
+            </div>
+          </motion.div>
+
+          <input
+            ref={inputRef}
+            aria-label={title}
+            title={title}
+            type="range"
+            value={value}
+            min={min}
+            max={max}
+            step={step}
+            onChange={(e) => {
+              const next = toNumber(e.target.value)
+              if (next == null) return
+              onChange(next)
+            }}
+            className="sr-only focus:outline-none"
+          />
+        </div>
       </div>
     </div>
   )
@@ -225,7 +372,7 @@ function ControlsBarPortal({
                 )}
               >
                 <ControlCell
-                  icon={<GaugeCircle className="h-4 w-4" />}
+                  Thumb={SpeedThumb}
                   title="Speed"
                   value={speed}
                   min={10}
@@ -235,7 +382,7 @@ function ControlsBarPortal({
                   onChange={onSpeedChange}
                 />
                 <ControlCell
-                  icon={<TextSizeIcon />}
+                  Thumb={TextSizeThumb}
                   title="Text size"
                   value={fontSize}
                   min={22}
@@ -245,7 +392,7 @@ function ControlsBarPortal({
                   onChange={onFontSizeChange}
                 />
                 <ControlCell
-                  icon={<Eye className="h-4 w-4" />}
+                  Thumb={OpacityThumb}
                   title="Opacity"
                   value={opacity}
                   min={0.15}
