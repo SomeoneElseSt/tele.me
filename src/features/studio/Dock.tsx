@@ -1,5 +1,5 @@
 import { AlignLeft, ChevronUp, Download, Pause, Play, Type, Video } from 'lucide-react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useCallback, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
@@ -25,6 +25,7 @@ type Props = {
   onTogglePrompter: () => void
   onShowPrompter: () => void
   onToggleDrawer: () => void
+  onDownload?: () => void
 }
 
 type DockButtonProps = {
@@ -77,7 +78,8 @@ export function Dock({
   prompterPlaying,
   onTogglePrompter,
   onShowPrompter,
-  onToggleDrawer
+  onToggleDrawer,
+  onDownload
 }: Props) {
   const [inputsOpen, setInputsOpen] = useState(false)
   const inputsAnchorRef = useRef<HTMLButtonElement | null>(null)
@@ -200,21 +202,32 @@ export function Dock({
           />
         </div>
 
-        {downloadUrl && (
-          <Tooltip label="Download">
-            <a
-              href={downloadUrl}
-              download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
-              className={cn(
-                'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
-                'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
-              )}
-              aria-label="Download"
+        <AnimatePresence>
+          {downloadUrl && (
+            <motion.div
+              key="download"
+              initial={{ opacity: 0, y: 10, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.96 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 34, mass: 0.7 }}
             >
-              <Download className="h-4 w-4" />
-            </a>
-          </Tooltip>
-        )}
+              <Tooltip label="Download" shortcut="D">
+                <a
+                  href={downloadUrl}
+                  download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
+                  className={cn(
+                    'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
+                    'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+                  )}
+                  aria-label="Download"
+                  onClick={onDownload}
+                >
+                  <Download className="h-4 w-4" />
+                </a>
+              </Tooltip>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   )

@@ -12,7 +12,7 @@ import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
 import { PROMPTER_FRAME_PADDING, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text\nC: controls\nH: hide prompter`
+const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text\nC: controls\nH: hide prompter\nD: download`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -126,28 +126,39 @@ export function Studio() {
   const onToggleDrawer = useCallback(() => setDrawerOpen((v) => !v), [])
   const onShowPrompter = useCallback(() => setPrompterOpen(true), [])
 
-  useHotkeys(
-    useMemo(
-      () => ({
-        r: () => onToggleRecord(),
-        space: () => onTogglePrompter(),
-        t: () => onToggleDrawer(),
-        escape: () => {
-          setDrawerOpen(false)
-          setPlaying(false)
-        }
-      }),
-      [onToggleDrawer, onTogglePrompter, onToggleRecord]
-    ),
-    true
-  )
-
   const cameras = useMemo(() => mapDevices('Camera', videoInputs), [videoInputs])
   const mics = useMemo(() => mapDevices('Mic', audioInputs), [audioInputs])
 
   const onFrameChange = useCallback((update: Partial<PrompterFrame>) => {
     setFrame((prev) => clampFrame({ ...prev, ...update }))
   }, [])
+
+  const onDownloadRecording = useCallback(() => {
+    if (!recorder.url) return
+    const link = document.createElement('a')
+    link.href = recorder.url
+    link.download = `teleme-${new Date().toISOString().replaceAll(':', '')}.webm`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  }, [recorder.url])
+
+  useHotkeys(
+    useMemo(
+      () => ({
+        r: () => onToggleRecord(),
+        space: () => onTogglePrompter(),
+        t: () => onToggleDrawer(),
+        d: () => onDownloadRecording(),
+        escape: () => {
+          setDrawerOpen(false)
+          setPlaying(false)
+        }
+      }),
+      [onDownloadRecording, onToggleDrawer, onTogglePrompter, onToggleRecord]
+    ),
+    true
+  )
 
   return (
     <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
@@ -194,6 +205,7 @@ export function Studio() {
         recording={recorder.status === 'recording'}
         elapsedLabel={elapsedLabel}
         downloadUrl={recorder.url}
+        onDownload={onDownloadRecording}
         onToggleRecord={onToggleRecord}
         cameras={cameras}
         mics={mics}
