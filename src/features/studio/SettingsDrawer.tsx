@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { Tooltip } from '../../components/Tooltip'
 import { cn } from '../../lib/cn'
 
 type Props = {
@@ -82,14 +83,18 @@ export function SettingsDrawer(props: Props) {
           >
             <header className="flex items-center justify-between">
               <div className="text-sm font-semibold text-white/90">Script</div>
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
+              <Tooltip label="Close" shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
+                <span className="inline-flex h-10 w-10 items-center justify-center">
+                  <button
+                    type="button"
+                    aria-label="Close"
+                    onClick={onClose}
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </span>
+              </Tooltip>
             </header>
 
             <div ref={scrollRef} className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-hidden pb-6">
