@@ -32,8 +32,9 @@ type Props = {
 const QUICK_PANEL_WIDTH = 340
 const QUICK_PANEL_GAP_PX = 10
 const QUICK_PANEL_MIN_MARGIN_PX = 12
-const SCROLLBAR_INSET_PX = 18
 const GRIP_HIT_SIZE_PX = 32
+const GRIP_RIGHT_PX = 8
+const SCROLLBAR_SAFE_GUTTER_PX = GRIP_RIGHT_PX + GRIP_HIT_SIZE_PX + 16
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -335,7 +336,7 @@ export function FloatingPrompter(props: Props) {
         <div
           ref={scrollerRef}
           className={cn('tele-scroll absolute left-0 top-0 bottom-0 overflow-y-auto')}
-          style={{ right: SCROLLBAR_INSET_PX }}
+          style={{ right: SCROLLBAR_SAFE_GUTTER_PX }}
         >
           <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
             <pre
@@ -354,7 +355,7 @@ export function FloatingPrompter(props: Props) {
           'resize-grip',
           resizing && 'is-active'
         )}
-        style={{ right: 8, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
+        style={{ right: GRIP_RIGHT_PX, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
         onPointerDown={onResizePointerDown}
       />
 
