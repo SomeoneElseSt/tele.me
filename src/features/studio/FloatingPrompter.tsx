@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
+import { Eye, FlipHorizontal2, Gauge, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -224,7 +224,7 @@ function ControlsBarPortal({
                         : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                     )}
                   >
-                    <Type className="h-4 w-4" />
+                    <FlipHorizontal2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
