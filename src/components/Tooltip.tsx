@@ -1,5 +1,5 @@
-import { AnimatePresence, motion } from 'framer-motion'
 import type { ReactNode } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   useCallback,
   useContext,
@@ -13,13 +13,15 @@ import {
 import { createPortal } from 'react-dom'
 import { TooltipContext } from './tooltipContext'
 
-type Side = 'top' | 'bottom'
+type Side = 'top' | 'bottom' | 'left' | 'right'
+type SideOrAuto = Side | 'auto'
 
 type TooltipProps = {
   label: string
   shortcut?: string
   tooltipId?: string
-  side?: Side
+  side?: SideOrAuto
+  preferSide?: Side
   sideOffset?: number
   children: ReactNode
 }
@@ -73,16 +75,31 @@ function formatLabel(label: string, shortcut?: string) {
   return `${label} (${shortcut})`
 }
 
-export function Tooltip({ label, shortcut, tooltipId, side = 'top', sideOffset = 22, children }: TooltipProps) {
+export function Tooltip({
+  label,
+  shortcut,
+  tooltipId,
+  side = 'top',
+  preferSide,
+  sideOffset = 14,
+  children
+}: TooltipProps) {
   const reactId = useId()
   const id = tooltipId ?? reactId
   const { enabled, activeId, lockedId, requestActive, releaseActive } = useContext(TooltipContext)
   const [hovered, setHovered] = useState(false)
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
+  const [anchor, setAnchor] = useState<{
+    left: number
+    right: number
+    top: number
+    bottom: number
+    cx: number
+    cy: number
+  } | null>(null)
   const anchorRef = useRef<HTMLSpanElement | null>(null)
   const tipRef = useRef<HTMLDivElement | null>(null)
-  const [tipWidth, setTipWidth] = useState<number | null>(null)
-  const lastPosRef = useRef<{ x: number; y: number } | null>(null)
+  const [tipSize, setTipSize] = useState<{ width: number; height: number } | null>(null)
+  const lastAnchorRef = useRef<{ cx: number; cy: number } | null>(null)
 
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && Boolean(label)
@@ -94,27 +111,34 @@ export function Tooltip({ label, shortcut, tooltipId, side = 'top', sideOffset =
     const anchor = anchorRef.current
     if (!anchor) return
     const rect = anchor.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = side === 'top' ? rect.top - sideOffset : rect.bottom + sideOffset
-    const next = { x, y }
-    const last = lastPosRef.current
-    lastPosRef.current = next
+    if (rect.width === 0 && rect.height === 0) return
+    const next = {
+      left: rect.left,
+      right: rect.right,
+      top: rect.top,
+      bottom: rect.bottom,
+      cx: rect.left + rect.width / 2,
+      cy: rect.top + rect.height / 2
+    }
+    const last = lastAnchorRef.current
+    lastAnchorRef.current = { cx: next.cx, cy: next.cy }
     if (!last) {
-      setPos(next)
+      setAnchor(next)
       return
     }
-    const dx = Math.abs(last.x - next.x)
-    const dy = Math.abs(last.y - next.y)
+    const dx = Math.abs(last.cx - next.cx)
+    const dy = Math.abs(last.cy - next.cy)
     const changed = dx > 0.25 || dy > 0.25
     if (!changed) return
-    setPos(next)
-  }, [show, side, sideOffset])
+    setAnchor(next)
+  }, [show])
 
   useLayoutEffect(() => {
     if (!open) return
     const el = tipRef.current
     if (!el) return
-    setTipWidth(el.getBoundingClientRect().width)
+    const rect = el.getBoundingClientRect()
+    setTipSize({ width: rect.width, height: rect.height })
   }, [open, text])
 
   useEffect(() => {
@@ -148,15 +172,73 @@ export function Tooltip({ label, shortcut, tooltipId, side = 'top', sideOffset =
   }, [open, updatePosition])
 
   const margin = 10
-  const xClamped = useMemo(() => {
-    if (!pos) return null
-    if (!tipWidth) return pos.x
-    const half = tipWidth / 2
-    return clamp(pos.x, margin + half, window.innerWidth - margin - half)
-  }, [pos, tipWidth])
+
+  const placement = useMemo(() => {
+    if (!anchor) return null
+    if (!tipSize) return null
+
+    const vw = document.documentElement.clientWidth || window.innerWidth
+    const vh = document.documentElement.clientHeight || window.innerHeight
+    const preferredOverflowTolerance = 24
+
+    const desired = (s: Side) => {
+      let left = 0
+      let top = 0
+      if (s === 'top') {
+        left = anchor.cx - tipSize.width / 2
+        top = anchor.top - sideOffset - tipSize.height
+      } else if (s === 'bottom') {
+        left = anchor.cx - tipSize.width / 2
+        top = anchor.bottom + sideOffset
+      } else if (s === 'left') {
+        left = anchor.left - sideOffset - tipSize.width
+        top = anchor.cy - tipSize.height / 2
+      } else {
+        left = anchor.right + sideOffset
+        top = anchor.cy - tipSize.height / 2
+      }
+      return { left, top }
+    }
+
+    const calc = (s: Side) => {
+      const pos = desired(s)
+
+      // Score by how much it would overflow the viewport margins.
+      const overflowX =
+        Math.max(0, margin - pos.left) +
+        Math.max(0, pos.left + tipSize.width - (vw - margin))
+      const overflowY =
+        Math.max(0, margin - pos.top) +
+        Math.max(0, pos.top + tipSize.height - (vh - margin))
+      const overflow = overflowX + overflowY
+
+      return { side: s, left: pos.left, top: pos.top, overflow }
+    }
+
+    const preferred: Side = side === 'auto' ? (preferSide ?? 'top') : side
+    const all: Side[] = ['top', 'bottom', 'left', 'right']
+    const ordered: Side[] = [preferred, ...all.filter((s) => s !== preferred)]
+    const scored = ordered.map(calc)
+    scored.sort((a, b) => a.overflow - b.overflow)
+
+    const best = scored[0]
+    if (!best) return null
+    const preferredScore = calc(preferred)
+    const chosen =
+      preferredScore.overflow <= preferredOverflowTolerance ? preferred : best.side
+    const final = calc(chosen)
+
+    // Final clamp to keep it inside margins when possible.
+    const leftClamped = clamp(final.left, margin, vw - margin - tipSize.width)
+    const topClamped = clamp(final.top, margin, vh - margin - tipSize.height)
+
+    return { side: final.side, left: leftClamped, top: topClamped }
+  }, [anchor, margin, preferSide, side, sideOffset, tipSize])
 
   const onOpen = useCallback(() => {
     if (!show) return
+    if (!anchorRef.current) return
+    updatePosition()
     updatePosition()
     setHovered(true)
   }, [show, updatePosition])
@@ -182,18 +264,47 @@ export function Tooltip({ label, shortcut, tooltipId, side = 'top', sideOffset =
       {show &&
         createPortal(
           <AnimatePresence>
-            {open && pos && (
+            {open && anchor && (
               <motion.div
                 ref={tipRef}
                 className="pointer-events-none fixed z-[120] select-none whitespace-nowrap rounded-lg border border-white/10 bg-black/85 px-2.5 py-1.5 text-[11px] font-medium text-white/90 shadow-glow backdrop-blur"
                 style={{
-                  left: xClamped ?? pos.x,
-                  top: pos.y,
-                  transform: side === 'top' ? 'translate3d(-50%, -100%, 0)' : 'translate3d(-50%, 0, 0)'
+                  left: placement?.left ?? -9999,
+                  top: placement?.top ?? -9999
                 }}
-                initial={{ opacity: 0, y: side === 'top' ? 6 : -6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: side === 'top' ? 6 : -6, scale: 0.98 }}
+                initial={{
+                  opacity: 0,
+                  y:
+                    (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'top'
+                      ? 6
+                      : (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'bottom'
+                        ? -6
+                        : 0,
+                  x:
+                    (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'left'
+                      ? 6
+                      : (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'right'
+                        ? -6
+                        : 0,
+                  scale: 0.98
+                }}
+                animate={{ opacity: 1, y: 0, x: 0, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  y:
+                    (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'top'
+                      ? 6
+                      : (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'bottom'
+                        ? -6
+                        : 0,
+                  x:
+                    (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'left'
+                      ? 6
+                      : (placement?.side ?? (side === 'auto' ? (preferSide ?? 'top') : side)) === 'right'
+                        ? -6
+                        : 0,
+                  scale: 0.98
+                }}
                 transition={{ type: 'spring', stiffness: 700, damping: 48, mass: 0.6 }}
               >
                 {text}

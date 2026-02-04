@@ -49,19 +49,20 @@ function clamp01(value: number) {
 function SpeedThumb({ t }: { t: MotionValue<number> }) {
   // Keep the needle within the top semicircle (avoid dipping below the baseline at the extremes).
   const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
-  const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * 6)
-  const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * 6)
+  const needleLength = 5.4
+  const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleLength)
+  const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleLength)
   return (
-    <svg viewBox="0 0 24 24" className="h-[20px] w-[20px]" fill="none">
+    <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none">
       <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      <circle cx="12" cy="14" r="1.2" fill="currentColor" />
+      <circle cx="12" cy="14" r="1.2" fill="currentColor" fillOpacity="0.1" />
       <motion.line
         x1="12"
         y1="14"
         x2={x2}
         y2={y2}
         stroke="currentColor"
-        strokeWidth="1.8"
+        strokeWidth="1.6"
         strokeLinecap="round"
       />
     </svg>
@@ -72,9 +73,9 @@ function TextSizeThumb({ t }: { t: MotionValue<number> }) {
   const scale = useTransform(t, (v) => (0.82 + v * 0.58) * 0.7)
   return (
     <motion.span
-      className="text-[13px] font-semibold leading-none text-white/60"
+      className="text-[13px] font-semibold leading-none"
       // Text renders "filled" and can read brighter than the stroked SVG icons; dial it back a bit.
-      style={{ scale, transformOrigin: 'center' }}
+      style={{ scale, transformOrigin: 'center', opacity: 0.72 }}
     >
       A
     </motion.span>
@@ -217,16 +218,16 @@ function ControlCell({
           <motion.div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left }}>
             <div
               className={cn(
-                'relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20',
+                'relative flex h-8 w-8 items-center justify-center rounded-full border border-white/20 text-white/70',
                 // "Liquid glass" thumb: heavy blur + darker tint so the track doesn't read through the thumb.
-                'bg-black/75 text-white/95',
+                'bg-black/75',
                 'backdrop-blur-[72px] backdrop-brightness-[0.35] backdrop-contrast-[0.35] backdrop-saturate-150',
                 'shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_14px_30px_rgba(0,0,0,0.45)]',
                 'cursor-grab',
                 dragging
                   ? // Slightly brighter while dragging, keep blur/tint intact.
-                    'scale-[1.07] cursor-grabbing border-white/55 shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
-                  : 'transition-[transform,background-color,border-color] duration-150 ease-out'
+                    'scale-[1.07] cursor-grabbing border-white/55 text-white/95 shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
+                  : 'transition-[transform,background-color,border-color,color] duration-220 ease-out'
               )}
             >
               <div
