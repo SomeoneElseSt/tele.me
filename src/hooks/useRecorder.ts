@@ -14,9 +14,11 @@ const ELAPSED_TICK_MS = 100
 
 function pickMimeType() {
   const candidates = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm'
+    'video/mp4;codecs=avc1,mp4a',        // MP4 H.264 + AAC (Chrome 120+)
+    'video/mp4',                          // MP4 fallback
+    'video/webm;codecs=vp9,opus',        // WebM VP9 (fallback)
+    'video/webm;codecs=vp8,opus',        // WebM VP8 (fallback)
+    'video/webm'                          // WebM generic
   ]
   for (const mimeType of candidates) {
     if (MediaRecorder.isTypeSupported?.(mimeType)) return mimeType
@@ -44,19 +46,12 @@ export function useRecorder(stream: MediaStream | null) {
 
   const supported = useMemo(() => Boolean(window.MediaRecorder), [])
 
-  const cleanupUrl = useCallback(() => {
-    setState((prev) => {
-      if (prev.url) URL.revokeObjectURL(prev.url)
-      return { ...prev, url: undefined }
-    })
-  }, [])
-
   const reset = useCallback(() => {
-    cleanupUrl()
+    // Don't revoke URL here - let takes manage their own URLs
     chunksRef.current = []
     startTsRef.current = null
-    setState({ status: 'idle', elapsedMs: 0 })
-  }, [cleanupUrl])
+    setState((prev) => ({ ...prev, status: 'idle', elapsedMs: 0, url: undefined, blob: undefined }))
+  }, [])
 
   const stopTimer = useCallback(() => {
     if (timerRef.current != null) window.clearInterval(timerRef.current)
@@ -118,14 +113,14 @@ export function useRecorder(stream: MediaStream | null) {
   useEffect(() => {
     return () => {
       stopTimer()
-      cleanupUrl()
+      // Don't revoke URL on cleanup - takes manage their own URLs
       try {
         if (recorderRef.current && recorderRef.current.state !== 'inactive') recorderRef.current.stop()
       } catch {
         // ignore
       }
     }
-  }, [cleanupUrl, stopTimer])
+  }, [stopTimer])
 
   return { ...state, supported, start, stop, reset }
 }

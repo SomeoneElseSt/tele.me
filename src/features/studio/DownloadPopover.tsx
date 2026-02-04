@@ -9,6 +9,7 @@ export type DownloadTake = {
   id: string
   url: string
   createdAt: number
+  mimeType?: string
 }
 
 type Props = {
@@ -24,6 +25,13 @@ const MARGIN_PX = 12
 
 function formatTime(value: number, locale: string) {
   return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
+}
+
+function getFileExtension(mimeType?: string): string {
+  if (!mimeType) return 'webm'
+  if (mimeType.includes('mp4')) return 'mp4'
+  if (mimeType.includes('webm')) return 'webm'
+  return 'webm'
 }
 
 export function DownloadPopover(props: Props) {
@@ -73,32 +81,58 @@ export function DownloadPopover(props: Props) {
               </div>
             ) : (
               <div className="mt-4 space-y-2">
-                {takes.map((take, index) => (
-                  <div key={take.id} className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
-                      )}
-                    >
-                      <span className="inline-flex items-center gap-2">
-                        <Film className="h-4 w-4 text-white/60" />
-                        <span>{strings.takeLabel(index + 1)}</span>
-                      </span>
-                      <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
+                {takes.map((take, index) => {
+                  const extension = getFileExtension(take.mimeType)
+                  const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
+                  
+                  const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.preventDefault()
+                    
+                    try {
+                      const response = await fetch(take.url)
+                      const blob = await response.blob()
+                      const url = URL.createObjectURL(blob)
+                      
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = filename
+                      document.body.appendChild(a)
+                      a.click()
+                      document.body.removeChild(a)
+                      
+                      setTimeout(() => URL.revokeObjectURL(url), 100)
+                    } catch {
+                      alert('Download failed. Please try recording again.')
+                    }
+                  }
+                  
+                  return (
+                    <div key={take.id} className="flex items-center gap-2">
+                      <div
+                        className={cn(
+                          'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
+                        )}
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <Film className="h-4 w-4 text-white/60" />
+                          <span>{strings.takeLabel(index + 1)}</span>
+                        </span>
+                        <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
+                      </div>
+                      <a
+                        href={take.url}
+                        onClick={handleDownload}
+                        aria-label={strings.downloadTakeLabel(index + 1)}
+                        className={cn(
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
+                          'hover:bg-white/8 transition-colors'
+                        )}
+                      >
+                        <Download className="h-4 w-4" />
+                      </a>
                     </div>
-                    <a
-                      href={take.url}
-                      download={`teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.webm`}
-                      aria-label={strings.downloadTakeLabel(index + 1)}
-                      className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
-                        'hover:bg-white/8 transition-colors'
-                      )}
-                    >
-                      <Download className="h-4 w-4" />
-                    </a>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </motion.div>

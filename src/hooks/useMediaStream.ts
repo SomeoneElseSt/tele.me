@@ -40,7 +40,22 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
 
     const constraints: MediaStreamConstraints = {
       audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
-      video: videoDeviceId ? { deviceId: { exact: videoDeviceId } } : facingMode ? { facingMode } : true
+      video: videoDeviceId 
+        ? { 
+            deviceId: { exact: videoDeviceId },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        : facingMode 
+          ? { 
+              facingMode,
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
+          : {
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
+            }
     }
 
     const next = await navigator.mediaDevices.getUserMedia(constraints).catch((err: unknown) => {

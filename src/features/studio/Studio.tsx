@@ -82,7 +82,12 @@ export function Studio() {
   const [mirrorText, setMirrorText] = useState(DEFAULT_MIRROR_TEXT)
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
-  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number }[]>([])
+  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string }[]>([])
+  const takesRef = useRef(takes)
+  
+  useEffect(() => {
+    takesRef.current = takes
+  }, [takes])
   const [localeOpen, setLocaleOpen] = useState(false)
   const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
   const localePanelRef = useRef<HTMLDivElement | null>(null)
@@ -158,6 +163,19 @@ export function Studio() {
     return () => window.removeEventListener('resize', onResize)
   }, [])
 
+  useEffect(() => {
+    // Cleanup all blob URLs on unmount
+    return () => {
+      takesRef.current.forEach(take => {
+        try {
+          URL.revokeObjectURL(take.url)
+        } catch {
+          // ignore
+        }
+      })
+    }
+  }, [])
+
   const error = recorder.error ?? streamError ?? devicesError
 
   const canRecord = useMemo(() => ready && Boolean(stream) && recorder.supported, [ready, recorder.supported, stream])
@@ -192,14 +210,16 @@ export function Studio() {
 
   useEffect(() => {
     const url = recorder.url
+    const mimeType = recorder.mimeType
     if (!url) return
+    
     setTakes((prev) => {
-      if (prev[0]?.url === url) return prev
+      if (prev.some(take => take.url === url)) return prev
+      
       const createdAt = Date.now()
-      const next = [{ id: `take-${createdAt}`, url, createdAt }, ...prev]
-      return next.slice(0, 3)
+      return [{ id: `take-${createdAt}`, url, createdAt, mimeType }, ...prev]
     })
-  }, [recorder.url])
+  }, [recorder.url, recorder.mimeType])
 
   useHotkeys(
     useMemo(
