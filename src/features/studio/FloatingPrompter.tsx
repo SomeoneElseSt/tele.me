@@ -140,11 +140,9 @@ function ControlsBarPortal({
   const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
   const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
   const hasRoomAbove = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX
-  const rawTop = hasRoomAbove
+  const top = hasRoomAbove
     ? frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
     : frame.y + frame.height + CONTROLS_BAR_GAP_PX
-  const maxTop = window.innerHeight - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_MIN_MARGIN_PX
-  const top = Math.max(CONTROLS_BAR_MIN_MARGIN_PX, Math.min(rawTop, maxTop))
   const yOffset = hasRoomAbove ? 14 : -14
   const rotateStart = hasRoomAbove ? 76 : -76
   const origin = hasRoomAbove ? 'bottom' : 'top'
