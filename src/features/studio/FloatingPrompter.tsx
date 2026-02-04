@@ -139,14 +139,36 @@ function ControlsBarPortal({
 }) {
   const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
   const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
-  const hasRoomAbove = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX
-  const side = hasRoomAbove ? 'top' : 'bottom'
-  const top = hasRoomAbove
+  const hysteresis = 18
+  const upperThreshold = CONTROLS_BAR_MIN_MARGIN_PX + hysteresis
+  const lowerThreshold = CONTROLS_BAR_MIN_MARGIN_PX - hysteresis
+  const [side, setSide] = useState<'top' | 'bottom'>(() =>
+    spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
+  )
+
+  useEffect(() => {
+    if (!open) return
+    const next = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
+    setSide(next)
+  }, [open, spaceAbove])
+
+  useEffect(() => {
+    if (side === 'top' && spaceAbove < lowerThreshold) {
+      setSide('bottom')
+      return
+    }
+    if (side === 'bottom' && spaceAbove > upperThreshold) {
+      setSide('top')
+    }
+  }, [lowerThreshold, side, spaceAbove, upperThreshold])
+
+  const isTop = side === 'top'
+  const top = isTop
     ? frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
     : frame.y + frame.height + CONTROLS_BAR_GAP_PX
-  const yOffset = hasRoomAbove ? 14 : -14
-  const rotateStart = hasRoomAbove ? 76 : -76
-  const origin = hasRoomAbove ? 'bottom' : 'top'
+  const yOffset = isTop ? 14 : -14
+  const rotateStart = isTop ? 76 : -76
+  const origin = isTop ? 'bottom' : 'top'
 
   const portalEl =
     typeof document === 'undefined'
@@ -167,7 +189,7 @@ function ControlsBarPortal({
             perspective: 1200
           }}
           animate={{ top }}
-          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
+          transition={{ type: 'spring', stiffness: 360, damping: 48, mass: 0.9 }}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <motion.div
