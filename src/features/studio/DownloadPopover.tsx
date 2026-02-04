@@ -72,24 +72,30 @@ export function DownloadPopover(props: Props) {
             ) : (
               <div className="mt-4 space-y-2">
                 {takes.map((take, index) => (
-                  <a
-                    key={take.id}
-                    href={take.url}
-                    download={`teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.webm`}
-                    className={cn(
-                      'flex items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85',
-                      'hover:bg-white/6 transition-colors'
-                    )}
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <Film className="h-4 w-4 text-white/60" />
-                      <span>Take {index + 1}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-2 text-xs text-white/55">
-                      <span>{formatTime(take.createdAt)}</span>
-                      <Download className="h-3.5 w-3.5 text-white/60" />
-                    </span>
-                  </a>
+                  <div key={take.id} className="flex items-center gap-2">
+                    <div
+                      className={cn(
+                        'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
+                      )}
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <Film className="h-4 w-4 text-white/60" />
+                        <span>Take {index + 1}</span>
+                      </span>
+                      <span className="text-xs text-white/55">{formatTime(take.createdAt)}</span>
+                    </div>
+                    <a
+                      href={take.url}
+                      download={`teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.webm`}
+                      aria-label={`Download take ${index + 1}`}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
+                        'hover:bg-white/8 transition-colors'
+                      )}
+                    >
+                      <Download className="h-4 w-4" />
+                    </a>
+                  </div>
                 ))}
               </div>
             )}
