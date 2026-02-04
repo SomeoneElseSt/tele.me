@@ -36,7 +36,7 @@ const GRIP_VISUAL_SIZE_PX = 38
 const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
 const CONTROLS_BAR_GAP_PX = 10
 const CONTROLS_BAR_MIN_MARGIN_PX = 12
-const CONTROLS_BAR_HEIGHT_PX = 64
+const CONTROLS_BAR_HEIGHT_PX = 76
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
@@ -52,7 +52,7 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
   const needleMaskId = useMemo(() => `speed-needle-mask-${rawId.replace(/[:]/g, '')}`, [rawId])
   const ARC_RADIUS = 7
   // Single hyperparameter to control stroke thickness.
-  const BASE_STROKE = 1.8
+  const BASE_STROKE = 1.2
   const ARC_STROKE = BASE_STROKE
   const NEEDLE_STROKE = BASE_STROKE * 0.9
   const NEEDLE_GAP = 0
@@ -64,7 +64,7 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
   // Mask radius follows the inner edge of the arc stroke.
   const maskRadius = needleReach
   return (
-    <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none">
+    <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none">
       <defs>
         <mask id={needleMaskId} maskUnits="userSpaceOnUse">
           <rect width="24" height="24" fill="black" />
@@ -213,7 +213,7 @@ function ControlCell({
   }, [])
 
   return (
-    <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-3 pb-1.5">
+    <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-4 pb-2">
       <div className="flex items-end justify-between gap-3">
         <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
         <div className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55">
@@ -221,7 +221,7 @@ function ControlCell({
         </div>
       </div>
 
-      <div className="relative mt-2 h-8">
+      <div className="relative mt-2.5 h-9">
         <div
           className={cn(
             'relative mx-4 h-full touch-none select-none',
@@ -403,7 +403,7 @@ function ControlsBarPortal({
             >
               <div
                 className={cn(
-                  'relative flex h-[64px] items-stretch',
+                  'relative flex h-[76px] items-stretch',
                   'divide-x divide-white/10'
                 )}
               >
