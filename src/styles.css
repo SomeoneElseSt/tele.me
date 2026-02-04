@@ -47,41 +47,22 @@ body {
 }
 
 .resize-grip {
-  position: relative;
-  opacity: 0.7;
+  opacity: 0.65;
   border: 0;
   border-radius: 999px;
   background-color: transparent;
-  overflow: hidden;
-  transition: opacity 180ms ease, filter 180ms ease;
-  -webkit-mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
-  mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
-}
-
-.resize-grip::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1.8px);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.34) 1px, transparent 1.8px);
   background-size: 6px 6px;
   background-position: 2px 2px;
-  opacity: 0.55;
-  transition: opacity 180ms ease;
+  transition: opacity 180ms ease, filter 180ms ease, transform 180ms ease;
 }
 
 .resize-grip:hover {
   opacity: 0.9;
 }
 
-.resize-grip:hover::before {
-  opacity: 0.8;
-}
-
 .resize-grip.is-active {
   opacity: 1;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.12));
-}
-
-.resize-grip.is-active::before {
-  opacity: 1;
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.18));
+  transform: scale(1.02);
 }

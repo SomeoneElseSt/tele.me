@@ -34,7 +34,7 @@ const QUICK_PANEL_GAP_PX = 10
 const QUICK_PANEL_MIN_MARGIN_PX = 12
 const GRIP_HIT_SIZE_PX = 32
 const GRIP_RIGHT_PX = 8
-const SCROLLBAR_SAFE_GUTTER_PX = GRIP_RIGHT_PX + GRIP_HIT_SIZE_PX + 16
+const SCROLLBAR_SAFE_GUTTER_PX = GRIP_RIGHT_PX + GRIP_HIT_SIZE_PX + 32
 
 function toNumber(value: string) {
   const parsed = Number(value)
