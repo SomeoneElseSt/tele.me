@@ -323,6 +323,7 @@ export function FloatingPrompter(props: Props) {
   useHotkeys(
     useMemo(
       () => ({
+        h: () => onClose(),
         c: () => setQuickOpen((prev) => !prev),
         space: () => onTogglePlaying(),
         escape: () => {
@@ -330,7 +331,7 @@ export function FloatingPrompter(props: Props) {
           onTogglePlaying()
         }
       }),
-      [onTogglePlaying, playing]
+      [onClose, onTogglePlaying, playing]
     ),
     open
   )
@@ -368,113 +369,124 @@ export function FloatingPrompter(props: Props) {
     setQuickOpen(false)
   }, [open])
 
-  if (!open) return null
-
   return (
-    <div
-      className={cn('fixed z-40 overflow-hidden rounded-2xl border border-white/10 shadow-glow')}
-      style={{
-        width: frame.width,
-        height: frame.height,
-        transform: `translate3d(${frame.x}px, ${frame.y}px, 0)`,
-        backgroundColor: `rgba(0,0,0,${opacity})`
-      }}
-    >
-      <div
-        className={cn(
-          'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
-          'cursor-grab active:cursor-grabbing select-none touch-none'
-        )}
-        style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
-        onPointerDown={drag.onPointerDown}
-      >
-        <Tooltip label="Hide prompter">
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Hide prompter"
-            onPointerDown={(e) => e.stopPropagation()}
-            className={cn(
-              'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-              'hover:bg-white/10 hover:text-white'
-            )}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </Tooltip>
-        <div className="flex items-center gap-1">
-          <Tooltip label="Controls" shortcut="C">
-            <button
-              type="button"
-              onClick={() => setQuickOpen((v) => !v)}
-              aria-label="Prompter controls"
-              onPointerDown={(e) => e.stopPropagation()}
-              className={cn(
-                'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                'hover:bg-white/10 hover:text-white',
-                quickOpen && 'border-white/18 bg-white/10 text-white'
-              )}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </button>
-          </Tooltip>
-          <Tooltip label="Drag" tooltipId={DRAG_TOOLTIP_ID}>
-            <span
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
-              onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
-            >
-              <Move className="h-4 w-4 text-white/60" />
-            </span>
-          </Tooltip>
-        </div>
-      </div>
-
-      <div className="relative h-[calc(100%-52px)]">
-        <div
-          ref={scrollerRef}
-          className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto')}
-          style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
-        >
-          <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
-            <pre
-              className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
-              style={{ fontSize }}
-            >
-              {script}
-            </pre>
-          </div>
-        </div>
-
-        <div
-          aria-hidden="true"
-          className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className={cn('fixed z-40 overflow-hidden rounded-2xl border border-white/10 shadow-glow')}
           style={{
-            right: GRIP_INSET_PX,
-            bottom: GRIP_INSET_PX,
-            width: GRIP_VISUAL_SIZE_PX,
-            height: GRIP_VISUAL_SIZE_PX
+            width: frame.width,
+            height: frame.height,
+            transform: `translate3d(${frame.x}px, ${frame.y}px, 0)`,
+            backgroundColor: `rgba(0,0,0,${opacity})`
           }}
-        />
-      </div>
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.98 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 40, mass: 0.8 }}
+        >
+          <div
+            className={cn(
+              'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
+              'cursor-grab active:cursor-grabbing select-none touch-none'
+            )}
+            style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+            onPointerDown={drag.onPointerDown}
+          >
+            <Tooltip label="Hide prompter" shortcut="H">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Hide prompter"
+                onPointerDown={(e) => e.stopPropagation()}
+                className={cn(
+                  'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                  'hover:bg-white/10 hover:text-white'
+                )}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </Tooltip>
+            <div className="flex items-center gap-1">
+              <Tooltip label="Controls" shortcut="C">
+                <button
+                  type="button"
+                  onClick={() => setQuickOpen((v) => !v)}
+                  aria-label="Prompter controls"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className={cn(
+                    'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                    'hover:bg-white/10 hover:text-white',
+                    quickOpen && 'border-white/18 bg-white/10 text-white'
+                  )}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              <Tooltip label="Drag" tooltipId={DRAG_TOOLTIP_ID}>
+                <span
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
+                  onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
+                >
+                  <Move className="h-4 w-4 text-white/60" />
+                </span>
+              </Tooltip>
+            </div>
+          </div>
 
-      <div
-        className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
-        style={{ right: GRIP_INSET_PX, bottom: GRIP_INSET_PX, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
-        onPointerDown={onResizePointerDown}
-      />
+          <div className="relative h-[calc(100%-52px)]">
+            <div
+              ref={scrollerRef}
+              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto')}
+              style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
+            >
+              <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
+                <pre
+                  className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
+                  style={{ fontSize }}
+                >
+                  {script}
+                </pre>
+              </div>
+            </div>
 
-      <ControlsBarPortal
-        open={quickOpen}
-        frame={frame}
-        opacity={opacity}
-        speed={speed}
-        fontSize={fontSize}
-        mirrorText={mirrorText}
-        onOpacityChange={onOpacityChange}
-        onSpeedChange={onSpeedChange}
-        onFontSizeChange={onFontSizeChange}
-        onMirrorTextChange={onMirrorTextChange}
-      />
-    </div>
+            <div
+              aria-hidden="true"
+              className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+              style={{
+                right: GRIP_INSET_PX,
+                bottom: GRIP_INSET_PX,
+                width: GRIP_VISUAL_SIZE_PX,
+                height: GRIP_VISUAL_SIZE_PX
+              }}
+            />
+          </div>
+
+          <div
+            className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
+            style={{
+              right: GRIP_INSET_PX,
+              bottom: GRIP_INSET_PX,
+              width: GRIP_HIT_SIZE_PX,
+              height: GRIP_HIT_SIZE_PX
+            }}
+            onPointerDown={onResizePointerDown}
+          />
+
+          <ControlsBarPortal
+            open={quickOpen}
+            frame={frame}
+            opacity={opacity}
+            speed={speed}
+            fontSize={fontSize}
+            mirrorText={mirrorText}
+            onOpacityChange={onOpacityChange}
+            onSpeedChange={onSpeedChange}
+            onFontSizeChange={onFontSizeChange}
+            onMirrorTextChange={onMirrorTextChange}
+          />
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
