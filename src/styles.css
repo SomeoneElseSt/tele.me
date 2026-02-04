@@ -65,12 +65,16 @@ body {
   background-image: radial-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1.8px);
   background-size: 6px 6px;
   background-position: 2px 2px;
-  opacity: 0;
+  opacity: 0.55;
   transition: opacity 180ms ease;
 }
 
 .resize-grip:hover {
   opacity: 0.9;
+}
+
+.resize-grip:hover::before {
+  opacity: 0.8;
 }
 
 .resize-grip.is-active {

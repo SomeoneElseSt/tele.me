@@ -351,7 +351,7 @@ export function FloatingPrompter(props: Props) {
 
       <div
         className={cn(
-          'absolute bottom-2 cursor-nwse-resize touch-none',
+          'absolute bottom-2 z-10 cursor-nwse-resize touch-none',
           'resize-grip',
           resizing && 'is-active'
         )}
