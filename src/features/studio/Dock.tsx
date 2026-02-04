@@ -97,9 +97,17 @@ export function Dock({
   }, [onToggleRecord])
 
   const onCloseDownloads = useCallback(() => setDownloadsOpen(false), [])
+  const onOpenInputsExclusive = useCallback(() => {
+    setDownloadsOpen(false)
+    setInputsOpen(true)
+  }, [])
   const onToggleInputsExclusive = useCallback(() => {
     setDownloadsOpen(false)
     setInputsOpen((v) => !v)
+  }, [])
+  const onOpenDownloadsExclusive = useCallback(() => {
+    setInputsOpen(false)
+    setDownloadsOpen(true)
   }, [])
   const onToggleDownloadsExclusive = useCallback(() => {
     setInputsOpen(false)
@@ -202,6 +210,7 @@ export function Dock({
                 type="button"
                 aria-label="Inputs"
                 onClick={onToggleInputsExclusive}
+                onMouseEnter={onOpenInputsExclusive}
                 disabled={recordDisabled}
                 className={cn(
                   'inline-flex h-11 w-10 items-center justify-center transition-colors',
@@ -234,6 +243,7 @@ export function Dock({
               type="button"
               aria-label="Videos"
               onClick={onToggleDownloadsExclusive}
+              onMouseEnter={onOpenDownloadsExclusive}
               className={cn(
                 'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
                 'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
