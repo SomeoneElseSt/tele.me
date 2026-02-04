@@ -1,4 +1,4 @@
-import { Download, Pause, Play, SlidersHorizontal, Video } from 'lucide-react'
+import { Download, Pause, Play, Settings2, Video } from 'lucide-react'
 import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
@@ -73,7 +73,7 @@ export function Dock({
         </div>
 
         <DockButton label="Settings" onClick={onToggleDrawer}>
-          <SlidersHorizontal className="h-4 w-4" />
+          <Settings2 className="h-4 w-4" />
         </DockButton>
 
         <DockButton

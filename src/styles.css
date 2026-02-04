@@ -45,3 +45,18 @@ body {
   border: 3px solid transparent;
   background-clip: content-box;
 }
+
+.resize-grip {
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.35) 1px, transparent 1.6px);
+  background-size: 6px 6px;
+  background-position: 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.resize-grip:hover {
+  opacity: 0.75;
+  border-color: rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.05);
+}
