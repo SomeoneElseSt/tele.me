@@ -12,6 +12,7 @@ import { FloatingPrompter } from './FloatingPrompter'
 import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
 import { cn } from '../../lib/cn'
+import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -20,7 +21,6 @@ import {
   type PrompterFrame
 } from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nSpace: play/pause\nR: record\nT: edit text\nC: teleprompter controls\nH: hide/show prompter\nI: control inputs\nD: download videos\n\nTo use markdown rendering and font, open the edit text pane (T) and enable it (M)`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -73,7 +73,7 @@ export function Studio() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [mirrorVideo, setMirrorVideo] = useState(DEFAULT_MIRROR_VIDEO)
 
-  const [script, setScript] = useState(DEFAULT_SCRIPT)
+  const [script, setScript] = useState(() => getStrings('en').defaultScript)
   const [markdownEnabled, setMarkdownEnabled] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(DEFAULT_SPEED)
@@ -88,18 +88,8 @@ export function Studio() {
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
   const LOCALE_STORAGE_KEY = 'teleme:locale'
-  const LOCALES = useMemo(
-    () => [
-      { code: 'en', label: 'English', short: 'EN' },
-      { code: 'es', label: 'Español', short: 'ES' },
-      { code: 'ja', label: '日本語', short: 'JA' },
-      { code: 'hi', label: 'हिन्दी', short: 'HI' },
-      { code: 'fr', label: 'Français', short: 'FR' },
-      { code: 'de', label: 'Deutsch', short: 'DE' }
-    ],
-    []
-  )
-  const [locale, setLocale] = useState('en')
+  const [locale, setLocale] = useState<LocaleCode>('en')
+  const localeRef = useRef<LocaleCode>(locale)
 
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,
@@ -128,14 +118,26 @@ export function Studio() {
     const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY)
     if (!saved) return
     if (LOCALES.some((item) => item.code === saved)) {
-      setLocale(saved)
+      setLocale(saved as LocaleCode)
     }
   }, [LOCALES])
+
+  const strings = getStrings(locale)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
   }, [locale])
+
+  useEffect(() => {
+    const prevLocale = localeRef.current
+    if (prevLocale === locale) return
+    const prevDefault = getStrings(prevLocale).defaultScript
+    if (script === prevDefault) {
+      setScript(getStrings(locale).defaultScript)
+    }
+    localeRef.current = locale
+  }, [locale, script])
 
   useEffect(() => {
     if (!localeOpen) return
@@ -181,8 +183,8 @@ export function Studio() {
   const onToggleDrawer = useCallback(() => setDrawerOpen((v) => !v), [])
   const onShowPrompter = useCallback(() => setPrompterOpen(true), [])
 
-  const cameras = useMemo(() => mapDevices('Camera', videoInputs), [videoInputs])
-  const mics = useMemo(() => mapDevices('Mic', audioInputs), [audioInputs])
+  const cameras = useMemo(() => mapDevices(strings.camera, videoInputs), [strings.camera, videoInputs])
+  const mics = useMemo(() => mapDevices(strings.mic, audioInputs), [audioInputs, strings.mic])
 
   const onFrameChange = useCallback((update: Partial<PrompterFrame>) => {
     setFrame((prev) => clampFrame({ ...prev, ...update }))
@@ -227,7 +229,8 @@ export function Studio() {
   )
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
+    <I18nProvider locale={locale}>
+      <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
       <StageVideo stream={stream} mirror={mirrorVideo} />
 
       <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
@@ -246,7 +249,7 @@ export function Studio() {
               'inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur',
               'hover:border-white/20 hover:bg-white/10'
             )}
-            aria-label="Language"
+            aria-label={strings.language}
           >
             <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
               {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
@@ -264,7 +267,7 @@ export function Studio() {
                 transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
               >
                 <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
-                  Language
+                  {strings.language}
                 </div>
                 <div className="mt-1 space-y-1">
                   {LOCALES.map((item) => {
@@ -357,6 +360,7 @@ export function Studio() {
       />
 
       <div id="studio-portal" className="pointer-events-none" />
-    </div>
+      </div>
+    </I18nProvider>
   )
 }

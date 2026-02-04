@@ -3,6 +3,7 @@ import { Download, Film, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
+import { useI18n } from './i18n'
 
 export type DownloadTake = {
   id: string
@@ -21,12 +22,13 @@ const POPOVER_WIDTH = 300
 const GAP_PX = 12
 const MARGIN_PX = 12
 
-function formatTime(value: number) {
-  return new Date(value).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+function formatTime(value: number, locale: string) {
+  return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
 }
 
 export function DownloadPopover(props: Props) {
   const { open, anchorEl, takes, onClose } = props
+  const { strings, locale } = useI18n()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -53,21 +55,21 @@ export function DownloadPopover(props: Props) {
             transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between">
-              <div className="text-xs font-medium text-white/75">Videos</div>
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+              <div className="flex items-center justify-between">
+                <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
+                <button
+                  type="button"
+                  aria-label={strings.close}
+                  onClick={onClose}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
 
             {takes.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/75">
-                Record your first video to download it.
+                {strings.recordFirstVideo}
               </div>
             ) : (
               <div className="mt-4 space-y-2">
@@ -80,14 +82,14 @@ export function DownloadPopover(props: Props) {
                     >
                       <span className="inline-flex items-center gap-2">
                         <Film className="h-4 w-4 text-white/60" />
-                        <span>Take {index + 1}</span>
+                        <span>{strings.takeLabel(index + 1)}</span>
                       </span>
-                      <span className="text-xs text-white/55">{formatTime(take.createdAt)}</span>
+                      <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
                     </div>
                     <a
                       href={take.url}
                       download={`teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.webm`}
-                      aria-label={`Download take ${index + 1}`}
+                      aria-label={strings.downloadTakeLabel(index + 1)}
                       className={cn(
                         'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
                         'hover:bg-white/8 transition-colors'

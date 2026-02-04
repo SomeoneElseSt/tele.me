@@ -6,6 +6,7 @@ import { Tooltip } from '../../components/Tooltip'
 import { InputsPopover, type InputDevice } from './InputsPopover'
 import { DownloadPopover, type DownloadTake } from './DownloadPopover'
 import { useHotkeys } from '../../hooks/useHotkeys'
+import { useI18n } from './i18n'
 
 type Props = {
   canRecord: boolean
@@ -80,6 +81,7 @@ export function Dock({
   onShowPrompter,
   onToggleDrawer
 }: Props) {
+  const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
   const inputsAnchorRef = useRef<HTMLButtonElement | null>(null)
   const [downloadsOpen, setDownloadsOpen] = useState(false)
@@ -142,13 +144,13 @@ export function Dock({
           <span className="tabular-nums">{elapsedLabel}</span>
         </div>
 
-        <DockButton label="Text" shortcut="T" onClick={onOpenDrawer}>
+        <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
           <Type className="h-4 w-4" />
         </DockButton>
 
         {!prompterOpen ? (
           <DockButton
-            label="Show prompter"
+            label={strings.showPrompter}
             shortcut="H"
             onClick={() => {
               setInputsOpen(false)
@@ -159,7 +161,7 @@ export function Dock({
           </DockButton>
         ) : (
           <DockButton
-            label={prompterPlaying ? 'Pause prompter' : 'Play prompter'}
+            label={prompterPlaying ? strings.pausePrompter : strings.playPrompter}
             shortcut="Space"
             onClick={() => {
               setInputsOpen(false)
@@ -197,7 +199,7 @@ export function Dock({
               recordDisabled && 'opacity-40'
             )}
           >
-            <Tooltip label={recording ? 'Stop recording' : 'Record'} shortcut="R">
+            <Tooltip label={recording ? strings.stopRecording : strings.record} shortcut="R">
               <button
                 type="button"
                 onClick={onRecordClick}
@@ -206,7 +208,7 @@ export function Dock({
                   'inline-flex h-11 w-11 items-center justify-center transition-colors',
                   'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
                 )}
-                aria-label={recording ? 'Stop recording' : 'Start recording'}
+                aria-label={recording ? strings.stopRecording : strings.startRecording}
               >
                 <Video className="h-4 w-4" />
               </button>
@@ -214,11 +216,11 @@ export function Dock({
 
             <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-            <Tooltip label="Inputs" shortcut="I">
+            <Tooltip label={strings.inputs} shortcut="I">
               <button
                 ref={inputsAnchorRef}
                 type="button"
-                aria-label="Inputs"
+                aria-label={strings.inputs}
                 onClick={onToggleInputsExclusive}
                 disabled={recordDisabled}
                 className={cn(
@@ -246,11 +248,11 @@ export function Dock({
         </div>
 
         <div className="relative inline-flex items-center">
-          <Tooltip label="Videos" shortcut="D">
+          <Tooltip label={strings.videos} shortcut="D">
             <button
               ref={downloadAnchorRef}
               type="button"
-              aria-label="Videos"
+              aria-label={strings.videos}
               onClick={onToggleDownloadsExclusive}
               className={cn(
                 'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',

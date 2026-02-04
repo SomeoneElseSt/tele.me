@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
+import { useI18n } from './i18n'
 
 export type InputDevice = { id: string; label: string }
 
@@ -43,6 +44,7 @@ export function InputsPopover(props: Props) {
     mirrorVideo,
     onMirrorVideoChange
   } = props
+  const { strings } = useI18n()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -86,10 +88,10 @@ export function InputsPopover(props: Props) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-white/75">Inputs</div>
+                <div className="text-xs font-medium text-white/75">{strings.inputsTitle}</div>
                 <button
                   type="button"
-                  aria-label="Close"
+                  aria-label={strings.close}
                   onClick={onClose}
                   className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
                 >
@@ -107,7 +109,7 @@ export function InputsPopover(props: Props) {
                       'border-white/10 focus:outline-none focus:ring-2 focus:ring-white/25'
                     )}
                   >
-                    {cameras.length === 0 && <option value="">No cameras</option>}
+                    {cameras.length === 0 && <option value="">{strings.noCameras}</option>}
                     {cameras.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.label}
@@ -128,7 +130,7 @@ export function InputsPopover(props: Props) {
                       'border-white/10 focus:outline-none focus:ring-2 focus:ring-white/25'
                     )}
                   >
-                    {mics.length === 0 && <option value="">No mics</option>}
+                    {mics.length === 0 && <option value="">{strings.noMics}</option>}
                     {mics.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.label}
@@ -152,9 +154,9 @@ export function InputsPopover(props: Props) {
                 >
                   <span className="inline-flex items-center gap-2">
                     <FlipHorizontal className="h-4 w-4" />
-                    <span>Mirror video</span>
+                    <span>{strings.mirrorVideo}</span>
                   </span>
-                  <span className="text-xs text-white/55">{mirrorVideo ? 'On' : 'Off'}</span>
+                  <span className="text-xs text-white/55">{mirrorVideo ? strings.on : strings.off}</span>
                 </button>
               </div>
             </motion.div>

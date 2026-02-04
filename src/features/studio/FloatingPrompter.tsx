@@ -11,6 +11,7 @@ import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
+import { useI18n } from './i18n'
 
 type Props = {
   open: boolean
@@ -483,6 +484,7 @@ function ControlsBarPortal({
   onFontSizeChange: (value: number) => void
   onMirrorTextChange: (value: boolean) => void
 }) {
+  const { strings } = useI18n()
   const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
   const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
   const hysteresis = 18
@@ -573,7 +575,7 @@ function ControlsBarPortal({
               >
                 <ControlCell
                   Thumb={SpeedThumb}
-                  title="Speed"
+                  title={strings.speed}
                   value={speed}
                   min={10}
                   max={180}
@@ -583,7 +585,7 @@ function ControlsBarPortal({
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
-                  title="Text size"
+                  title={strings.textSize}
                   value={fontSize}
                   min={22}
                   max={72}
@@ -593,7 +595,7 @@ function ControlsBarPortal({
                 />
                 <ControlCell
                   Thumb={OpacityThumb}
-                  title="Opacity"
+                  title={strings.opacity}
                   value={opacity}
                   min={0.15}
                   max={0.95}
@@ -603,11 +605,11 @@ function ControlsBarPortal({
                 />
 
                 <div className="flex w-[104px] items-center justify-center px-3">
-                  <Tooltip label="Mirror text">
+                  <Tooltip label={strings.mirrorText}>
                     <button
                       type="button"
                       onClick={() => onMirrorTextChange(!mirrorText)}
-                      aria-label="Mirror text"
+                      aria-label={strings.mirrorText}
                       className={cn(
                         'inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-xs transition-colors',
                         mirrorText
@@ -664,6 +666,7 @@ export function FloatingPrompter(props: Props) {
   } = props
 
   const tooltip = useTooltipController()
+  const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
@@ -759,11 +762,11 @@ export function FloatingPrompter(props: Props) {
             style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
             onPointerDown={drag.onPointerDown}
           >
-              <Tooltip label="Hide prompter" shortcut="H">
+              <Tooltip label={strings.hidePrompter} shortcut="H">
                 <button
                   type="button"
                   onClick={onClose}
-                aria-label="Hide prompter"
+                  aria-label={strings.hidePrompter}
                 onPointerDown={(e) => e.stopPropagation()}
                 className={cn(
                   'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
@@ -774,7 +777,7 @@ export function FloatingPrompter(props: Props) {
               </button>
             </Tooltip>
             <div className="flex items-center gap-1">
-              <Tooltip label="Controls" shortcut="C">
+              <Tooltip label={strings.controls} shortcut="C">
                 <button
                   type="button"
                   onClick={() => setQuickOpen((v) => !v)}
@@ -789,7 +792,7 @@ export function FloatingPrompter(props: Props) {
                   <SlidersHorizontal className="h-4 w-4" />
                 </button>
               </Tooltip>
-              <Tooltip label="Drag" tooltipId={DRAG_TOOLTIP_ID}>
+              <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
                 <span
                   className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
                   onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}

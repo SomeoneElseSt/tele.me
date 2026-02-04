@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { Tooltip } from '../../components/Tooltip'
 import { cn } from '../../lib/cn'
+import { useI18n } from './i18n'
 
 type Props = {
   open: boolean
@@ -15,6 +16,7 @@ type Props = {
 
 export function SettingsDrawer(props: Props) {
   const { open, onClose, script, onScriptChange, markdownEnabled, onMarkdownEnabledChange } = props
+  const { strings } = useI18n()
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const boxRef = useRef<HTMLDivElement | null>(null)
@@ -84,13 +86,13 @@ export function SettingsDrawer(props: Props) {
             transition={{ duration: 0.2 }}
           >
             <header className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-white/90">Script</div>
+              <div className="text-sm font-semibold text-white/90">{strings.script}</div>
               <div className="flex items-center gap-2">
-                <Tooltip label="Enable Markdown">
+                <Tooltip label={strings.enableMarkdown}>
                   <button
                     type="button"
                     onClick={() => onMarkdownEnabledChange(!markdownEnabled)}
-                    aria-label="Enable Markdown"
+                    aria-label={strings.enableMarkdown}
                     className={cn(
                       'inline-flex h-10 items-center gap-2 rounded-2xl border px-3 text-xs transition-colors',
                       markdownEnabled
@@ -115,11 +117,11 @@ export function SettingsDrawer(props: Props) {
                     </span>
                   </button>
                 </Tooltip>
-                <Tooltip label="Close" shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
+                <Tooltip label={strings.close} shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
                   <span className="inline-flex h-10 w-10 items-center justify-center">
                     <button
                       type="button"
-                      aria-label="Close"
+                      aria-label={strings.close}
                       onClick={onClose}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
                     >
