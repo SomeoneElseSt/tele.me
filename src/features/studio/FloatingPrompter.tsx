@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { FlipHorizontal2, Move, SlidersHorizontal, X } from 'lucide-react'
@@ -48,13 +48,22 @@ function clamp01(value: number) {
 
 function SpeedThumb({ t }: { t: MotionValue<number> }) {
   // Keep the needle within the top semicircle (avoid dipping below the baseline at the extremes).
+  const rawId = useId()
+  const needleMaskId = useMemo(() => `speed-needle-mask-${rawId.replace(/[:]/g, '')}`, [rawId])
   const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
-  const needleLength = 5
+  const needleLength = 6
   const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleLength)
   const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleLength)
+  // Match the inner edge of the arc stroke to avoid a visible gap.
+  const maskRadius = 5.85
   return (
     <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none">
-      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+      <defs>
+        <mask id={needleMaskId} maskUnits="userSpaceOnUse">
+          <rect width="24" height="24" fill="black" />
+          <circle cx="12" cy="14" r={maskRadius} fill="white" />
+        </mask>
+      </defs>
       <circle cx="12" cy="14" r="1.2" fill="currentColor" fillOpacity="0.1" />
       <motion.line
         x1="12"
@@ -64,7 +73,9 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
         stroke="currentColor"
         strokeWidth="2.1"
         strokeLinecap="round"
+        mask={`url(#${needleMaskId})`}
       />
+      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
     </svg>
   )
 }
