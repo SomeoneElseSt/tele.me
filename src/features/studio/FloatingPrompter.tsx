@@ -54,7 +54,7 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
   const needleMaskId = useMemo(() => `speed-needle-mask-${rawId.replace(/[:]/g, '')}`, [rawId])
   const ARC_RADIUS = 7
   // Single hyperparameter to control stroke thickness.
-  const BASE_STROKE = 1.4
+  const BASE_STROKE = 1.2
   const ARC_STROKE = BASE_STROKE
   const NEEDLE_STROKE = BASE_STROKE * 0.9
   const NEEDLE_GAP = 0
@@ -98,9 +98,9 @@ function TextSizeThumb({ t }: { t: MotionValue<number> }) {
   const scale = useTransform(t, (v) => (0.82 + v * 0.58) * 0.7)
   return (
     <motion.span
-      className="text-[13px] font-semibold leading-none"
+      className="text-[14px] font-semibold leading-none"
       // Text renders "filled" and can read brighter than the stroked SVG icons; dial it back a bit.
-      style={{ scale, transformOrigin: 'center', opacity: 0.7 }}
+      style={{ scale, transformOrigin: 'center' }}
     >
       A
     </motion.span>
@@ -406,35 +406,23 @@ function ControlCell({
           <motion.div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left }}>
             <div
               className={cn(
-                'relative flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white/95',
-                // "Liquid glass" thumb: heavy blur + darker tint so the track doesn't read through the thumb.
-                'bg-black/75',
-                'backdrop-blur-[72px] backdrop-brightness-[0.35] backdrop-contrast-[0.35] backdrop-saturate-150',
-                'shadow-[0_0_0_1px_rgba(0,0,0,0.45),0_14px_30px_rgba(0,0,0,0.45)]',
+                'relative flex h-8 w-8 items-center justify-center rounded-full border border-white/35 text-white/92',
+                // Solid thumb (no blur) to fully mask the track underneath.
+                'bg-black',
+                'shadow-[0_0_0_1px_rgba(0,0,0,0.5),0_16px_34px_rgba(0,0,0,0.55)]',
                 'cursor-grab',
                 dragging
                   ? // Slightly brighter while dragging, keep blur/tint intact.
-                    'scale-[1.07] cursor-grabbing border-white/55 text-white/95 shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
+                    'scale-[1.07] cursor-grabbing border-white/55 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
                   : 'transition-[transform,background-color,border-color,color] duration-220 ease-out'
               )}
             >
-              <div
-                aria-hidden="true"
-                className={cn(
-                  'pointer-events-none absolute inset-0 rounded-full',
-                  dragging ? 'bg-black/45' : 'bg-black/45'
-                )}
-              />
               {dragging && (
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 rounded-full bg-white/12"
+                  className="pointer-events-none absolute inset-0 rounded-full bg-white/8"
                 />
               )}
-              <div
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-white/0"
-              />
               <Thumb t={tSpring} />
             </div>
           </motion.div>
