@@ -50,12 +50,19 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
   // Keep the needle within the top semicircle (avoid dipping below the baseline at the extremes).
   const rawId = useId()
   const needleMaskId = useMemo(() => `speed-needle-mask-${rawId.replace(/[:]/g, '')}`, [rawId])
+  const ARC_RADIUS = 7
+  // Single hyperparameter to control stroke thickness.
+  const BASE_STROKE = 1.8
+  const ARC_STROKE = BASE_STROKE
+  const NEEDLE_STROKE = BASE_STROKE * 0.9
+  const NEEDLE_GAP = 0
+  const innerArcRadius = ARC_RADIUS - ARC_STROKE / 2
+  const needleReach = Math.max(0, innerArcRadius - NEEDLE_GAP)
   const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
-  const needleLength = 6
-  const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleLength)
-  const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleLength)
-  // Match the inner edge of the arc stroke to avoid a visible gap.
-  const maskRadius = 5.85
+  const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleReach)
+  const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleReach)
+  // Mask radius follows the inner edge of the arc stroke.
+  const maskRadius = needleReach
   return (
     <svg viewBox="0 0 24 24" className="h-[22px] w-[22px]" fill="none">
       <defs>
@@ -71,11 +78,16 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
         x2={x2}
         y2={y2}
         stroke="currentColor"
-        strokeWidth="2.1"
+        strokeWidth={NEEDLE_STROKE}
         strokeLinecap="round"
         mask={`url(#${needleMaskId})`}
       />
-      <path d="M5 14a7 7 0 0 1 14 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+      <path
+        d="M5 14a7 7 0 0 1 14 0"
+        stroke="currentColor"
+        strokeWidth={ARC_STROKE}
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
