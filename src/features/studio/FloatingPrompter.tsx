@@ -143,11 +143,15 @@ function ControlsBarPortal({
     frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
   )
 
+  const portalEl = typeof document === 'undefined' ? null : (document.getElementById('root') ?? document.body)
+
+  if (!portalEl) return null
+
   return createPortal(
     <AnimatePresence initial={false}>
       {open && (
         <div
-          className="fixed z-[45]"
+          className="fixed z-[35]"
           style={{
             left: frame.x,
             top,
@@ -234,7 +238,7 @@ function ControlsBarPortal({
         </div>
       )}
     </AnimatePresence>,
-    document.body
+    portalEl
   )
 }
 
