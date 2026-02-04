@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import type { ReactNode } from 'react'
 import {
-  createContext,
   useCallback,
   useContext,
   useEffect,
@@ -12,34 +11,49 @@ import {
   useState
 } from 'react'
 import { createPortal } from 'react-dom'
+import { TooltipContext } from './tooltipContext'
 
 type Side = 'top' | 'bottom'
 
 type TooltipProps = {
   label: string
   shortcut?: string
+  tooltipId?: string
   side?: Side
   sideOffset?: number
   children: ReactNode
 }
 
-type TooltipState = {
-  enabled: boolean
-  activeId: string | null
-  setActiveId: Dispatch<SetStateAction<string | null>>
-}
-
-const noopSetActiveId: Dispatch<SetStateAction<string | null>> = () => undefined
-
-const TooltipContext = createContext<TooltipState>({
-  enabled: true,
-  activeId: null,
-  setActiveId: noopSetActiveId
-})
-
 export function TooltipProvider({ enabled = true, children }: { enabled?: boolean; children: ReactNode }) {
   const [activeId, setActiveId] = useState<string | null>(null)
-  const value = useMemo(() => ({ enabled, activeId, setActiveId }), [activeId, enabled])
+  const [lockedId, setLockedId] = useState<string | null>(null)
+
+  const requestActive = useCallback(
+    (id: string) => {
+      if (lockedId && lockedId !== id) return
+      setActiveId(id)
+    },
+    [lockedId]
+  )
+
+  const releaseActive = useCallback((id: string) => {
+    setActiveId((prev) => (prev === id ? null : prev))
+  }, [])
+
+  const lock = useCallback((id: string) => {
+    setLockedId(id)
+    setActiveId(id)
+  }, [])
+
+  const unlock = useCallback((id: string) => {
+    setLockedId((prev) => (prev === id ? null : prev))
+    setActiveId((prev) => (prev === id ? null : prev))
+  }, [])
+
+  const value = useMemo(
+    () => ({ enabled, activeId, lockedId, requestActive, releaseActive, lock, unlock }),
+    [activeId, enabled, lockedId, lock, releaseActive, requestActive, unlock]
+  )
   return <TooltipContext.Provider value={value}>{children}</TooltipContext.Provider>
 }
 
@@ -54,9 +68,10 @@ function formatLabel(label: string, shortcut?: string) {
   return `${label} (${shortcut})`
 }
 
-export function Tooltip({ label, shortcut, side = 'top', sideOffset = 18, children }: TooltipProps) {
-  const id = useId()
-  const { enabled, activeId, setActiveId } = useContext(TooltipContext)
+export function Tooltip({ label, shortcut, tooltipId, side = 'top', sideOffset = 22, children }: TooltipProps) {
+  const reactId = useId()
+  const id = tooltipId ?? reactId
+  const { enabled, activeId, lockedId, requestActive, releaseActive } = useContext(TooltipContext)
   const [hovered, setHovered] = useState(false)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   const anchorRef = useRef<HTMLSpanElement | null>(null)
@@ -66,7 +81,8 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 18, childr
 
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && Boolean(label)
-  const open = show && hovered && activeId === id
+  const locked = lockedId === id
+  const open = show && (locked || (hovered && activeId === id))
 
   const updatePosition = useCallback(() => {
     if (!show) return
@@ -99,11 +115,11 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 18, childr
   useEffect(() => {
     if (!hovered) return
     if (!show) return
-    setActiveId(id)
+    requestActive(id)
     return () => {
-      setActiveId((prev) => (prev === id ? null : prev))
+      releaseActive(id)
     }
-  }, [hovered, id, setActiveId, show])
+  }, [hovered, id, releaseActive, requestActive, show])
 
   useEffect(() => {
     if (!open) return
@@ -142,8 +158,9 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 18, childr
 
   const onClose = useCallback(() => {
     setHovered(false)
-    setActiveId((prev) => (prev === id ? null : prev))
-  }, [id, setActiveId])
+    if (locked) return
+    releaseActive(id)
+  }, [id, locked, releaseActive])
 
   return (
     <>

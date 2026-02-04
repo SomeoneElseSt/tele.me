@@ -32,6 +32,7 @@ export function useHotkeys(bindings: Record<string, HotkeyHandler>, enabled = tr
       const handler = bindings[combo]
       if (!handler) return
 
+      if (isTypingTarget && combo !== 'escape') return
       if (!isTypingTarget) event.preventDefault()
       handler(event)
     },

@@ -5,6 +5,7 @@ import { Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
+import { useTooltipController } from '../../components/useTooltipController'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
@@ -37,6 +38,7 @@ const CONTROLS_BAR_GAP_PX = 10
 const CONTROLS_BAR_MIN_MARGIN_PX = 12
 const CONTROLS_BAR_HEIGHT_PX = 96
 const PROMPTER_HEADER_HEIGHT_PX = 52
+const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -245,6 +247,7 @@ export function FloatingPrompter(props: Props) {
     onClose
   } = props
 
+  const tooltip = useTooltipController()
   const [quickOpen, setQuickOpen] = useState(false)
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
@@ -279,7 +282,8 @@ export function FloatingPrompter(props: Props) {
   const drag = usePointerDrag({
     enabled: open,
     getOrigin: () => ({ x: frame.x, y: frame.y }),
-    onMove: (next) => onFrameChange({ x: next.x, y: next.y })
+    onMove: (next) => onFrameChange({ x: next.x, y: next.y }),
+    onEnd: () => tooltip.unlock(DRAG_TOOLTIP_ID)
   })
 
   const resize = usePointerResize({
@@ -358,8 +362,11 @@ export function FloatingPrompter(props: Props) {
               <SlidersHorizontal className="h-4 w-4" />
             </button>
           </Tooltip>
-          <Tooltip label="Drag">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6">
+          <Tooltip label="Drag" tooltipId={DRAG_TOOLTIP_ID}>
+            <span
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
+              onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
+            >
               <Move className="h-4 w-4 text-white/60" />
             </span>
           </Tooltip>
