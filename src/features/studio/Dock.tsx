@@ -115,7 +115,7 @@ export function Dock({
           <span className="tabular-nums">{elapsedLabel}</span>
         </div>
 
-        <DockButton label="Text" shortcut="?" onClick={onOpenDrawer}>
+        <DockButton label="Text" shortcut="T" onClick={onOpenDrawer}>
           <Type className="h-4 w-4" />
         </DockButton>
 

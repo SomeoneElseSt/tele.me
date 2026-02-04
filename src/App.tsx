@@ -1,5 +1,10 @@
 import { Studio } from './features/studio/Studio'
+import { TooltipProvider } from './components/Tooltip'
 
 export default function App() {
-  return <Studio />
+  return (
+    <TooltipProvider>
+      <Studio />
+    </TooltipProvider>
+  )
 }

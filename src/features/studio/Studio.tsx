@@ -12,7 +12,7 @@ import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
 import { PROMPTER_FRAME_PADDING, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record`
+const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -131,7 +131,7 @@ export function Studio() {
       () => ({
         r: () => onToggleRecord(),
         space: () => onTogglePrompter(),
-        '?': () => onToggleDrawer(),
+        t: () => onToggleDrawer(),
         escape: () => {
           setDrawerOpen(false)
           setPlaying(false)

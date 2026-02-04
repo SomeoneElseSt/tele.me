@@ -1,6 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import type { ReactNode } from 'react'
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { createPortal } from 'react-dom'
 
 type Side = 'top' | 'bottom'
@@ -15,12 +25,21 @@ type TooltipProps = {
 
 type TooltipState = {
   enabled: boolean
+  activeId: string | null
+  setActiveId: Dispatch<SetStateAction<string | null>>
 }
 
-const TooltipContext = createContext<TooltipState>({ enabled: true })
+const noopSetActiveId: Dispatch<SetStateAction<string | null>> = () => undefined
+
+const TooltipContext = createContext<TooltipState>({
+  enabled: true,
+  activeId: null,
+  setActiveId: noopSetActiveId
+})
 
 export function TooltipProvider({ enabled = true, children }: { enabled?: boolean; children: ReactNode }) {
-  const value = useMemo(() => ({ enabled }), [enabled])
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const value = useMemo(() => ({ enabled, activeId, setActiveId }), [activeId, enabled])
   return <TooltipContext.Provider value={value}>{children}</TooltipContext.Provider>
 }
 
@@ -35,9 +54,10 @@ function formatLabel(label: string, shortcut?: string) {
   return `${label} (${shortcut})`
 }
 
-export function Tooltip({ label, shortcut, side = 'top', sideOffset = 10, children }: TooltipProps) {
-  const { enabled } = useContext(TooltipContext)
-  const [open, setOpen] = useState(false)
+export function Tooltip({ label, shortcut, side = 'top', sideOffset = 14, children }: TooltipProps) {
+  const id = useId()
+  const { enabled, activeId, setActiveId } = useContext(TooltipContext)
+  const [hovered, setHovered] = useState(false)
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null)
   const anchorRef = useRef<HTMLSpanElement | null>(null)
   const tipRef = useRef<HTMLDivElement | null>(null)
@@ -45,6 +65,7 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 10, childr
 
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && Boolean(label)
+  const open = show && hovered && activeId === id
 
   const updatePosition = useCallback(() => {
     if (!show) return
@@ -62,6 +83,15 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 10, childr
     if (!el) return
     setTipWidth(el.getBoundingClientRect().width)
   }, [open, text])
+
+  useEffect(() => {
+    if (!hovered) return
+    if (!show) return
+    setActiveId(id)
+    return () => {
+      setActiveId((prev) => (prev === id ? null : prev))
+    }
+  }, [hovered, id, setActiveId, show])
 
   useEffect(() => {
     if (!open) return
@@ -88,10 +118,13 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 10, childr
   const onOpen = useCallback(() => {
     if (!show) return
     updatePosition()
-    setOpen(true)
+    setHovered(true)
   }, [show, updatePosition])
 
-  const onClose = useCallback(() => setOpen(false), [])
+  const onClose = useCallback(() => {
+    setHovered(false)
+    setActiveId((prev) => (prev === id ? null : prev))
+  }, [id, setActiveId])
 
   return (
     <>
