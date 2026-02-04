@@ -14,6 +14,14 @@ export function StageVideo({ stream, mirror }: Props) {
     const el = videoRef.current
     if (!el) return
     el.srcObject = stream
+    
+    if (stream) {
+      const videoTrack = stream.getVideoTracks()[0]
+      if (videoTrack) {
+        const settings = videoTrack.getSettings()
+        console.log('Video resolution:', settings.width, 'x', settings.height)
+      }
+    }
   }, [stream])
 
   return (
