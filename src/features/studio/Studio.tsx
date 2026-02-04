@@ -18,7 +18,14 @@ const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
 const DEFAULT_MIRROR_VIDEO = true
 const DEFAULT_MIRROR_TEXT = false
-const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 1120, height: 560 }
+const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }
+
+function getCenteredFrame(frame: PrompterFrame) {
+  if (typeof window === 'undefined') return frame
+  const x = (window.innerWidth - frame.width) / 2
+  const y = (window.innerHeight - frame.height) / 2
+  return { ...frame, x, y }
+}
 
 function clampFrame(frame: PrompterFrame) {
   const vw = window.innerWidth
@@ -64,7 +71,7 @@ export function Studio() {
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
   const [mirrorText, setMirrorText] = useState(DEFAULT_MIRROR_TEXT)
   const [prompterOpen, setPrompterOpen] = useState(true)
-  const [frame, setFrame] = useState<PrompterFrame>(DEFAULT_FRAME)
+  const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
 
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,

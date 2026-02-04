@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignLeft, Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
+import { Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { useHotkeys } from '../../hooks/useHotkeys'
@@ -285,10 +285,16 @@ export function FloatingPrompter(props: Props) {
         )}
         onPointerDown={drag.onPointerDown}
       >
-        <div className="flex items-center gap-2 text-xs text-white/70">
-          <AlignLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Prompter</span>
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Hide prompter"
+          title="Hide prompter"
+          onPointerDown={(e) => e.stopPropagation()}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+        >
+          <X className="h-4 w-4" />
+        </button>
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -306,16 +312,6 @@ export function FloatingPrompter(props: Props) {
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
             <Move className="h-4 w-4 text-white/60" />
           </span>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Hide prompter"
-            title="Hide prompter"
-            onPointerDown={(e) => e.stopPropagation()}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
       </div>
 

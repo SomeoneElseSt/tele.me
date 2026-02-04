@@ -1,4 +1,4 @@
-import { AlignLeft, ChevronUp, Download, Pause, Play, Settings2, Video } from 'lucide-react'
+import { AlignLeft, ChevronUp, Download, Pause, Play, Type, Video } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useCallback, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
@@ -110,8 +110,8 @@ export function Dock({
           <span className="tabular-nums">{elapsedLabel}</span>
         </div>
 
-        <DockButton label="Settings" onClick={onOpenDrawer}>
-          <Settings2 className="h-4 w-4" />
+        <DockButton label="Text" onClick={onOpenDrawer}>
+          <Type className="h-4 w-4" />
         </DockButton>
 
         {!prompterOpen ? (
