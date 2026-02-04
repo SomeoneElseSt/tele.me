@@ -164,7 +164,7 @@ function ControlsBarPortal({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <motion.div
-            className="overflow-hidden rounded-2xl border border-white/10 shadow-glow backdrop-blur"
+            className="overflow-hidden rounded-2xl border border-white/10 shadow-glow"
             style={{
               backgroundColor: `rgba(0,0,0,${barAlpha})`,
               transform: 'translateZ(0)',
@@ -189,8 +189,6 @@ function ControlsBarPortal({
               exit={{ rotateX: 76 }}
               transition={{ type: 'spring', stiffness: 460, damping: 40, mass: 0.7 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-white/8 via-white/0 to-white/0" aria-hidden="true" />
-
               <div
                 className={cn(
                   'relative flex h-[96px] items-stretch',
