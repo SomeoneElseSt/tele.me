@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
@@ -221,6 +221,7 @@ export function FloatingPrompter(props: Props) {
   } = props
 
   const [quickOpen, setQuickOpen] = useState(false)
+  const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
 
   useRafLoop(
@@ -263,8 +264,23 @@ export function FloatingPrompter(props: Props) {
       onFrameChange({
         width: Math.max(PROMPTER_MIN_WIDTH, next.width),
         height: Math.max(PROMPTER_MIN_HEIGHT, next.height)
-      })
+      }),
+    onEnd: () => setResizing(false)
   })
+
+  const onResizePointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      if (event.button !== 0) return
+      setResizing(true)
+      resize.onPointerDown(event)
+    },
+    [resize]
+  )
+
+  useEffect(() => {
+    if (open) return
+    setResizing(false)
+  }, [open])
 
   if (!open) return null
 
@@ -335,10 +351,11 @@ export function FloatingPrompter(props: Props) {
       <div
         className={cn(
           'absolute bottom-2 cursor-nwse-resize touch-none',
-          'resize-grip'
+          'resize-grip',
+          resizing && 'is-active'
         )}
         style={{ right: 8, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
-        onPointerDown={resize.onPointerDown}
+        onPointerDown={onResizePointerDown}
       />
 
       <QuickControlsPortal

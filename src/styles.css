@@ -61,3 +61,8 @@ body {
 .resize-grip:hover {
   opacity: 0.9;
 }
+
+.resize-grip.is-active {
+  opacity: 1;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.46) 1px, transparent 1.8px);
+}
