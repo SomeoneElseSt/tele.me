@@ -148,7 +148,7 @@ function ControlsBarPortal({
           onPointerDown={(e) => e.stopPropagation()}
         >
           <motion.div
-            className="overflow-hidden rounded-2xl border border-white/12 shadow-glow backdrop-blur"
+            className="overflow-hidden rounded-2xl border border-white/10 shadow-glow backdrop-blur"
             style={{ backgroundColor: `rgba(0,0,0,${barAlpha})` }}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
