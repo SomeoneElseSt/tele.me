@@ -147,7 +147,7 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <div
-          className="fixed z-[70]"
+          className="fixed z-[45]"
           style={{
             left: frame.x,
             top,
@@ -212,20 +212,21 @@ function ControlsBarPortal({
                 />
 
                 <div className="flex w-[92px] items-center justify-center px-3">
-                  <button
-                    type="button"
-                    onClick={() => onMirrorTextChange(!mirrorText)}
-                    aria-label="Mirror text"
-                    title="Mirror text"
-                    className={cn(
-                      'inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-xs transition-all',
-                      mirrorText
-                        ? 'border-white/18 bg-white/10 text-white'
-                        : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
-                    )}
-                  >
-                    <FlipHorizontal2 className="h-4 w-4" />
-                  </button>
+                  <Tooltip label="Mirror text">
+                    <button
+                      type="button"
+                      onClick={() => onMirrorTextChange(!mirrorText)}
+                      aria-label="Mirror text"
+                      className={cn(
+                        'inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-xs transition-all',
+                        mirrorText
+                          ? 'border-white/18 bg-white/10 text-white'
+                          : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
+                      )}
+                    >
+                      <FlipHorizontal2 className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
             </motion.div>
