@@ -18,7 +18,7 @@ import {
   type PrompterFrame
 } from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: edit text\nC: teleprompter controls\nH: hide/show prompter\nI: control inputs\nD: download videos`
+const DEFAULT_SCRIPT = `Your script goes here.\n\nSpace: play/pause\nR: record\nT: edit text\nC: teleprompter controls\nH: hide/show prompter\nI: control inputs\nD: download videos\n\nTo use markdown rendering and font, open the edit text pane (T) and enable it (M)`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -72,6 +72,7 @@ export function Studio() {
   const [mirrorVideo, setMirrorVideo] = useState(DEFAULT_MIRROR_VIDEO)
 
   const [script, setScript] = useState(DEFAULT_SCRIPT)
+  const [markdownEnabled, setMarkdownEnabled] = useState(false)
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(DEFAULT_SPEED)
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE)
@@ -166,6 +167,9 @@ export function Studio() {
           }
           setPrompterOpen(true)
         },
+        m: () => {
+          setMarkdownEnabled((prev) => !prev)
+        },
         escape: () => {
           setDrawerOpen(false)
           setPlaying(false)
@@ -200,6 +204,7 @@ export function Studio() {
         frame={frame}
         opacity={opacity}
         script={script}
+        markdownEnabled={markdownEnabled}
         speed={speed}
         fontSize={fontSize}
         mirrorText={mirrorText}
@@ -242,6 +247,8 @@ export function Studio() {
         onClose={() => setDrawerOpen(false)}
         script={script}
         onScriptChange={setScript}
+        markdownEnabled={markdownEnabled}
+        onMarkdownEnabledChange={setMarkdownEnabled}
       />
 
       <div id="studio-portal" className="pointer-events-none" />

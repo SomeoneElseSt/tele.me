@@ -9,10 +9,12 @@ type Props = {
   onClose: () => void
   script: string
   onScriptChange: (value: string) => void
+  markdownEnabled: boolean
+  onMarkdownEnabledChange: (value: boolean) => void
 }
 
 export function SettingsDrawer(props: Props) {
-  const { open, onClose, script, onScriptChange } = props
+  const { open, onClose, script, onScriptChange, markdownEnabled, onMarkdownEnabledChange } = props
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const boxRef = useRef<HTMLDivElement | null>(null)
@@ -83,18 +85,49 @@ export function SettingsDrawer(props: Props) {
           >
             <header className="flex items-center justify-between">
               <div className="text-sm font-semibold text-white/90">Script</div>
-              <Tooltip label="Close" shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
-                <span className="inline-flex h-10 w-10 items-center justify-center">
+              <div className="flex items-center gap-2">
+                <Tooltip label="Enable Markdown">
                   <button
                     type="button"
-                    aria-label="Close"
-                    onClick={onClose}
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
+                    onClick={() => onMarkdownEnabledChange(!markdownEnabled)}
+                    aria-label="Enable Markdown"
+                    className={cn(
+                      'inline-flex h-10 items-center gap-2 rounded-2xl border px-3 text-xs transition-colors',
+                      markdownEnabled
+                        ? 'border-white/18 bg-white/10 text-white'
+                        : 'border-white/10 bg-white/6 text-white/70 hover:bg-white/10 hover:text-white'
+                    )}
                   >
-                    <X className="h-4 w-4" />
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.12em]">MD</span>
+                    <span
+                      className={cn(
+                        'relative inline-flex h-5 w-8 items-center rounded-full border border-white/10 bg-white/8 transition-colors',
+                        markdownEnabled && 'bg-white/15'
+                      )}
+                      aria-hidden="true"
+                    >
+                      <span
+                        className={cn(
+                          'absolute left-[2px] top-[2px] h-[14px] w-[14px] rounded-full bg-white/70 transition-transform',
+                          markdownEnabled ? 'translate-x-[14px]' : 'translate-x-0'
+                        )}
+                      />
+                    </span>
                   </button>
-                </span>
-              </Tooltip>
+                </Tooltip>
+                <Tooltip label="Close" shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
+                  <span className="inline-flex h-10 w-10 items-center justify-center">
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={onClose}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </span>
+                </Tooltip>
+              </div>
             </header>
 
             <div ref={scrollRef} className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-hidden pb-6">

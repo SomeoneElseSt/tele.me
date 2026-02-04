@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { ComponentType, PointerEvent as ReactPointerEvent } from 'react'
+import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { FlipHorizontal2, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
@@ -17,6 +17,7 @@ type Props = {
   frame: PrompterFrame
   opacity: number
   script: string
+  markdownEnabled: boolean
   speed: number
   fontSize: number
   mirrorText: boolean
@@ -119,6 +120,169 @@ function toNumber(value: string) {
   const parsed = Number(value)
   if (Number.isNaN(parsed)) return null
   return parsed
+}
+
+function renderInlineMarkdown(text: string): ReactNode[] {
+  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g)
+  return parts.map((part, idx) => {
+    if (!part) return null
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code
+          key={`code-${idx}`}
+          className="rounded-md bg-white/10 px-1.5 py-0.5 text-[0.9em] text-white/90"
+        >
+          {part.slice(1, -1)}
+        </code>
+      )
+    }
+    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
+      return (
+        <strong key={`bold-${idx}`} className="font-semibold text-white/95">
+          {part.slice(2, -2)}
+        </strong>
+      )
+    }
+    if ((part.startsWith('*') && part.endsWith('*')) || (part.startsWith('_') && part.endsWith('_'))) {
+      return (
+        <em key={`em-${idx}`} className="text-white/90">
+          {part.slice(1, -1)}
+        </em>
+      )
+    }
+    return <span key={`text-${idx}`}>{part}</span>
+  })
+}
+
+function renderMarkdownBlocks(text: string): ReactNode[] {
+  const lines = text.replace(/\r\n/g, '\n').split('\n')
+  const blocks: ReactNode[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i] ?? ''
+    if (line.trim() === '') {
+      blocks.push(<div key={`spacer-${i}`} className="h-4" />)
+      i += 1
+      continue
+    }
+
+    const headingMatch = /^(#{1,6})\s+(.*)$/.exec(line)
+    if (headingMatch) {
+      const level = headingMatch[1]?.length ?? 1
+      const textContent = headingMatch[2] ?? ''
+      const headingClass = cn(
+        'font-semibold tracking-[-0.02em] text-white',
+        level === 1 && 'text-[1.45em] leading-[1.2] mb-3',
+        level === 2 && 'text-[1.25em] leading-[1.25] mb-2.5',
+        level === 3 && 'text-[1.1em] leading-[1.3] mb-2',
+        level > 3 && 'text-[1em] leading-[1.35] mb-2'
+      )
+      if (level === 1) {
+        blocks.push(
+          <h1 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h1>
+        )
+      } else if (level === 2) {
+        blocks.push(
+          <h2 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h2>
+        )
+      } else if (level === 3) {
+        blocks.push(
+          <h3 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h3>
+        )
+      } else if (level === 4) {
+        blocks.push(
+          <h4 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h4>
+        )
+      } else if (level === 5) {
+        blocks.push(
+          <h5 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h5>
+        )
+      } else {
+        blocks.push(
+          <h6 key={`h-${i}`} className={headingClass}>
+            {renderInlineMarkdown(textContent)}
+          </h6>
+        )
+      }
+      i += 1
+      continue
+    }
+
+    const ulMatch = /^\s*[-*+]\s+/.test(line)
+    if (ulMatch) {
+      const items: ReactNode[] = []
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i] ?? '')) {
+        const itemText = (lines[i] ?? '').replace(/^\s*[-*+]\s+/, '')
+        items.push(
+          <li key={`ul-${i}`} className="mb-1.5 last:mb-0">
+            {renderInlineMarkdown(itemText)}
+          </li>
+        )
+        i += 1
+      }
+      blocks.push(
+        <ul key={`ul-block-${i}`} className="mb-3 list-disc pl-6 text-white/92">
+          {items}
+        </ul>
+      )
+      continue
+    }
+
+    const olMatch = /^\s*\d+\.\s+/.test(line)
+    if (olMatch) {
+      const items: ReactNode[] = []
+      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i] ?? '')) {
+        const itemText = (lines[i] ?? '').replace(/^\s*\d+\.\s+/, '')
+        items.push(
+          <li key={`ol-${i}`} className="mb-1.5 last:mb-0">
+            {renderInlineMarkdown(itemText)}
+          </li>
+        )
+        i += 1
+      }
+      blocks.push(
+        <ol key={`ol-block-${i}`} className="mb-3 list-decimal pl-6 text-white/92">
+          {items}
+        </ol>
+      )
+      continue
+    }
+
+    const paragraphLines: string[] = []
+    while (i < lines.length && (lines[i] ?? '').trim() !== '') {
+      const currentLine = lines[i] ?? ''
+      if (/^(#{1,6})\s+/.test(currentLine)) break
+      if (/^\s*[-*+]\s+/.test(currentLine)) break
+      if (/^\s*\d+\.\s+/.test(currentLine)) break
+      paragraphLines.push(currentLine)
+      i += 1
+    }
+    const paragraphText = paragraphLines.join('\n')
+    const paragraphParts = paragraphText.split('\n')
+    blocks.push(
+      <p key={`p-${i}`} className="mb-3 last:mb-0 text-white/92">
+        {paragraphParts.map((segment, idx) => (
+          <span key={`p-${i}-${idx}`}>
+            {renderInlineMarkdown(segment)}
+            {idx < paragraphParts.length - 1 && <br />}
+          </span>
+        ))}
+      </p>
+    )
+  }
+
+  return blocks
 }
 
 function ControlCell({
@@ -485,6 +649,7 @@ export function FloatingPrompter(props: Props) {
     frame,
     opacity,
     script,
+    markdownEnabled,
     speed,
     fontSize,
     mirrorText,
@@ -594,10 +759,10 @@ export function FloatingPrompter(props: Props) {
             style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
             onPointerDown={drag.onPointerDown}
           >
-            <Tooltip label="Hide prompter" shortcut="H">
-              <button
-                type="button"
-                onClick={onClose}
+              <Tooltip label="Hide prompter" shortcut="H">
+                <button
+                  type="button"
+                  onClick={onClose}
                 aria-label="Hide prompter"
                 onPointerDown={(e) => e.stopPropagation()}
                 className={cn(
@@ -642,12 +807,21 @@ export function FloatingPrompter(props: Props) {
               style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
             >
               <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
-                <pre
-                  className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
-                  style={{ fontSize }}
-                >
-                  {script}
-                </pre>
+                {markdownEnabled ? (
+                  <div
+                    className="font-medium leading-[1.35] tracking-[-0.02em]"
+                    style={{ fontSize }}
+                  >
+                    {renderMarkdownBlocks(script)}
+                  </div>
+                ) : (
+                  <pre
+                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
+                    style={{ fontSize }}
+                  >
+                    {script}
+                  </pre>
+                )}
               </div>
             </div>
 
