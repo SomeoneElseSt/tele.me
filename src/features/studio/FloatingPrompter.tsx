@@ -63,8 +63,8 @@ function SpeedThumb({ t }: { t: MotionValue<number> }) {
   const radians = useTransform(t, (v) => ((-80 + v * 160) * Math.PI) / 180)
   const x2 = useTransform(radians, (angle) => 12 + Math.sin(angle) * needleReach)
   const y2 = useTransform(radians, (angle) => 14 - Math.cos(angle) * needleReach)
-  // Mask radius follows the inner edge of the arc stroke.
-  const maskRadius = needleReach
+  // Mask radius accounts for stroke width to prevent clipping at edges
+  const maskRadius = needleReach + NEEDLE_STROKE / 2
   return (
     <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
       <defs>
