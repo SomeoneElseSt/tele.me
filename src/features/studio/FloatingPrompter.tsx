@@ -140,6 +140,7 @@ function ControlsBarPortal({
   const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
   const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
   const hasRoomAbove = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX
+  const side = hasRoomAbove ? 'top' : 'bottom'
   const top = hasRoomAbove
     ? frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
     : frame.y + frame.height + CONTROLS_BAR_GAP_PX
@@ -157,7 +158,7 @@ function ControlsBarPortal({
   return createPortal(
     <AnimatePresence initial={false}>
       {open && (
-        <div
+        <motion.div
           className="pointer-events-auto fixed z-[35]"
           style={{
             left: frame.x,
@@ -165,6 +166,8 @@ function ControlsBarPortal({
             width: frame.width,
             perspective: 1200
           }}
+          animate={{ top }}
+          transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
           onPointerDown={(e) => e.stopPropagation()}
         >
           <motion.div
@@ -180,6 +183,7 @@ function ControlsBarPortal({
             transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
           >
             <motion.div
+              key={side}
               className="relative"
               style={{
                 transformOrigin: origin,
@@ -250,7 +254,7 @@ function ControlsBarPortal({
               </div>
             </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     portalEl
