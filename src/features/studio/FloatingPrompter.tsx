@@ -33,8 +33,8 @@ const QUICK_PANEL_WIDTH = 340
 const QUICK_PANEL_GAP_PX = 10
 const QUICK_PANEL_MIN_MARGIN_PX = 12
 const GRIP_HIT_SIZE_PX = 32
-const GRIP_RIGHT_PX = 8
-const SCROLLBAR_SAFE_GUTTER_PX = GRIP_RIGHT_PX + GRIP_HIT_SIZE_PX + 32
+const GRIP_INSET_PX = 10
+const GRIP_VISUAL_SIZE_PX = 46
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -335,8 +335,7 @@ export function FloatingPrompter(props: Props) {
       <div className="relative h-[calc(100%-44px)]">
         <div
           ref={scrollerRef}
-          className={cn('tele-scroll absolute left-0 top-0 bottom-0 overflow-y-auto')}
-          style={{ right: SCROLLBAR_SAFE_GUTTER_PX }}
+          className={cn('tele-scroll absolute left-0 top-0 bottom-0 right-0 z-10 overflow-y-auto')}
         >
           <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
             <pre
@@ -347,15 +346,22 @@ export function FloatingPrompter(props: Props) {
             </pre>
           </div>
         </div>
+
+        <div
+          aria-hidden="true"
+          className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+          style={{
+            right: GRIP_INSET_PX,
+            bottom: GRIP_INSET_PX,
+            width: GRIP_VISUAL_SIZE_PX,
+            height: GRIP_VISUAL_SIZE_PX
+          }}
+        />
       </div>
 
       <div
-        className={cn(
-          'absolute bottom-2 z-10 cursor-nwse-resize touch-none',
-          'resize-grip',
-          resizing && 'is-active'
-        )}
-        style={{ right: GRIP_RIGHT_PX, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
+        className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
+        style={{ right: GRIP_INSET_PX, bottom: GRIP_INSET_PX, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
         onPointerDown={onResizePointerDown}
       />
 
