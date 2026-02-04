@@ -47,7 +47,6 @@ export function SettingsDrawer(props: Props) {
 
             <div className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-y-auto tele-scroll pr-1">
               <section className="space-y-3">
-                <div className="text-xs text-white/55">Script</div>
                 <textarea
                   value={script}
                   onChange={(e) => onScriptChange(e.target.value)}

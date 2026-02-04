@@ -54,7 +54,7 @@ function formatLabel(label: string, shortcut?: string) {
   return `${label} (${shortcut})`
 }
 
-export function Tooltip({ label, shortcut, side = 'top', sideOffset = 14, children }: TooltipProps) {
+export function Tooltip({ label, shortcut, side = 'top', sideOffset = 18, children }: TooltipProps) {
   const id = useId()
   const { enabled, activeId, setActiveId } = useContext(TooltipContext)
   const [hovered, setHovered] = useState(false)
@@ -62,6 +62,7 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 14, childr
   const anchorRef = useRef<HTMLSpanElement | null>(null)
   const tipRef = useRef<HTMLDivElement | null>(null)
   const [tipWidth, setTipWidth] = useState<number | null>(null)
+  const lastPosRef = useRef<{ x: number; y: number } | null>(null)
 
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && Boolean(label)
@@ -74,7 +75,18 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 14, childr
     const rect = anchor.getBoundingClientRect()
     const x = rect.left + rect.width / 2
     const y = side === 'top' ? rect.top - sideOffset : rect.bottom + sideOffset
-    setPos({ x, y })
+    const next = { x, y }
+    const last = lastPosRef.current
+    lastPosRef.current = next
+    if (!last) {
+      setPos(next)
+      return
+    }
+    const dx = Math.abs(last.x - next.x)
+    const dy = Math.abs(last.y - next.y)
+    const changed = dx > 0.25 || dy > 0.25
+    if (!changed) return
+    setPos(next)
   }, [show, side, sideOffset])
 
   useLayoutEffect(() => {
@@ -101,9 +113,16 @@ export function Tooltip({ label, shortcut, side = 'top', sideOffset = 14, childr
     const onResize = () => updatePosition()
     window.addEventListener('scroll', onScroll, true)
     window.addEventListener('resize', onResize)
+    let rafId = 0
+    const loop = () => {
+      updatePosition()
+      rafId = window.requestAnimationFrame(loop)
+    }
+    rafId = window.requestAnimationFrame(loop)
     return () => {
       window.removeEventListener('scroll', onScroll, true)
       window.removeEventListener('resize', onResize)
+      window.cancelAnimationFrame(rafId)
     }
   }, [open, updatePosition])
 
