@@ -323,6 +323,7 @@ export function FloatingPrompter(props: Props) {
   useHotkeys(
     useMemo(
       () => ({
+        c: () => setQuickOpen((prev) => !prev),
         space: () => onTogglePlaying(),
         escape: () => {
           if (!playing) return
@@ -402,7 +403,7 @@ export function FloatingPrompter(props: Props) {
           </button>
         </Tooltip>
         <div className="flex items-center gap-1">
-          <Tooltip label="Controls">
+          <Tooltip label="Controls" shortcut="C">
             <button
               type="button"
               onClick={() => setQuickOpen((v) => !v)}
