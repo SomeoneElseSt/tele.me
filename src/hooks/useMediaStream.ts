@@ -43,18 +43,18 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
       video: videoDeviceId 
         ? { 
             deviceId: { exact: videoDeviceId },
-            width: { min: 1280, ideal: 1920 },
-            height: { min: 720, ideal: 1080 }
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
           }
         : facingMode 
           ? { 
               facingMode,
-              width: { min: 1280, ideal: 1920 },
-              height: { min: 720, ideal: 1080 }
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
             }
           : {
-              width: { min: 1280, ideal: 1920 },
-              height: { min: 720, ideal: 1080 }
+              width: { ideal: 1920 },
+              height: { ideal: 1080 }
             }
     }
 
