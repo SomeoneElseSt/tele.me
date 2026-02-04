@@ -208,6 +208,33 @@ export function Studio() {
     setFrame((prev) => clampFrame({ ...prev, ...update }))
   }, [])
 
+  const onDeleteTake = useCallback((takeId: string) => {
+    setTakes((prev) => {
+      const take = prev.find(t => t.id === takeId)
+      if (take) {
+        try {
+          URL.revokeObjectURL(take.url)
+        } catch {
+          // ignore
+        }
+      }
+      return prev.filter(t => t.id !== takeId)
+    })
+  }, [])
+
+  const onClearAllTakes = useCallback(() => {
+    setTakes((prev) => {
+      prev.forEach(take => {
+        try {
+          URL.revokeObjectURL(take.url)
+        } catch {
+          // ignore
+        }
+      })
+      return []
+    })
+  }, [])
+
   useEffect(() => {
     const url = recorder.url
     const mimeType = recorder.mimeType
@@ -368,6 +395,8 @@ export function Studio() {
         onTogglePrompter={onTogglePrompter}
         onShowPrompter={onShowPrompter}
         onToggleDrawer={onToggleDrawer}
+        onDeleteTake={onDeleteTake}
+        onClearAllTakes={onClearAllTakes}
       />
 
       <SettingsDrawer

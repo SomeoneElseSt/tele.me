@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Download, Film, X } from 'lucide-react'
+import { AlertCircle, Download, Film, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
@@ -17,6 +17,8 @@ type Props = {
   anchorEl: HTMLElement | null
   takes: DownloadTake[]
   onClose: () => void
+  onDeleteTake: (takeId: string) => void
+  onClearAll: () => void
 }
 
 const POPOVER_WIDTH = 300
@@ -35,13 +37,15 @@ function getFileExtension(mimeType?: string): string {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose } = props
+  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll } = props
   const { strings, locale } = useI18n()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
   const left = rect ? clamp(desiredLeft, MARGIN_PX, window.innerWidth - POPOVER_WIDTH - MARGIN_PX) : 0
   const top = rect ? rect.top - GAP_PX : 0
+  
+  const showWarning = takes.length >= 3
 
   return createPortal(
     <AnimatePresence>
@@ -65,15 +69,42 @@ export function DownloadPopover(props: Props) {
           >
               <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
-                <button
-                  type="button"
-                  aria-label={strings.close}
-                  onClick={onClose}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  {takes.length > 0 && (
+                    <button
+                      type="button"
+                      aria-label="Clear all recordings"
+                      onClick={() => {
+                        if (confirm('Delete all recordings? This cannot be undone.')) {
+                          onClearAll()
+                        }
+                      }}
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Clear all
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={strings.close}
+                    onClick={onClose}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
+
+            {showWarning && (
+              <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-red-500/30 bg-red-500/20 px-3 py-2.5 text-xs">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0 text-red-400 mt-0.5" />
+                <div>
+                  <div className="font-medium text-white/85">{strings.memoryWarningTitle}</div>
+                  <div className="mt-0.5 text-white/65">{strings.memoryWarningMessage}</div>
+                </div>
+              </div>
+            )}
 
             {takes.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/75">
@@ -130,6 +161,20 @@ export function DownloadPopover(props: Props) {
                       >
                         <Download className="h-4 w-4" />
                       </a>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Delete ${strings.takeLabel(index + 1)}?`)) {
+                            onDeleteTake(take.id)
+                          }
+                        }}
+                        aria-label={`Delete ${strings.takeLabel(index + 1)}`}
+                        className={cn(
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
+                          'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors'
+                        )}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   )
                 })}

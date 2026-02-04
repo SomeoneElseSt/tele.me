@@ -27,6 +27,8 @@ type Props = {
   onTogglePrompter: () => void
   onShowPrompter: () => void
   onToggleDrawer: () => void
+  onDeleteTake: (takeId: string) => void
+  onClearAllTakes: () => void
 }
 
 type DockButtonProps = {
@@ -79,7 +81,9 @@ export function Dock({
   prompterPlaying,
   onTogglePrompter,
   onShowPrompter,
-  onToggleDrawer
+  onToggleDrawer,
+  onDeleteTake,
+  onClearAllTakes
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -267,6 +271,8 @@ export function Dock({
             anchorEl={downloadAnchorRef.current}
             takes={takes}
             onClose={onCloseDownloads}
+            onDeleteTake={onDeleteTake}
+            onClearAll={onClearAllTakes}
           />
         </div>
       </div>
