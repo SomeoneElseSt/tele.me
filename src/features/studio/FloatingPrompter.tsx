@@ -40,6 +40,15 @@ const CONTROLS_BAR_HEIGHT_PX = 96
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
+function TextSizeIcon({ className }: { className?: string }) {
+  return (
+    <span className={cn('inline-flex h-4 w-4 items-end justify-center gap-[1px] leading-none', className)}>
+      <span className="text-[9px] font-semibold">A</span>
+      <span className="text-[13px] font-semibold -translate-y-[0.5px]">A</span>
+    </span>
+  )
+}
+
 function toNumber(value: string) {
   const parsed = Number(value)
   if (Number.isNaN(parsed)) return null
@@ -182,7 +191,7 @@ function ControlsBarPortal({
                   onChange={onSpeedChange}
                 />
                 <ControlCell
-                  icon={<Type className="h-4 w-4" />}
+                  icon={<TextSizeIcon />}
                   title="Text size"
                   value={fontSize}
                   min={22}
