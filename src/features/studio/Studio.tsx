@@ -10,9 +10,15 @@ import { Dock } from './Dock'
 import { FloatingPrompter } from './FloatingPrompter'
 import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
-import { PROMPTER_FRAME_PADDING, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
+import {
+  PROMPTER_CONTROLS_MIN_WIDTH,
+  PROMPTER_FRAME_PADDING,
+  PROMPTER_MIN_HEIGHT,
+  PROMPTER_MIN_WIDTH,
+  type PrompterFrame
+} from './types'
 
-const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: text\nC: controls\nH: hide prompter\nI: inputs\nD: videos`
+const DEFAULT_SCRIPT = `Your script goes here.\n\nShortcuts:\nSpace: play/pause\nR: record\nT: edit text\nC: teleprompter controls\nH: hide/show prompter\nI: control inputs\nD: download videos`
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
@@ -31,10 +37,11 @@ function clampFrame(frame: PrompterFrame) {
   const vw = window.innerWidth
   const vh = window.innerHeight
 
-  const maxWidth = Math.max(PROMPTER_MIN_WIDTH, vw - PROMPTER_FRAME_PADDING * 2)
+  const minWidth = Math.max(PROMPTER_MIN_WIDTH, PROMPTER_CONTROLS_MIN_WIDTH)
+  const maxWidth = Math.max(minWidth, vw - PROMPTER_FRAME_PADDING * 2)
   const maxHeight = Math.max(PROMPTER_MIN_HEIGHT, vh - PROMPTER_FRAME_PADDING * 2)
 
-  const width = clamp(frame.width, PROMPTER_MIN_WIDTH, maxWidth)
+  const width = clamp(frame.width, minWidth, maxWidth)
   const height = clamp(frame.height, PROMPTER_MIN_HEIGHT, maxHeight)
 
   const maxX = Math.max(PROMPTER_FRAME_PADDING, vw - width - PROMPTER_FRAME_PADDING)
@@ -151,12 +158,20 @@ export function Studio() {
         r: () => onToggleRecord(),
         space: () => onTogglePrompter(),
         t: () => onToggleDrawer(),
+        h: () => {
+          if (prompterOpen) {
+            setPrompterOpen(false)
+            setPlaying(false)
+            return
+          }
+          setPrompterOpen(true)
+        },
         escape: () => {
           setDrawerOpen(false)
           setPlaying(false)
         }
       }),
-      [onToggleDrawer, onTogglePrompter, onToggleRecord]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen]
     ),
     true
   )

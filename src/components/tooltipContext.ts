@@ -8,6 +8,7 @@ export type TooltipState = {
   releaseActive: (id: string) => void
   lock: (id: string) => void
   unlock: (id: string) => void
+  clear: () => void
 }
 
 const noop = () => undefined
@@ -19,6 +20,6 @@ export const TooltipContext = createContext<TooltipState>({
   requestActive: noop,
   releaseActive: noop,
   lock: noop,
-  unlock: noop
+  unlock: noop,
+  clear: noop
 })
-

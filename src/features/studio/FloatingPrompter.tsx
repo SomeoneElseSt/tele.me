@@ -10,7 +10,7 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
-import { PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
+import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
 type Props = {
   open: boolean
@@ -306,6 +306,7 @@ export function FloatingPrompter(props: Props) {
   const [quickOpen, setQuickOpen] = useState(false)
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
+  const wasOpenRef = useRef(open)
 
   useRafLoop(
     (deltaMs) => {
@@ -323,7 +324,6 @@ export function FloatingPrompter(props: Props) {
   useHotkeys(
     useMemo(
       () => ({
-        h: () => onClose(),
         c: () => setQuickOpen((prev) => !prev),
         space: () => onTogglePlaying(),
         escape: () => {
@@ -331,7 +331,7 @@ export function FloatingPrompter(props: Props) {
           onTogglePlaying()
         }
       }),
-      [onClose, onTogglePlaying, playing]
+      [onTogglePlaying, playing]
     ),
     open
   )
@@ -343,12 +343,13 @@ export function FloatingPrompter(props: Props) {
     onEnd: () => tooltip.unlock(DRAG_TOOLTIP_ID)
   })
 
+  const minWidth = Math.max(PROMPTER_MIN_WIDTH, PROMPTER_CONTROLS_MIN_WIDTH)
   const resize = usePointerResize({
     enabled: open,
     getOrigin: () => ({ width: frame.width, height: frame.height }),
     onResize: (next) =>
       onFrameChange({
-        width: Math.max(PROMPTER_MIN_WIDTH, next.width),
+        width: Math.max(minWidth, next.width),
         height: Math.max(PROMPTER_MIN_HEIGHT, next.height)
       }),
     onEnd: () => setResizing(false)
@@ -364,10 +365,13 @@ export function FloatingPrompter(props: Props) {
   )
 
   useEffect(() => {
-    if (open) return
-    setResizing(false)
-    setQuickOpen(false)
-  }, [open])
+    if (wasOpenRef.current && !open) {
+      tooltip.clear()
+      setResizing(false)
+      setQuickOpen(false)
+    }
+    wasOpenRef.current = open
+  }, [open, tooltip])
 
   return (
     <AnimatePresence>

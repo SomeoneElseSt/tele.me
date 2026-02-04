@@ -149,6 +149,7 @@ export function Dock({
         {!prompterOpen ? (
           <DockButton
             label="Show prompter"
+            shortcut="H"
             onClick={() => {
               setInputsOpen(false)
               onShowPrompter()
@@ -166,7 +167,24 @@ export function Dock({
             }}
             active={prompterPlaying}
           >
-            {prompterPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+            <span className="relative flex h-4 w-4 items-center justify-center">
+              <span
+                className={cn(
+                  'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                  prompterPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                )}
+              >
+                <Pause className="h-4 w-4" />
+              </span>
+              <span
+                className={cn(
+                  'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                  prompterPlaying ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                )}
+              >
+                <Play className="h-4 w-4" />
+              </span>
+            </span>
           </DockButton>
         )}
 

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, FlipHorizontal, Mic, X } from 'lucide-react'
+import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
@@ -47,19 +48,25 @@ export function InputsPopover(props: Props) {
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
   const left = rect ? clamp(desiredLeft, MARGIN_PX, window.innerWidth - POPOVER_WIDTH - MARGIN_PX) : 0
   const top = rect ? rect.top - GAP_PX : 0
+  const popoverRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (popoverRef.current?.contains(target)) return
+      if (anchorEl?.contains(target)) return
+      onClose()
+    }
+    window.addEventListener('pointerdown', onPointerDown, true)
+    return () => window.removeEventListener('pointerdown', onPointerDown, true)
+  }, [anchorEl, onClose, open])
 
   return createPortal(
     <AnimatePresence>
       {open && anchorEl && (
         <>
-          <motion.div
-            className="fixed inset-0 z-[30]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-
           <div
             className="fixed z-[70]"
             style={{
@@ -68,6 +75,7 @@ export function InputsPopover(props: Props) {
               width: POPOVER_WIDTH,
               transform: 'translateY(-100%)'
             }}
+            ref={popoverRef}
           >
             <motion.div
               className="rounded-2xl border border-white/10 bg-black/70 p-4 text-xs text-white/70 shadow-glow backdrop-blur"

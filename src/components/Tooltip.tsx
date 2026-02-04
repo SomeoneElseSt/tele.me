@@ -50,9 +50,14 @@ export function TooltipProvider({ enabled = true, children }: { enabled?: boolea
     setActiveId((prev) => (prev === id ? null : prev))
   }, [])
 
+  const clear = useCallback(() => {
+    setLockedId(null)
+    setActiveId(null)
+  }, [])
+
   const value = useMemo(
-    () => ({ enabled, activeId, lockedId, requestActive, releaseActive, lock, unlock }),
-    [activeId, enabled, lockedId, lock, releaseActive, requestActive, unlock]
+    () => ({ enabled, activeId, lockedId, requestActive, releaseActive, lock, unlock, clear }),
+    [activeId, clear, enabled, lockedId, lock, releaseActive, requestActive, unlock]
   )
   return <TooltipContext.Provider value={value}>{children}</TooltipContext.Provider>
 }
