@@ -165,7 +165,11 @@ function ControlsBarPortal({
         >
           <motion.div
             className="overflow-hidden rounded-2xl border border-white/10 shadow-glow backdrop-blur"
-            style={{ backgroundColor: `rgba(0,0,0,${barAlpha})` }}
+            style={{
+              backgroundColor: `rgba(0,0,0,${barAlpha})`,
+              transform: 'translateZ(0)',
+              willChange: 'transform'
+            }}
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 14 }}
@@ -173,7 +177,13 @@ function ControlsBarPortal({
           >
             <motion.div
               className="relative"
-              style={{ transformOrigin: 'bottom' }}
+              style={{
+                transformOrigin: 'bottom',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                transformStyle: 'preserve-3d',
+                willChange: 'transform'
+              }}
               initial={{ rotateX: 76 }}
               animate={{ rotateX: 0 }}
               exit={{ rotateX: 76 }}
