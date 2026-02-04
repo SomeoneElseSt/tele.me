@@ -34,7 +34,8 @@ const QUICK_PANEL_GAP_PX = 10
 const QUICK_PANEL_MIN_MARGIN_PX = 12
 const GRIP_HIT_SIZE_PX = 32
 const GRIP_INSET_PX = 10
-const GRIP_VISUAL_SIZE_PX = 46
+const GRIP_VISUAL_SIZE_PX = 38
+const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -335,7 +336,8 @@ export function FloatingPrompter(props: Props) {
       <div className="relative h-[calc(100%-44px)]">
         <div
           ref={scrollerRef}
-          className={cn('tele-scroll absolute left-0 top-0 bottom-0 right-0 z-10 overflow-y-auto')}
+          className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto')}
+          style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
         >
           <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
             <pre

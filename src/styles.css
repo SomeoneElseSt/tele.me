@@ -53,18 +53,18 @@ body {
 
 .grip-visual {
   pointer-events: none;
-  opacity: 0.48;
+  opacity: 0.36;
   border-radius: 999px;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.2px, transparent 2.2px);
-  background-size: 8px 8px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 1.05px, transparent 2.25px);
+  background-size: 7px 7px;
   background-position: 2px 2px;
   transition: opacity 220ms ease, filter 220ms ease, transform 220ms ease;
-  -webkit-mask-image: radial-gradient(44px 44px at 100% 100%, #000 55%, transparent 100%);
-  mask-image: radial-gradient(44px 44px at 100% 100%, #000 55%, transparent 100%);
+  -webkit-mask-image: radial-gradient(40px 40px at 100% 100%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(40px 40px at 100% 100%, #000 55%, transparent 100%);
 }
 
 .grip-visual.is-active {
-  opacity: 0.92;
+  opacity: 0.88;
   transform: scale(1.03);
-  filter: drop-shadow(0 0 16px rgba(255, 255, 255, 0.16));
+  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.16));
 }
