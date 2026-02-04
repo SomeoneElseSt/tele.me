@@ -225,11 +225,23 @@ function ControlCell({
                 'cursor-grab',
                 dragging
                   ? // Slightly brighter while dragging, keep blur/tint intact.
-                    'scale-[1.07] cursor-grabbing border-white/45 text-white/95 bg-white/8 shadow-[0_0_0_1px_rgba(255,255,255,0.18),0_18px_34px_rgba(0,0,0,0.55)]'
+                    'scale-[1.07] cursor-grabbing border-white/55 shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
                   : 'transition-[transform,background-color,border-color] duration-150 ease-out'
               )}
             >
-              <div aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-full bg-black/45" />
+              <div
+                aria-hidden="true"
+                className={cn(
+                  'pointer-events-none absolute inset-0 rounded-full',
+                  dragging ? 'bg-black/45' : 'bg-black/45'
+                )}
+              />
+              {dragging && (
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 rounded-full bg-white/12"
+                />
+              )}
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-b from-white/10 to-white/0"
