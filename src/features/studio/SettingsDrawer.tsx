@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { cn } from '../../lib/cn'
 
 type Props = {
@@ -11,6 +12,52 @@ type Props = {
 
 export function SettingsDrawer(props: Props) {
   const { open, onClose, script, onScriptChange } = props
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const boxRef = useRef<HTMLDivElement | null>(null)
+  const MIN_TEXTAREA_HEIGHT = 220
+  const BOTTOM_PADDING = 24
+
+  const syncTextarea = useCallback(() => {
+    if (!open) return
+    const textarea = textareaRef.current
+    if (!textarea) return
+    const container = scrollRef.current
+    const box = boxRef.current
+    const available = container && container.clientHeight > 0 ? container.clientHeight - BOTTOM_PADDING : null
+
+    if (box && available != null) {
+      box.style.maxHeight = `${Math.max(MIN_TEXTAREA_HEIGHT, available)}px`
+    } else if (box) {
+      box.style.maxHeight = ''
+    }
+
+    let maxTextareaHeight: number | null = null
+    if (box && available != null) {
+      const style = window.getComputedStyle(box)
+      const chromeY =
+        Number.parseFloat(style.paddingTop) +
+        Number.parseFloat(style.paddingBottom) +
+        Number.parseFloat(style.borderTopWidth) +
+        Number.parseFloat(style.borderBottomWidth)
+      maxTextareaHeight = Math.max(MIN_TEXTAREA_HEIGHT, available - chromeY)
+    }
+
+    textarea.style.height = 'auto'
+    textarea.style.maxHeight = maxTextareaHeight != null ? `${maxTextareaHeight}px` : ''
+    textarea.style.height = `${Math.max(MIN_TEXTAREA_HEIGHT, textarea.scrollHeight)}px`
+  }, [open])
+
+  useLayoutEffect(() => {
+    syncTextarea()
+  }, [script, syncTextarea])
+
+  useEffect(() => {
+    if (!open) return
+    const onResize = () => syncTextarea()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [open, syncTextarea])
 
   return (
     <AnimatePresence>
@@ -45,16 +92,25 @@ export function SettingsDrawer(props: Props) {
               </button>
             </header>
 
-            <div className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-y-auto tele-scroll pr-1">
+            <div ref={scrollRef} className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-hidden pb-6">
               <section className="space-y-3">
-                <textarea
-                  value={script}
-                  onChange={(e) => onScriptChange(e.target.value)}
+                <div
+                  ref={boxRef}
                   className={cn(
-                    'min-h-[220px] w-full resize-none rounded-2xl border bg-white/4 px-4 py-3 text-sm text-white/85',
-                    'border-white/10 focus:outline-none focus:ring-2 focus:ring-white/25'
+                    'w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6',
+                    'overflow-hidden focus-within:border-white/20 focus-within:bg-white/5'
                   )}
-                />
+                >
+                  <textarea
+                    ref={textareaRef}
+                    value={script}
+                    onChange={(e) => onScriptChange(e.target.value)}
+                    className={cn(
+                      'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
+                      'focus:outline-none overflow-y-auto'
+                    )}
+                  />
+                </div>
               </section>
             </div>
           </motion.aside>
