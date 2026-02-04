@@ -1,6 +1,6 @@
 tele.me
 
-A tasteful, local-first teleprompter + recorder.
+Teleprompter + recorder.
 
 ## Dev
 

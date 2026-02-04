@@ -9,9 +9,7 @@
 html,
 body {
   height: 100%;
-  background: radial-gradient(1200px 800px at 30% 0%, rgba(124, 92, 255, 0.18), transparent 60%),
-    radial-gradient(900px 600px at 80% 30%, rgba(255, 255, 255, 0.06), transparent 60%),
-    #07070b;
+  background: #000;
 }
 
 * {
@@ -24,16 +22,8 @@ body {
 
 .glass {
   background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.10);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(14px);
-}
-
-.grid-fade {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(600px 360px at 50% 20%, black 55%, transparent 80%);
-  opacity: 0.35;
 }
 
 .tele-scroll {
@@ -55,4 +45,3 @@ body {
   border: 3px solid transparent;
   background-clip: content-box;
 }
-
