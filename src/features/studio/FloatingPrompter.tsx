@@ -377,7 +377,8 @@ export function FloatingPrompter(props: Props) {
           style={{
             width: frame.width,
             height: frame.height,
-            transform: `translate3d(${frame.x}px, ${frame.y}px, 0)`,
+            x: frame.x,
+            y: frame.y,
             backgroundColor: `rgba(0,0,0,${opacity})`
           }}
           initial={{ opacity: 0, scale: 0.98 }}
