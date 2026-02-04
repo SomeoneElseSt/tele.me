@@ -166,6 +166,10 @@ export function Studio() {
         fontSize={fontSize}
         mirrorText={mirrorText}
         playing={playing}
+        onOpacityChange={setOpacity}
+        onSpeedChange={setSpeed}
+        onFontSizeChange={setFontSize}
+        onMirrorTextChange={setMirrorText}
         onTogglePlaying={onTogglePrompter}
         onClose={() => {
           setPrompterOpen(false)
@@ -190,16 +194,8 @@ export function Studio() {
         onClose={() => setDrawerOpen(false)}
         script={script}
         onScriptChange={setScript}
-        speed={speed}
-        onSpeedChange={setSpeed}
-        fontSize={fontSize}
-        onFontSizeChange={setFontSize}
-        opacity={opacity}
-        onOpacityChange={setOpacity}
         mirrorVideo={mirrorVideo}
         onMirrorVideoChange={setMirrorVideo}
-        mirrorText={mirrorText}
-        onMirrorTextChange={setMirrorText}
         cameras={cameras}
         mics={mics}
         cameraId={videoDeviceId}

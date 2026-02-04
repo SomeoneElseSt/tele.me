@@ -53,56 +53,61 @@ export function Dock({
   onToggleDrawer
 }: Props) {
   return (
-    <motion.div
-      className={cn(
-        'fixed bottom-6 left-1/2 z-40 -translate-x-1/2',
-        'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
-      )}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.25 }}
-    >
-      <div className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex">
-        <span
-          className={cn(
-            'h-2 w-2 rounded-full',
-            recording ? 'bg-red-400 shadow-[0_0_0_6px_rgba(248,113,113,0.12)]' : 'bg-white/25'
-          )}
-        />
-        <span className="tabular-nums">{elapsedLabel}</span>
-      </div>
-
-      <DockButton label="Settings" onClick={onToggleDrawer}>
-        <SlidersHorizontal className="h-4 w-4" />
-      </DockButton>
-
-      <DockButton label={prompterPlaying ? 'Pause prompter' : 'Play prompter'} onClick={onTogglePrompter} active={prompterPlaying}>
-        {prompterPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-      </DockButton>
-
-      <DockButton
-        label={recording ? 'Stop recording' : 'Start recording'}
-        onClick={onToggleRecord}
-        active={recording}
-        disabled={!canRecord && !recording}
+    <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
+      <motion.div
+        className={cn(
+          'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
+        )}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
       >
-        <Video className="h-4 w-4" />
-      </DockButton>
+        <div className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex">
+          <span
+            className={cn(
+              'h-2 w-2 rounded-full',
+              recording ? 'bg-red-400 shadow-[0_0_0_6px_rgba(248,113,113,0.12)]' : 'bg-white/25'
+            )}
+          />
+          <span className="tabular-nums">{elapsedLabel}</span>
+        </div>
 
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
-          className={cn(
-            'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
-            'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
-          )}
-          aria-label="Download"
-          title="Download"
+        <DockButton label="Settings" onClick={onToggleDrawer}>
+          <SlidersHorizontal className="h-4 w-4" />
+        </DockButton>
+
+        <DockButton
+          label={prompterPlaying ? 'Pause prompter' : 'Play prompter'}
+          onClick={onTogglePrompter}
+          active={prompterPlaying}
         >
-          <Download className="h-4 w-4" />
-        </a>
-      )}
-    </motion.div>
+          {prompterPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </DockButton>
+
+        <DockButton
+          label={recording ? 'Stop recording' : 'Start recording'}
+          onClick={onToggleRecord}
+          active={recording}
+          disabled={!canRecord && !recording}
+        >
+          <Video className="h-4 w-4" />
+        </DockButton>
+
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            download={`teleme-${new Date().toISOString().replaceAll(':', '')}.webm`}
+            className={cn(
+              'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
+              'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+            )}
+            aria-label="Download"
+            title="Download"
+          >
+            <Download className="h-4 w-4" />
+          </a>
+        )}
+      </motion.div>
+    </div>
   )
 }

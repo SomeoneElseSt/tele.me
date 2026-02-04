@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, Mic, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Slider } from '../../components/Slider'
 import { cn } from '../../lib/cn'
 
 type Device = { id: string; label: string }
@@ -11,16 +10,8 @@ type Props = {
   onClose: () => void
   script: string
   onScriptChange: (value: string) => void
-  speed: number
-  onSpeedChange: (value: number) => void
-  fontSize: number
-  onFontSizeChange: (value: number) => void
-  opacity: number
-  onOpacityChange: (value: number) => void
   mirrorVideo: boolean
   onMirrorVideoChange: (value: boolean) => void
-  mirrorText: boolean
-  onMirrorTextChange: (value: boolean) => void
   cameras: Device[]
   mics: Device[]
   cameraId?: string
@@ -106,16 +97,8 @@ export function SettingsDrawer(props: Props) {
     onClose,
     script,
     onScriptChange,
-    speed,
-    onSpeedChange,
-    fontSize,
-    onFontSizeChange,
-    opacity,
-    onOpacityChange,
     mirrorVideo,
     onMirrorVideoChange,
-    mirrorText,
-    onMirrorTextChange,
     cameras,
     mics,
     cameraId,
@@ -170,39 +153,9 @@ export function SettingsDrawer(props: Props) {
                 />
               </section>
 
-              <section className="space-y-4">
-                <div className="text-xs text-white/55">Teleprompter</div>
-                <div className="rounded-2xl border border-white/10 bg-white/4 p-4">
-                  <div className="flex items-center justify-between text-xs text-white/60">
-                    <span>Speed</span>
-                    <span className="tabular-nums">{Math.round(speed)} px/s</span>
-                  </div>
-                  <div className="mt-3">
-                    <Slider value={speed} min={10} max={180} step={1} onChange={onSpeedChange} />
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/4 p-4">
-                  <div className="flex items-center justify-between text-xs text-white/60">
-                    <span>Text size</span>
-                    <span className="tabular-nums">{fontSize}px</span>
-                  </div>
-                  <div className="mt-3">
-                    <Slider value={fontSize} min={22} max={72} step={1} onChange={onFontSizeChange} />
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-white/10 bg-white/4 p-4">
-                  <div className="flex items-center justify-between text-xs text-white/60">
-                    <span>Opacity</span>
-                    <span className="tabular-nums">{Math.round(opacity * 100)}%</span>
-                  </div>
-                  <div className="mt-3">
-                    <Slider value={opacity} min={0.15} max={0.95} step={0.01} onChange={onOpacityChange} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-3">
-                  <Toggle label="Mirror video" value={mirrorVideo} onChange={onMirrorVideoChange} />
-                  <Toggle label="Mirror text" value={mirrorText} onChange={onMirrorTextChange} />
-                </div>
+              <section className="space-y-3">
+                <div className="text-xs text-white/55">View</div>
+                <Toggle label="Mirror video" value={mirrorVideo} onChange={onMirrorVideoChange} />
               </section>
 
               <section className="space-y-3">

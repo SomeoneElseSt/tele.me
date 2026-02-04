@@ -1,10 +1,11 @@
-import { useMemo, useRef } from 'react'
-import { AlignLeft, Move, X } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { AlignLeft, Eye, Gauge, Move, SlidersHorizontal, Type, X } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
+import { Slider } from '../../components/Slider'
 import { PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 
 type Props = {
@@ -17,8 +18,18 @@ type Props = {
   mirrorText: boolean
   playing: boolean
   onFrameChange: (update: Partial<PrompterFrame>) => void
+  onOpacityChange: (value: number) => void
+  onSpeedChange: (value: number) => void
+  onFontSizeChange: (value: number) => void
+  onMirrorTextChange: (value: boolean) => void
   onTogglePlaying: () => void
   onClose: () => void
+}
+
+const QUICK_PANEL_WIDTH = 340
+
+function formatPercent(value: number) {
+  return `${Math.round(value * 100)}%`
 }
 
 export function FloatingPrompter(props: Props) {
@@ -32,10 +43,15 @@ export function FloatingPrompter(props: Props) {
     mirrorText,
     playing,
     onFrameChange,
+    onOpacityChange,
+    onSpeedChange,
+    onFontSizeChange,
+    onMirrorTextChange,
     onTogglePlaying,
     onClose
   } = props
 
+  const [quickOpen, setQuickOpen] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
 
   useRafLoop(
@@ -105,6 +121,18 @@ export function FloatingPrompter(props: Props) {
           <span className="hidden sm:inline">Prompter</span>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setQuickOpen((v) => !v)}
+            aria-label="Prompter controls"
+            title="Prompter controls"
+            className={cn(
+              'inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70',
+              'hover:bg-white/10 hover:text-white'
+            )}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </button>
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5">
             <Move className="h-4 w-4 text-white/60" />
           </span>
@@ -120,6 +148,64 @@ export function FloatingPrompter(props: Props) {
         </div>
       </div>
 
+      {quickOpen && (
+        <div className="absolute left-3 top-[52px] z-50" style={{ width: QUICK_PANEL_WIDTH }}>
+          <div className="rounded-2xl border border-white/10 bg-black/60 p-4 text-xs text-white/70 backdrop-blur">
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Gauge className="h-4 w-4 text-white/60" />
+                    <span>Speed</span>
+                  </div>
+                  <span className="tabular-nums">{Math.round(speed)} px/s</span>
+                </div>
+                <div className="mt-2">
+                  <Slider value={speed} min={10} max={180} step={1} onChange={onSpeedChange} />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Type className="h-4 w-4 text-white/60" />
+                    <span>Text</span>
+                  </div>
+                  <span className="tabular-nums">{fontSize}px</span>
+                </div>
+                <div className="mt-2">
+                  <Slider value={fontSize} min={22} max={72} step={1} onChange={onFontSizeChange} />
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-white/60" />
+                    <span>Opacity</span>
+                  </div>
+                  <span className="tabular-nums">{formatPercent(opacity)}</span>
+                </div>
+                <div className="mt-2">
+                  <Slider value={opacity} min={0.15} max={0.95} step={0.01} onChange={onOpacityChange} />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => onMirrorTextChange(!mirrorText)}
+                className={cn(
+                  'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-all',
+                  mirrorText
+                    ? 'border-white/18 bg-white/8 text-white'
+                    : 'border-white/10 bg-white/4 text-white/80 hover:bg-white/6'
+                )}
+              >
+                <span>Mirror text</span>
+                <span className="text-xs text-white/55">{mirrorText ? 'On' : 'Off'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div ref={scrollerRef} className={cn('tele-scroll relative h-[calc(100%-44px)] overflow-y-auto')}>
         <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
           <pre
@@ -129,8 +215,6 @@ export function FloatingPrompter(props: Props) {
             {script}
           </pre>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black/70 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/70 to-transparent" />
       </div>
 
       <div
