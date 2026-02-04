@@ -36,7 +36,7 @@ const GRIP_VISUAL_SIZE_PX = 38
 const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
 const CONTROLS_BAR_GAP_PX = 10
 const CONTROLS_BAR_MIN_MARGIN_PX = 12
-const CONTROLS_BAR_HEIGHT_PX = 96
+const CONTROLS_BAR_HEIGHT_PX = 78
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
 
@@ -75,14 +75,16 @@ function ControlCell({
   formatValue?: (value: number) => string
 }) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3 px-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70">
+    <div className="flex min-w-0 flex-1 items-center gap-2 px-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/4 text-white/70">
         {icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-3 pb-2">
-          <div className="truncate text-[11px] text-white/65">{title}</div>
-          <div className="shrink-0 tabular-nums text-[11px] text-white/50">
+        <div className="flex items-center justify-between gap-3 pb-1.5">
+          <div className="truncate text-[10px] font-medium tracking-[0.08em] text-white/55">
+            {title.toUpperCase()}
+          </div>
+          <div className="shrink-0 tabular-nums text-[10px] font-medium text-white/50">
             {formatValue ? formatValue(value) : `${value}`}
           </div>
         </div>
@@ -100,12 +102,12 @@ function ControlCell({
             onChange(next)
           }}
           className={cn(
-            'h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 outline-none',
-            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4',
+            'h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 outline-none',
+            '[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:w-3.5',
             '[&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white/80 [&::-webkit-slider-thumb]:shadow',
             '[&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-white/25',
             '[&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:active:scale-110',
-            '[&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white/80',
+            '[&::-moz-range-thumb]:h-3.5 [&::-moz-range-thumb]:w-3.5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white/80',
             '[&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-white/25'
           )}
         />
@@ -221,7 +223,7 @@ function ControlsBarPortal({
             >
               <div
                 className={cn(
-                  'relative flex h-[96px] items-stretch',
+                  'relative flex h-[78px] items-stretch',
                   'divide-x divide-white/10'
                 )}
               >
@@ -256,14 +258,14 @@ function ControlsBarPortal({
                   onChange={onOpacityChange}
                 />
 
-                <div className="flex w-[92px] items-center justify-center px-3">
+                <div className="flex w-[78px] items-center justify-center px-2">
                   <Tooltip label="Mirror text">
                     <button
                       type="button"
                       onClick={() => onMirrorTextChange(!mirrorText)}
                       aria-label="Mirror text"
                       className={cn(
-                        'inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-xs transition-all',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-xl border text-xs transition-all',
                         mirrorText
                           ? 'border-white/18 bg-white/10 text-white'
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
