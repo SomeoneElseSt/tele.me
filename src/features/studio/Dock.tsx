@@ -100,15 +100,16 @@ export function Dock({
 
   return (
     <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
-      <motion.div
-        className={cn(
-          'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
-        )}
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        layout
-        transition={{ duration: 0.25, layout: { type: 'spring', stiffness: 320, damping: 32, mass: 0.8 } }}
-      >
+        <motion.div
+          className={cn(
+            'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
+          )}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          layout
+          layoutId="dock-bar"
+          transition={{ duration: 0.25, layout: { type: 'spring', stiffness: 320, damping: 32, mass: 0.8 } }}
+        >
         <motion.div
           layout="position"
           className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
@@ -207,15 +208,18 @@ export function Dock({
           />
         </motion.div>
 
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="sync" initial={false}>
           {downloadUrl && (
             <motion.div
               key="download"
               layout="position"
-              initial={{ opacity: 0, y: 10, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 30, mass: 0.8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                opacity: { duration: 0.18 },
+                layout: { type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }
+              }}
             >
               <Tooltip label="Download" shortcut="D">
                 <a
