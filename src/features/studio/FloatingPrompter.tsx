@@ -138,10 +138,16 @@ function ControlsBarPortal({
   onMirrorTextChange: (value: boolean) => void
 }) {
   const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
-  const top = Math.max(
-    CONTROLS_BAR_MIN_MARGIN_PX,
-    frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
-  )
+  const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
+  const hasRoomAbove = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX
+  const rawTop = hasRoomAbove
+    ? frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
+    : frame.y + frame.height + CONTROLS_BAR_GAP_PX
+  const maxTop = window.innerHeight - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_MIN_MARGIN_PX
+  const top = Math.max(CONTROLS_BAR_MIN_MARGIN_PX, Math.min(rawTop, maxTop))
+  const yOffset = hasRoomAbove ? 14 : -14
+  const rotateStart = hasRoomAbove ? 76 : -76
+  const origin = hasRoomAbove ? 'bottom' : 'top'
 
   const portalEl =
     typeof document === 'undefined'
@@ -170,23 +176,23 @@ function ControlsBarPortal({
               transform: 'translateZ(0)',
               willChange: 'transform'
             }}
-            initial={{ opacity: 0, y: 14 }}
+            initial={{ opacity: 0, y: yOffset }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 14 }}
+            exit={{ opacity: 0, y: yOffset }}
             transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
           >
             <motion.div
               className="relative"
               style={{
-                transformOrigin: 'bottom',
+                transformOrigin: origin,
                 backfaceVisibility: 'hidden',
                 WebkitBackfaceVisibility: 'hidden',
                 transformStyle: 'preserve-3d',
                 willChange: 'transform'
               }}
-              initial={{ rotateX: 76 }}
+              initial={{ rotateX: rotateStart }}
               animate={{ rotateX: 0 }}
-              exit={{ rotateX: 76 }}
+              exit={{ rotateX: rotateStart }}
               transition={{ type: 'spring', stiffness: 460, damping: 40, mass: 0.7 }}
             >
               <div
