@@ -47,15 +47,26 @@ body {
 }
 
 .resize-grip {
+  position: relative;
   opacity: 0.7;
+  border: 0;
+  border-radius: 999px;
+  background-color: transparent;
+  overflow: hidden;
+  transition: opacity 180ms ease, filter 180ms ease;
+  -webkit-mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
+  mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
+}
+
+.resize-grip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
   background-image: radial-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1.8px);
   background-size: 6px 6px;
   background-position: 2px 2px;
-  background-color: transparent;
-  border: 0;
-  border-radius: 999px;
-  -webkit-mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
-  mask-image: radial-gradient(18px 18px at 100% 100%, #000 60%, transparent 100%);
+  opacity: 0;
+  transition: opacity 180ms ease;
 }
 
 .resize-grip:hover {
@@ -64,6 +75,9 @@ body {
 
 .resize-grip.is-active {
   opacity: 1;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.72) 1.1px, transparent 1.9px);
   filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.12));
+}
+
+.resize-grip.is-active::before {
+  opacity: 1;
 }
