@@ -18,14 +18,17 @@ const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.35
 const DEFAULT_MIRROR_VIDEO = true
 const DEFAULT_MIRROR_TEXT = false
-const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 560, height: 280 }
+const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 1120, height: 560 }
 
 function clampFrame(frame: PrompterFrame) {
-  const width = Math.max(PROMPTER_MIN_WIDTH, frame.width)
-  const height = Math.max(PROMPTER_MIN_HEIGHT, frame.height)
-
   const vw = window.innerWidth
   const vh = window.innerHeight
+
+  const maxWidth = Math.max(PROMPTER_MIN_WIDTH, vw - PROMPTER_FRAME_PADDING * 2)
+  const maxHeight = Math.max(PROMPTER_MIN_HEIGHT, vh - PROMPTER_FRAME_PADDING * 2)
+
+  const width = clamp(frame.width, PROMPTER_MIN_WIDTH, maxWidth)
+  const height = clamp(frame.height, PROMPTER_MIN_HEIGHT, maxHeight)
 
   const maxX = Math.max(PROMPTER_FRAME_PADDING, vw - width - PROMPTER_FRAME_PADDING)
   const maxY = Math.max(PROMPTER_FRAME_PADDING, vh - height - PROMPTER_FRAME_PADDING)

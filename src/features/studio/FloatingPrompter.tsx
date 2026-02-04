@@ -32,6 +32,8 @@ type Props = {
 const QUICK_PANEL_WIDTH = 340
 const QUICK_PANEL_GAP_PX = 10
 const QUICK_PANEL_MIN_MARGIN_PX = 12
+const SCROLLBAR_INSET_PX = 18
+const GRIP_HIT_SIZE_PX = 32
 
 function toNumber(value: string) {
   const parsed = Number(value)
@@ -317,22 +319,29 @@ export function FloatingPrompter(props: Props) {
         </div>
       </div>
 
-      <div ref={scrollerRef} className={cn('tele-scroll relative h-[calc(100%-44px)] overflow-y-auto')}>
-        <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
-          <pre
-            className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
-            style={{ fontSize }}
-          >
-            {script}
-          </pre>
+      <div className="relative h-[calc(100%-44px)]">
+        <div
+          ref={scrollerRef}
+          className={cn('tele-scroll absolute left-0 top-0 bottom-0 overflow-y-auto')}
+          style={{ right: SCROLLBAR_INSET_PX }}
+        >
+          <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
+            <pre
+              className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
+              style={{ fontSize }}
+            >
+              {script}
+            </pre>
+          </div>
         </div>
       </div>
 
       <div
         className={cn(
-          'absolute bottom-2 right-2 h-6 w-6 rounded-lg cursor-nwse-resize touch-none',
+          'absolute bottom-2 cursor-nwse-resize touch-none',
           'resize-grip'
         )}
+        style={{ right: 8, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }}
         onPointerDown={resize.onPointerDown}
       />
 
