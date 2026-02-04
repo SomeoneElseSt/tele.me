@@ -114,6 +114,7 @@ export function Studio() {
   }, [prompterOpen])
 
   const onToggleDrawer = useCallback(() => setDrawerOpen((v) => !v), [])
+  const onShowPrompter = useCallback(() => setPrompterOpen(true), [])
 
   useHotkeys(
     useMemo(
@@ -184,8 +185,18 @@ export function Studio() {
         elapsedLabel={elapsedLabel}
         downloadUrl={recorder.url}
         onToggleRecord={onToggleRecord}
+        cameras={cameras}
+        mics={mics}
+        cameraId={videoDeviceId}
+        micId={audioDeviceId}
+        onCameraIdChange={setVideoDeviceId}
+        onMicIdChange={setAudioDeviceId}
+        mirrorVideo={mirrorVideo}
+        onMirrorVideoChange={setMirrorVideo}
+        prompterOpen={prompterOpen}
         prompterPlaying={playing}
         onTogglePrompter={onTogglePrompter}
+        onShowPrompter={onShowPrompter}
         onToggleDrawer={onToggleDrawer}
       />
 
@@ -194,14 +205,6 @@ export function Studio() {
         onClose={() => setDrawerOpen(false)}
         script={script}
         onScriptChange={setScript}
-        mirrorVideo={mirrorVideo}
-        onMirrorVideoChange={setMirrorVideo}
-        cameras={cameras}
-        mics={mics}
-        cameraId={videoDeviceId}
-        micId={audioDeviceId}
-        onCameraIdChange={setVideoDeviceId}
-        onMicIdChange={setAudioDeviceId}
       />
     </div>
   )
