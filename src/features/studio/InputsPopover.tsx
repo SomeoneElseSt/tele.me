@@ -53,7 +53,7 @@ export function InputsPopover(props: Props) {
       {open && anchorEl && (
         <>
           <motion.div
-            className="fixed inset-0 z-[60]"
+            className="fixed inset-0 z-[30]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
