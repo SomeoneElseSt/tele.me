@@ -162,6 +162,7 @@ export function Studio() {
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
+  const lastProcessedUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
     takesRef.current = takes
@@ -508,6 +509,10 @@ export function Studio() {
     const url = recorder.url
     const mimeType = recorder.mimeType
     if (!url) return
+
+    // Prevent duplicate processing of the same video URL (e.g. when persistVideos toggles)
+    if (url === lastProcessedUrlRef.current) return
+    lastProcessedUrlRef.current = url
 
     setTakes((prev) => {
       if (prev.some(take => take.url === url)) return prev
