@@ -145,7 +145,13 @@ export function Dock({
         style={{ transform: 'translateZ(0)', contain: 'paint' }}
       >
         <div
-          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/45 backdrop-blur shadow-glow"
+          className={cn(
+            'pointer-events-none absolute inset-0 rounded-3xl border border-white/10 shadow-glow',
+            // Root cause fix: Overlapping backdrop-filter layers trigger GPU compositing artifacts (black lines)
+            // when hover repaints occur. We disable the Dock's blur when the DownloadPopover (which also has blur)
+            // is open to prevent this conflict.
+            downloadsOpen ? 'bg-black/55' : 'bg-black/45 backdrop-blur'
+          )}
           style={{
             transform: 'translateZ(0)',
             willChange: 'transform',
