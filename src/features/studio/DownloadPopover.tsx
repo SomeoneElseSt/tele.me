@@ -145,6 +145,7 @@ export function DownloadPopover(props: Props) {
           }}
         >
           <motion.div
+            className="rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur text-xs text-white/70 isolate overflow-hidden"
             style={{ transform: 'translateZ(0)' }}
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -152,18 +153,8 @@ export function DownloadPopover(props: Props) {
             transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Blur seam fix: isolate blur layer + clip to rounded bounds to avoid GPU lines. */}
-            <div className="relative rounded-2xl text-xs text-white/70 isolate">
-              <div
-                className="pointer-events-none absolute inset-0 rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur overflow-hidden"
-                style={{
-                  transform: 'translateZ(0)',
-                  willChange: 'transform',
-                  backfaceVisibility: 'hidden',
-                  WebkitBackfaceVisibility: 'hidden'
-                }}
-              />
-              <div className="relative p-4 overflow-visible">
+            {/* Blur seam fix: clip to rounded bounds to avoid GPU lines. */}
+            <div className="relative p-4 overflow-visible">
                 <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
                 <div className="flex items-center gap-2">
@@ -386,7 +377,6 @@ export function DownloadPopover(props: Props) {
                 })}
               </div>
             </div>
-          </div>
           </div>
           </motion.div>
         </div>
