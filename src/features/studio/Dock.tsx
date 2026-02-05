@@ -221,8 +221,9 @@ export function Dock({
           <div
             className={cn(
               'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
-              'focus-within:outline-none focus-within:ring-2 focus-within:ring-white/30',
-              recording ? 'border-white/20 bg-white/10 text-white' : 'border-white/10 bg-white/6 text-white/80',
+              recording
+                ? 'border-white/20 bg-white/10 text-white'
+                : 'border-white/10 bg-white/6 text-white/80',
               recordDisabled && 'opacity-40'
             )}
           >
@@ -255,7 +256,15 @@ export function Dock({
                   'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
                 )}
               >
-                <ChevronUp className={cn('h-4 w-4 transition-transform', inputsOpen && 'rotate-180')} />
+                <ChevronUp 
+                  className={cn(
+                    'h-4 w-4 transition-all',
+                    inputsOpen ? 'rotate-180' : ''
+                  )} 
+                  style={{ 
+                    color: inputsOpen ? 'rgb(255, 255, 255)' : 'inherit'
+                  }}
+                />
               </button>
             </Tooltip>
           </div>
@@ -274,7 +283,7 @@ export function Dock({
           />
         </div>
 
-        <div className="relative inline-flex items-center">
+        <div className="relative inline-flex items-center gap-2">
           <Tooltip label={strings.videos} shortcut="D">
             <button
               ref={downloadAnchorRef}
@@ -282,8 +291,11 @@ export function Dock({
               aria-label={strings.videos}
               onClick={onToggleDownloadsExclusive}
               className={cn(
-                'inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80',
-                'hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+                'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
+                'hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
+                downloadsOpen
+                  ? 'border-white/20 bg-white/10 text-white'
+                  : 'border-white/10 bg-white/6 text-white/80'
               )}
             >
               <Download className="h-4 w-4" />
