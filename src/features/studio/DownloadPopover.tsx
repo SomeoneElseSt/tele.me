@@ -34,7 +34,6 @@ const GAP_PX = 12
 const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
-const SWAP_DELAY_MS = 200
 
 function formatTime(value: number, locale: string) {
   return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
@@ -52,10 +51,6 @@ export function DownloadPopover(props: Props) {
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
-  const [showPlaceholder, setShowPlaceholder] = useState(takes.length === 0)
-  const [showList, setShowList] = useState(takes.length > 0)
-  const prevCountRef = useRef(takes.length)
-  const swapTimeoutRef = useRef<number | null>(null)
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
   const trayRef = useRef<HTMLDivElement>(null)
 
@@ -66,44 +61,6 @@ export function DownloadPopover(props: Props) {
 
   const showWarning = takes.length >= 3
 
-  useEffect(() => {
-    const prevCount = prevCountRef.current
-    const nextCount = takes.length
-    if (prevCount === nextCount) return
-
-    if (swapTimeoutRef.current != null) {
-      window.clearTimeout(swapTimeoutRef.current)
-      swapTimeoutRef.current = null
-    }
-
-    if (prevCount === 0 && nextCount > 0) {
-      setShowPlaceholder(false)
-      setShowList(false)
-      swapTimeoutRef.current = window.setTimeout(() => setShowList(true), SWAP_DELAY_MS)
-    } else if (prevCount > 0 && nextCount === 0) {
-      setShowList(false)
-      setShowPlaceholder(false)
-      swapTimeoutRef.current = window.setTimeout(() => setShowPlaceholder(true), SWAP_DELAY_MS)
-    } else if (nextCount > 0) {
-      setShowPlaceholder(false)
-      setShowList(true)
-    } else {
-      setShowPlaceholder(true)
-      setShowList(false)
-    }
-
-    prevCountRef.current = nextCount
-  }, [takes.length])
-
-
-
-  useEffect(() => {
-    return () => {
-      if (swapTimeoutRef.current != null) {
-        window.clearTimeout(swapTimeoutRef.current)
-      }
-    }
-  }, [])
 
   const removeTake = (takeId: string) => {
     setConfirmingTakeId(null)
@@ -297,32 +254,23 @@ export function DownloadPopover(props: Props) {
                 </div>
               </div>
 
-              <div className="mt-4">
-                <div
-                  className={cn(
-                    'overflow-hidden transition-[max-height,opacity,transform] duration-200 ease-out',
-                    showPlaceholder ? 'max-h-20 opacity-100 translate-y-0' : 'max-h-0 opacity-0 translate-y-2'
-                  )}
-                >
-                  <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/75">
-                    {strings.recordFirstVideo}
-                  </div>
-                </div>
-                <motion.div
-                  initial={false}
-                  animate={{
-                    maxHeight: showList ? 384 : 0,
-                    opacity: showList ? 1 : 0
-                  }}
-                  transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
-                  className="flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain pr-1 -mr-1 py-1"
-                  onScroll={() => {
-                    // Close confirmation popup on scroll to avoid floating UI issues
-                    if (confirmingTakeId) setConfirmingTakeId(null)
-                  }}
-                >
-                  <AnimatePresence initial={false}>
-                    {takes.map((take, index) => {
+              <div className="mt-4 flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain pr-1 -mr-1 py-1 max-h-96">
+                <AnimatePresence initial={false}>
+                  {takes.length === 0 ? (
+                    <motion.div
+                      key="placeholder"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+                      className="overflow-hidden"
+                    >
+                      <div className="rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/75">
+                        {strings.recordFirstVideo}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    takes.map((take) => {
                       const extension = getFileExtension(take.mimeType)
                       const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
 
@@ -413,9 +361,9 @@ export function DownloadPopover(props: Props) {
                           </div>
                         </motion.div>
                       )
-                    })}
-                  </AnimatePresence>
-                </motion.div>
+                    })
+                  )}
+                </AnimatePresence>
               </div>
             </div>
 
