@@ -98,7 +98,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Record your first video to download it.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Download take ${index}`,
-    memoryWarningTitle: 'Videos stored locally',
+    memoryWarningTitle: 'Videos are stored locally',
     memoryWarningMessage: "Many recordings may use significant memory. Download and delete recordings you don't need."
   },
   es: {
@@ -144,7 +144,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Graba tu primer video para descargarlo.',
     takeLabel: (index) => `Toma ${index}`,
     downloadTakeLabel: (index) => `Descargar toma ${index}`,
-    memoryWarningTitle: 'Videos almacenados localmente',
+    memoryWarningTitle: 'Los videos están almacenados localmente',
     memoryWarningMessage: 'Muchas grabaciones pueden usar mucha memoria. Descarga y elimina las grabaciones que no necesites.'
   },
   ja: {
@@ -190,7 +190,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: '最初の動画を録画してダウンロードしてください。',
     takeLabel: (index) => `テイク ${index}`,
     downloadTakeLabel: (index) => `テイク ${index} をダウンロード`,
-    memoryWarningTitle: 'ビデオはローカルに保存されます',
+    memoryWarningTitle: 'ビデオはローカルに保存されています',
     memoryWarningMessage: '多くの録画は大量のメモリを使用する可能性があります。不要な録画をダウンロードして削除してください。'
   },
   hi: {
@@ -236,7 +236,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'डाउनलोड करने के लिए अपना पहला वीडियो रिकॉर्ड करें।',
     takeLabel: (index) => `टेक ${index}`,
     downloadTakeLabel: (index) => `टेक ${index} डाउनलोड करें`,
-    memoryWarningTitle: 'वीडियो स्थानीय रूप से संग्रहीत',
+    memoryWarningTitle: 'वीडियो स्थानीय रूप से संग्रहीत हैं',
     memoryWarningMessage: 'कई रिकॉर्डिंग महत्वपूर्ण मेमोरी का उपयोग कर सकते हैं। जिन रिकॉर्डिंग की आवश्यकता नहीं है उन्हें डाउनलोड और हटाएं।'
   },
   fr: {
@@ -282,7 +282,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Enregistrez votre première vidéo pour la télécharger.',
     takeLabel: (index) => `Prise ${index}`,
     downloadTakeLabel: (index) => `Télécharger la prise ${index}`,
-    memoryWarningTitle: 'Vidéos stockées localement',
+    memoryWarningTitle: 'Les vidéos sont stockées localement',
     memoryWarningMessage: "De nombreux enregistrements peuvent utiliser beaucoup de mémoire. Téléchargez et supprimez les enregistrements dont vous n'avez pas besoin."
   },
   de: {
@@ -328,7 +328,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Nehmen Sie Ihr erstes Video auf, um es herunterzuladen.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Take ${index} herunterladen`,
-    memoryWarningTitle: 'Videos lokal gespeichert',
+    memoryWarningTitle: 'Videos sind lokal gespeichert',
     memoryWarningMessage: 'Viele Aufnahmen können viel Speicher verwenden. Laden Sie Aufnahmen herunter und löschen Sie die, die Sie nicht benötigen.'
   },
   zh: {
@@ -374,7 +374,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: '录制你的第一个视频以便下载。',
     takeLabel: (index) => `拍摄 ${index}`,
     downloadTakeLabel: (index) => `下载拍摄 ${index}`,
-    memoryWarningTitle: '视频本地存储',
+    memoryWarningTitle: '视频存储在本地',
     memoryWarningMessage: '大量录制可能会占用大量内存。下载并删除不需要的录制。'
   },
   ar: {
@@ -466,7 +466,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Grave seu primeiro vídeo para baixar.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Baixar take ${index}`,
-    memoryWarningTitle: 'Vídeos armazenados localmente',
+    memoryWarningTitle: 'Os vídeos estão armazenados localmente',
     memoryWarningMessage: 'Muitas gravações podem usar memória significativa. Baixe e exclua as gravações que não precisa.'
   },
   ru: {

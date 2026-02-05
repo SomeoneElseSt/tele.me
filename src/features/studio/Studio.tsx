@@ -5,6 +5,7 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useMediaDevices } from '../../hooks/useMediaDevices'
 import { useMediaStream } from '../../hooks/useMediaStream'
 import { useRecorder } from '../../hooks/useRecorder'
+import { useMirroredStream } from '../../hooks/useMirroredStream'
 import { clamp } from '../../hooks/geometry'
 import { formatMs } from '../recording/format'
 import { Dock } from './Dock'
@@ -102,7 +103,8 @@ export function Studio() {
     facingMode: 'user'
   })
 
-  const recorder = useRecorder(stream)
+  const recordingStream = useMirroredStream(stream, mirrorVideo)
+  const recorder = useRecorder(recordingStream)
 
   useEffect(() => {
     if (audioDeviceId) return
