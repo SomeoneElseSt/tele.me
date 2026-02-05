@@ -245,7 +245,8 @@ export function Dock({
                 disabled={recordDisabled}
                 className={cn(
                   'inline-flex h-11 w-10 items-center justify-center transition-colors',
-                  'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+                  'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none',
+                  inputsOpen && 'bg-white/10 text-white'
                 )}
               >
                 <ChevronUp 
@@ -253,9 +254,6 @@ export function Dock({
                     'h-4 w-4 transition-all',
                     inputsOpen ? 'rotate-180' : ''
                   )} 
-                  style={{ 
-                    color: inputsOpen ? 'rgb(255, 255, 255)' : 'inherit'
-                  }}
                 />
               </button>
             </Tooltip>
