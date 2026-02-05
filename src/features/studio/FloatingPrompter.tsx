@@ -23,11 +23,13 @@ type Props = {
   fontSize: number
   textAlign: 'left' | 'center' | 'right'
   playing: boolean
+  fixedToTop: boolean
   onFrameChange: (update: Partial<PrompterFrame>) => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
   onTextAlignChange: (value: 'left' | 'center' | 'right') => void
+  onFixedToTopChange: (value: boolean) => void
   onTogglePlaying: () => void
   onClose: () => void
   onControlsOpenChange?: (open: boolean) => void
@@ -530,7 +532,7 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <motion.div
-          className="pointer-events-auto fixed z-[35]"
+          className="pointer-events-auto fixed z-[65]"
           style={{
             left: frame.x,
             top,
@@ -673,11 +675,13 @@ export function FloatingPrompter(props: Props) {
     fontSize,
     textAlign,
     playing,
+    fixedToTop,
     onFrameChange,
     onOpacityChange,
     onSpeedChange,
     onFontSizeChange,
     onTextAlignChange,
+    onFixedToTopChange,
     onTogglePlaying,
     onClose,
     onControlsOpenChange,
@@ -687,7 +691,6 @@ export function FloatingPrompter(props: Props) {
   const tooltip = useTooltipController()
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
-  const [fixedToTop, setFixedToTop] = useState(false)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
   
   useEffect(() => {
@@ -750,17 +753,17 @@ export function FloatingPrompter(props: Props) {
 
   const onFixToTop = useCallback(() => {
     originalPositionRef.current = { x: frame.x, y: frame.y }
-    setFixedToTop(true)
+    onFixedToTopChange(true)
     onFrameChange({ y: 0 })
-  }, [frame.x, frame.y, onFrameChange])
+  }, [frame.x, frame.y, onFrameChange, onFixedToTopChange])
 
   const onUnfixFromTop = useCallback(() => {
-    setFixedToTop(false)
+    onFixedToTopChange(false)
     if (originalPositionRef.current) {
       onFrameChange(originalPositionRef.current)
       originalPositionRef.current = null
     }
-  }, [onFrameChange])
+  }, [onFrameChange, onFixedToTopChange])
 
   useHotkeys(
     useMemo(
@@ -800,8 +803,6 @@ export function FloatingPrompter(props: Props) {
       tooltip.clear()
       setResizing(false)
       setQuickOpen(false)
-      setFixedToTop(false)
-      originalPositionRef.current = null
       onControlsOpenChange?.(false)
     } else if (!wasOpenRef.current && open) {
       // Restore scroll position when showing
@@ -827,7 +828,7 @@ export function FloatingPrompter(props: Props) {
       {open && (
         <motion.div
           className={cn(
-            'fixed z-40 overflow-hidden border border-white/10 shadow-glow flex flex-col',
+            'fixed z-[70] overflow-hidden border border-white/10 shadow-glow flex flex-col',
             fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl'
           )}
           style={{

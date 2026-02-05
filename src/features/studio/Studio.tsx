@@ -31,6 +31,15 @@ type TextAlign = 'left' | 'center' | 'right'
 const DEFAULT_TEXT_ALIGN: TextAlign = 'left'
 const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }
 
+const LOCALE_STORAGE_KEY = 'teleme:locale'
+const TAKE_NUMBER_STORAGE_KEY = 'teleme:next_take_number'
+const SPEED_STORAGE_KEY = 'teleme:prompter_speed'
+const FONT_SIZE_STORAGE_KEY = 'teleme:prompter_font_size'
+const OPACITY_STORAGE_KEY = 'teleme:prompter_opacity'
+const TEXT_ALIGN_STORAGE_KEY = 'teleme:prompter_text_align'
+const FRAME_STORAGE_KEY = 'teleme:prompter_frame'
+const FIXED_TO_TOP_STORAGE_KEY = 'teleme:prompter_fixed_to_top'
+
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
   const x = (window.innerWidth - frame.width) / 2
@@ -39,6 +48,7 @@ function getCenteredFrame(frame: PrompterFrame) {
 }
 
 function clampFrame(frame: PrompterFrame) {
+  if (typeof window === 'undefined') return frame
   const vw = window.innerWidth
   const vh = window.innerHeight
 
@@ -79,14 +89,71 @@ export function Studio() {
   const [script, setScript] = useState(() => getStrings('en').defaultScript)
   const [markdownEnabled, setMarkdownEnabled] = useState(false)
   const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState(DEFAULT_SPEED)
-  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE)
-  const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
-  const [textAlign, setTextAlign] = useState<TextAlign>(DEFAULT_TEXT_ALIGN)
+  const [speed, setSpeed] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_SPEED
+    const saved = window.localStorage.getItem(SPEED_STORAGE_KEY)
+    if (!saved) return DEFAULT_SPEED
+    const parsed = Number(saved)
+    if (isNaN(parsed) || parsed < 10 || parsed > 180) return DEFAULT_SPEED
+    return parsed
+  })
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_FONT_SIZE
+    const saved = window.localStorage.getItem(FONT_SIZE_STORAGE_KEY)
+    if (!saved) return DEFAULT_FONT_SIZE
+    const parsed = Number(saved)
+    if (isNaN(parsed) || parsed < 22 || parsed > 72) return DEFAULT_FONT_SIZE
+    return parsed
+  })
+  const [opacity, setOpacity] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_OPACITY
+    const saved = window.localStorage.getItem(OPACITY_STORAGE_KEY)
+    if (!saved) return DEFAULT_OPACITY
+    const parsed = Number(saved)
+    if (isNaN(parsed) || parsed < 0.15 || parsed > 0.95) return DEFAULT_OPACITY
+    return parsed
+  })
+  const [textAlign, setTextAlign] = useState<TextAlign>(() => {
+    if (typeof window === 'undefined') return DEFAULT_TEXT_ALIGN
+    const saved = window.localStorage.getItem(TEXT_ALIGN_STORAGE_KEY)
+    if (!saved) return DEFAULT_TEXT_ALIGN
+    if (saved === 'left' || saved === 'center' || saved === 'right') {
+      return saved
+    }
+    return DEFAULT_TEXT_ALIGN
+  })
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
   const [forceCloseControls, setForceCloseControls] = useState(false)
-  const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
+  const [fixedToTop, setFixedToTop] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = window.localStorage.getItem(FIXED_TO_TOP_STORAGE_KEY)
+    if (!saved) return false
+    return saved === 'true'
+  })
+  const [frame, setFrame] = useState<PrompterFrame>(() => {
+    if (typeof window === 'undefined') {
+      return clampFrame(getCenteredFrame(DEFAULT_FRAME))
+    }
+    const saved = window.localStorage.getItem(FRAME_STORAGE_KEY)
+    if (!saved) {
+      return clampFrame(getCenteredFrame(DEFAULT_FRAME))
+    }
+    try {
+      const parsed = JSON.parse(saved) as PrompterFrame
+      if (
+        typeof parsed.x === 'number' &&
+        typeof parsed.y === 'number' &&
+        typeof parsed.width === 'number' &&
+        typeof parsed.height === 'number'
+      ) {
+        return clampFrame(parsed)
+      }
+    } catch {
+      // Invalid JSON, fall back to default
+    }
+    return clampFrame(getCenteredFrame(DEFAULT_FRAME))
+  })
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number }[]>([])
   const takesRef = useRef(takes)
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
@@ -100,8 +167,6 @@ export function Studio() {
   const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
-  const LOCALE_STORAGE_KEY = 'teleme:locale'
-  const TAKE_NUMBER_STORAGE_KEY = 'teleme:next_take_number'
   const [locale, setLocale] = useState<LocaleCode>('en')
   const localeRef = useRef<LocaleCode>(locale)
   
@@ -160,6 +225,42 @@ export function Studio() {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
   }, [locale])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(SPEED_STORAGE_KEY, speed.toString())
+  }, [speed])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, fontSize.toString())
+  }, [fontSize])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(OPACITY_STORAGE_KEY, opacity.toString())
+  }, [opacity])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(TEXT_ALIGN_STORAGE_KEY, textAlign)
+  }, [textAlign])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(FRAME_STORAGE_KEY, JSON.stringify(frame))
+  }, [frame])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(FIXED_TO_TOP_STORAGE_KEY, fixedToTop.toString())
+  }, [fixedToTop])
+
+  useEffect(() => {
+    if (!fixedToTop) return
+    if (frame.y === 0) return
+    setFrame((prev) => clampFrame({ ...prev, y: 0 }))
+  }, [fixedToTop, frame.y])
 
   useEffect(() => {
     const prevLocale = localeRef.current
@@ -523,10 +624,12 @@ export function Studio() {
         fontSize={fontSize}
         textAlign={textAlign}
         playing={playing}
+        fixedToTop={fixedToTop}
         onOpacityChange={setOpacity}
         onSpeedChange={setSpeed}
         onFontSizeChange={setFontSize}
         onTextAlignChange={setTextAlign}
+        onFixedToTopChange={setFixedToTop}
         onTogglePlaying={onTogglePrompter}
         onClose={() => {
           setPrompterOpen(false)
