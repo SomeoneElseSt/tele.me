@@ -150,14 +150,14 @@ export function DownloadPopover(props: Props) {
             Using simple opacity + y translation instead.
           */}
           <motion.div
-            className="rounded-2xl border border-white/10 bg-black/45 shadow-glow text-xs text-white/70 overflow-visible"
+            className="relative text-xs text-white/70 overflow-visible rounded-2xl border border-white/10 bg-black/40 shadow-glow backdrop-blur"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative p-4 overflow-visible">
+            <div className="p-4 overflow-visible">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
                 <div className="flex items-center gap-2">

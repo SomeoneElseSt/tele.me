@@ -144,7 +144,7 @@ export function Dock({
         className="relative isolate rounded-3xl overflow-hidden"
       >
         <div
-          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/45 shadow-glow"
+          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/40 shadow-glow backdrop-blur"
         />
         <div
           className={cn(
