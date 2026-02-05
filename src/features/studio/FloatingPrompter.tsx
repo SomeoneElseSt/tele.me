@@ -714,31 +714,16 @@ export function FloatingPrompter(props: Props) {
     open && playing
   )
 
-  useHotkeys(
-    useMemo(
-      () => ({
-        c: () => {
-          setQuickOpen((prev) => {
-            const next = !prev
-            onControlsOpenChange?.(next)
-            return next
-          })
-        },
-        space: () => onTogglePlaying(),
-        escape: () => {
-          if (!playing) return
-          onTogglePlaying()
-        }
-      }),
-      [onTogglePlaying, playing, onControlsOpenChange]
-    ),
-    open
-  )
-
   const drag = usePointerDrag({
-    enabled: open && !fixedToTop,
+    enabled: open,
     getOrigin: () => ({ x: frame.x, y: frame.y }),
-    onMove: (next) => onFrameChange({ x: next.x, y: next.y }),
+    onMove: (next) => {
+      if (fixedToTop) {
+        onFrameChange({ x: next.x, y: 0 })
+      } else {
+        onFrameChange({ x: next.x, y: next.y })
+      }
+    },
     onEnd: () => tooltip.unlock(DRAG_TOOLTIP_ID)
   })
 
@@ -776,6 +761,34 @@ export function FloatingPrompter(props: Props) {
       originalPositionRef.current = null
     }
   }, [onFrameChange])
+
+  useHotkeys(
+    useMemo(
+      () => ({
+        c: () => {
+          setQuickOpen((prev) => {
+            const next = !prev
+            onControlsOpenChange?.(next)
+            return next
+          })
+        },
+        y: () => {
+          if (fixedToTop) {
+            onUnfixFromTop()
+          } else {
+            onFixToTop()
+          }
+        },
+        space: () => onTogglePlaying(),
+        escape: () => {
+          if (!playing) return
+          onTogglePlaying()
+        }
+      }),
+      [onTogglePlaying, playing, onControlsOpenChange, fixedToTop, onFixToTop, onUnfixFromTop]
+    ),
+    open
+  )
 
   useEffect(() => {
     if (wasOpenRef.current && !open) {
@@ -857,7 +870,7 @@ export function FloatingPrompter(props: Props) {
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">
-                <Tooltip label={strings.fixToTop}>
+                <Tooltip label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
                     onClick={onFixToTop}
@@ -956,9 +969,10 @@ export function FloatingPrompter(props: Props) {
             <div
               className={cn(
                 'flex items-center justify-between gap-2 border-t border-white/10 px-4 text-white/85',
-                'select-none touch-none'
+                'cursor-grab active:cursor-grabbing select-none touch-none relative'
               )}
               style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+              onPointerDown={drag.onPointerDown}
             >
               <Tooltip label={strings.hidePrompter} shortcut="H">
                 <button
@@ -975,7 +989,7 @@ export function FloatingPrompter(props: Props) {
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">
-                <Tooltip label={strings.unfixFromTop}>
+                <Tooltip label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"
                     onClick={onUnfixFromTop}
@@ -1009,6 +1023,14 @@ export function FloatingPrompter(props: Props) {
                   >
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
+                </Tooltip>
+                <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                  <span
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
+                    onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
+                  >
+                    <Move className="h-4 w-4 text-white/60" />
+                  </span>
                 </Tooltip>
               </div>
             </div>
