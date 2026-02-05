@@ -345,14 +345,14 @@ export function DownloadPopover(props: Props) {
                         <AnimatePresence mode="wait">
                           {isConfirming && (
                             <motion.div
-                              className="absolute left-full bottom-full mb-1 ml-1 z-20 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
+                              className="absolute left-full bottom-full -mb-4 ml-0 z-0 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
                               initial={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                               exit={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
                               transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
                             >
                               <div className="flex items-center gap-2">
-                                <span className="text-xs text-white/60">Delete?</span>
+                                <span className="text-xs text-white/60">Confirm?</span>
                                 <div className="flex items-center gap-1">
                                   <button
                                     onClick={(e) => {

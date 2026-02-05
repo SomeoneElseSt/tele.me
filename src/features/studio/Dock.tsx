@@ -139,7 +139,9 @@ export function Dock({
         <div
           className={cn(
             'pointer-events-none absolute inset-0 rounded-3xl border border-white/10 shadow-glow',
-            // Avoid overlapping backdrop-filter layers when the tray is open (causes GPU seams).
+            // Root cause fix: Overlapping backdrop-filter layers cause GPU compositing seams/artifacts.
+            // When the downloads tray (which also uses backdrop-blur) is open, disable dock blur to prevent
+            // overlapping blur surfaces. The darker background maintains visual consistency without blur.
             downloadsOpen ? 'bg-black/60' : 'bg-black/45 backdrop-blur'
           )}
           style={{
