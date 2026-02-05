@@ -24,7 +24,7 @@ import {
 
 const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
-const DEFAULT_OPACITY = 0.35
+const DEFAULT_OPACITY = 0.45
 const DEFAULT_MIRROR_VIDEO = true
 const DEFAULT_MIRROR_TEXT = false
 const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }

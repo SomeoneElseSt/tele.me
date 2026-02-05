@@ -475,7 +475,8 @@ function ControlsBarPortal({
   onMirrorTextChange: (value: boolean) => void
 }) {
   const { strings } = useI18n()
-  const barAlpha = Math.min(0.95, Math.max(0.18, opacity + 0.22))
+  // Match teleprompter opacity for visual consistency (no contrast difference)
+  const barAlpha = opacity
   const spaceAbove = frame.y - CONTROLS_BAR_GAP_PX - CONTROLS_BAR_HEIGHT_PX
   const hysteresis = 18
   const upperThreshold = CONTROLS_BAR_MIN_MARGIN_PX + hysteresis
