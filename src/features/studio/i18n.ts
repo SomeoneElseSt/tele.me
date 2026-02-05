@@ -62,6 +62,7 @@ type Strings = {
   continue: string
   inputsTooltip: string
   aboutMessage: string
+  fullscreen: string
 }
 
 const STRINGS: Record<LocaleCode, Strings> = {
@@ -118,7 +119,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me works best in Chrome or Safari due to compatibility limitations. There are known bugs when used in different browsers.',
     continue: 'Continue',
     inputsTooltip: 'Inputs',
-    aboutMessage: 'tele.me is an open-source teleprompter - 100% free, no login required, and browser-based. It was developed by '
+    aboutMessage: 'tele.me is an open-source teleprompter - 100% free, no login required, and browser-based. It was developed by ',
+    fullscreen: 'Fullscreen'
   },
   es: {
     defaultScript:
@@ -173,7 +175,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me funciona mejor en Chrome o Safari debido a limitaciones de compatibilidad. Hay errores conocidos al usar otros navegadores.',
     continue: 'Continuar',
     inputsTooltip: 'Entradas',
-    aboutMessage: 'tele.me es un teleprompter de código abierto - 100% gratis, no requiere registro y basado en navegador. Fue desarrollado por '
+    aboutMessage: 'tele.me es un teleprompter de código abierto - 100% gratis, no requiere registro y basado en navegador. Fue desarrollado por ',
+    fullscreen: 'Pantalla completa'
   },
   ja: {
     defaultScript:
@@ -228,7 +231,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.meは互換性の制限により、ChromeまたはSafariで最もよく動作します。他のブラウザで使用する場合、既知のバグがあります。',
     continue: '続ける',
     inputsTooltip: '入力',
-    aboutMessage: 'tele.meはオープンソースのテレプロンプターです - 100%無料、ログイン不要、ブラウザベース。開発者: '
+    aboutMessage: 'tele.meはオープンソースのテレプロンプターです - 100%無料、ログイン不要、ブラウザベース。開発者: ',
+    fullscreen: 'フルスクリーン'
   },
   hi: {
     defaultScript:
@@ -283,7 +287,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me अनुकूलता सीमाओं के कारण Chrome या Safari में सबसे अच्छा काम करता है। विभिन्न ब्राउज़रों में उपयोग करने पर ज्ञात बग हैं।',
     continue: 'जारी रखें',
     inputsTooltip: 'इनपुट',
-    aboutMessage: 'tele.me एक ओपन-सोर्स टेलीप्रॉम्प्टर है - 100% मुफ्त, लॉगिन की आवश्यकता नहीं, और ब्राउज़र आधारित। इसे विकसित किया गया है '
+    aboutMessage: 'tele.me एक ओपन-सोर्स टेलीप्रॉम्प्टर है - 100% मुफ्त, लॉगिन की आवश्यकता नहीं, और ब्राउज़र आधारित। इसे विकसित किया गया है ',
+    fullscreen: 'पूर्ण स्क्रीन'
   },
   fr: {
     defaultScript:
@@ -339,7 +344,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me fonctionne mieux dans Chrome ou Safari en raison de limitations de compatibilité. Il existe des bugs connus lors de l\'utilisation dans d\'autres navigateurs.',
     continue: 'Continuer',
     inputsTooltip: 'Entrées',
-    aboutMessage: 'tele.me est un téléprompteur open-source - 100% gratuit, pas de connexion requise et basé sur navigateur. Il a été développé par '
+    aboutMessage: 'tele.me est un téléprompteur open-source - 100% gratuit, pas de connexion requise et basé sur navigateur. Il a été développé par ',
+    fullscreen: 'Plein écran'
   },
   de: {
     defaultScript:
@@ -394,7 +400,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me funktioniert aufgrund von Kompatibilitätseinschränkungen am besten in Chrome oder Safari. Es gibt bekannte Fehler bei der Verwendung in anderen Browsern.',
     continue: 'Fortfahren',
     inputsTooltip: 'Eingänge',
-    aboutMessage: 'tele.me ist ein Open-Source-Teleprompter - 100% kostenlos, keine Anmeldung erforderlich und browserbasiert. Entwickelt von '
+    aboutMessage: 'tele.me ist ein Open-Source-Teleprompter - 100% kostenlos, keine Anmeldung erforderlich und browserbasiert. Entwickelt von ',
+    fullscreen: 'Vollbild'
   },
   zh: {
     defaultScript:
@@ -449,7 +456,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: '由于兼容性限制，tele.me在Chrome或Safari中效果最佳。在其他浏览器中使用时存在已知错误。',
     continue: '继续',
     inputsTooltip: '输入',
-    aboutMessage: 'tele.me是一个开源提词器 - 100%免费，无需登录，基于浏览器。开发者: '
+    aboutMessage: 'tele.me是一个开源提词器 - 100%免费，无需登录，基于浏览器。开发者: ',
+    fullscreen: '全屏'
   },
   ar: {
     defaultScript:
@@ -504,7 +512,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'يعمل tele.me بشكل أفضل في Chrome أو Safari بسبب قيود التوافق. توجد أخطاء معروفة عند الاستخدام في متصفحات مختلفة.',
     continue: 'متابعة',
     inputsTooltip: 'المدخلات',
-    aboutMessage: 'tele.me هو ملقن مفتوح المصدر - مجاني 100%، لا يتطلب تسجيل الدخول، ويعمل على المتصفح. تم تطويره بواسطة '
+    aboutMessage: 'tele.me هو ملقن مفتوح المصدر - مجاني 100%، لا يتطلب تسجيل الدخول، ويعمل على المتصفح. تم تطويره بواسطة ',
+    fullscreen: 'ملء الشاشة'
   },
   pt: {
     defaultScript:
@@ -559,7 +568,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me funciona melhor no Chrome ou Safari devido a limitações de compatibilidade. Existem bugs conhecidos ao usar em outros navegadores.',
     continue: 'Continuar',
     inputsTooltip: 'Entradas',
-    aboutMessage: 'tele.me é um teleprompter de código aberto - 100% gratuito, não requer login e baseado em navegador. Foi desenvolvido por '
+    aboutMessage: 'tele.me é um teleprompter de código aberto - 100% gratuito, não requer login e baseado em navegador. Foi desenvolvido por ',
+    fullscreen: 'Tela cheia'
   },
   ru: {
     defaultScript:
@@ -614,7 +624,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     browserWarningMessage: 'tele.me лучше всего работает в Chrome или Safari из-за ограничений совместимости. При использовании в других браузерах есть известные ошибки.',
     continue: 'Продолжить',
     inputsTooltip: 'Входы',
-    aboutMessage: 'tele.me — это телесуфлёр с открытым исходным кодом, 100% бесплатный, не требует входа и работающий в браузере. Разработан '
+    aboutMessage: 'tele.me — это телесуфлёр с открытым исходным кодом, 100% бесплатный, не требует входа и работающий в браузере. Разработан ',
+    fullscreen: 'Полноэкранный режим'
   },
 }
 

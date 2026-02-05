@@ -1,4 +1,4 @@
-import { AlignLeft, ChevronUp, Download, Pause, Play, Type, Video, X } from 'lucide-react'
+import { AlignLeft, ChevronUp, Download, Maximize, Pause, Play, Type, Video, X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/cn'
@@ -34,6 +34,7 @@ type Props = {
   videoPlaying: boolean
   onToggleVideoPlayback: () => void
   onCloseVideo: () => void
+  onToggleFullscreen: () => void
 }
 
 type DockButtonProps = {
@@ -93,7 +94,8 @@ export function Dock({
   playingTakeId,
   videoPlaying,
   onToggleVideoPlayback,
-  onCloseVideo
+  onCloseVideo,
+  onToggleFullscreen
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -227,6 +229,10 @@ export function Dock({
           <>
             <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
               <Type className="h-4 w-4" />
+            </DockButton>
+
+            <DockButton label={strings.fullscreen} shortcut="F" onClick={onToggleFullscreen}>
+              <Maximize className="h-4 w-4" />
             </DockButton>
 
             {!prompterOpen ? (

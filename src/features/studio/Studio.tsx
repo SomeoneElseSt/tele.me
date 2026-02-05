@@ -315,6 +315,19 @@ export function Studio() {
     })
   }, [recorder.url, recorder.mimeType, incrementTakeNumber])
 
+  const onToggleFullscreen = useCallback(() => {
+    if (typeof document === 'undefined') return
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {
+        // Ignore errors (user may have denied permission)
+      })
+    } else {
+      document.exitFullscreen().catch(() => {
+        // Ignore errors
+      })
+    }
+  }, [])
+
   useHotkeys(
     useMemo(
       () => {
@@ -347,6 +360,7 @@ export function Studio() {
           hotkeys.m = () => {
             setMarkdownEnabled((prev) => !prev)
           }
+          hotkeys.f = () => onToggleFullscreen()
           hotkeys.escape = () => {
             setDrawerOpen(false)
             setPlaying(false)
@@ -355,7 +369,7 @@ export function Studio() {
         
         return hotkeys
       },
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen]
     ),
     true
   )
@@ -549,6 +563,7 @@ export function Studio() {
         videoPlaying={videoPlaying}
         onToggleVideoPlayback={onToggleVideoPlayback}
         onCloseVideo={onCloseVideo}
+        onToggleFullscreen={onToggleFullscreen}
       />
 
       <SettingsDrawer
