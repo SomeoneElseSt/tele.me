@@ -120,9 +120,17 @@ export function Dock({
         },
         d: () => {
           onToggleDownloadsExclusive()
+        },
+        escape: () => {
+          if (inputsOpen) {
+            setInputsOpen(false)
+          }
+          if (downloadsOpen) {
+            setDownloadsOpen(false)
+          }
         }
       }),
-      [onToggleDownloadsExclusive, onToggleInputsExclusive]
+      [downloadsOpen, inputsOpen, onToggleDownloadsExclusive, onToggleInputsExclusive]
     ),
     true
   )

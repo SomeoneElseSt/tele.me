@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
 import { useI18n } from './i18n'
+import { Tooltip } from '../../components/Tooltip'
 
 export type InputDevice = { id: string; label: string }
 
@@ -89,14 +90,16 @@ export function InputsPopover(props: Props) {
             >
               <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.inputsTitle}</div>
-                <button
-                  type="button"
-                  aria-label={strings.close}
-                  onClick={onClose}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                >
-                  <X className="h-4 w-4" />
-                </button>
+                <Tooltip label={strings.close} shortcut="Esc">
+                  <button
+                    type="button"
+                    aria-label={strings.close}
+                    onClick={onClose}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </Tooltip>
               </div>
 
               <div className="mt-4 space-y-3">
