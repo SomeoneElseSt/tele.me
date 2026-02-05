@@ -145,7 +145,7 @@ export function DownloadPopover(props: Props) {
           }}
         >
           <motion.div
-            className="rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur text-xs text-white/70 isolate overflow-hidden"
+            className="rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur text-xs text-white/70 isolate"
             style={{ transform: 'translateZ(0)' }}
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -153,8 +153,8 @@ export function DownloadPopover(props: Props) {
             transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Blur seam fix: clip to rounded bounds to avoid GPU lines. */}
-            <div className="relative p-4 overflow-visible">
+            {/* GPU seam fix: isolate + translateZ for compositing, no overflow-hidden to allow tooltips */}
+            <div className="relative p-4">
                 <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
                 <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export function DownloadPopover(props: Props) {
                       <AnimatePresence mode="wait">
                         {confirmingClearAll && (
                           <motion.div
-                            className="absolute right-0 bottom-full mb-2 z-10 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
+                            className="absolute right-0 bottom-full mb-2 z-50 rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5"
                             initial={{ opacity: 0, y: 6, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 6, scale: 0.95 }}
@@ -339,7 +339,7 @@ export function DownloadPopover(props: Props) {
                         <AnimatePresence mode="wait">
                           {isConfirming && (
                             <motion.div
-                              className="absolute left-full bottom-full -mb-4 ml-0 z-0 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
+                              className="absolute left-full bottom-full -mb-4 ml-0 z-50 rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5"
                               initial={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                               exit={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
