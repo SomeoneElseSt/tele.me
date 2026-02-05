@@ -671,6 +671,7 @@ export function FloatingPrompter(props: Props) {
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
+  const savedScrollTopRef = useRef<number>(0)
 
   useRafLoop(
     (deltaMs) => {
@@ -736,10 +737,24 @@ export function FloatingPrompter(props: Props) {
 
   useEffect(() => {
     if (wasOpenRef.current && !open) {
+      // Save scroll position when hiding
+      const el = scrollerRef.current
+      if (el) {
+        savedScrollTopRef.current = el.scrollTop
+      }
       tooltip.clear()
       setResizing(false)
       setQuickOpen(false)
       onControlsOpenChange?.(false)
+    } else if (!wasOpenRef.current && open) {
+      // Restore scroll position when showing
+      const el = scrollerRef.current
+      if (el) {
+        // Use requestAnimationFrame to ensure DOM is ready
+        requestAnimationFrame(() => {
+          el.scrollTop = savedScrollTopRef.current
+        })
+      }
     }
     wasOpenRef.current = open
   }, [open, tooltip, onControlsOpenChange])
