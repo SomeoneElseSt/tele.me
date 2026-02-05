@@ -295,8 +295,7 @@ export function Dock({
                     'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
                     recording
                       ? 'border-white/20 bg-white/10 text-white'
-                      : 'border-white/10 bg-white/6 text-white/80',
-                    recordDisabled && 'opacity-40'
+                      : 'border-white/10 bg-white/6 text-white/80'
                   )}
                 >
                   <Tooltip label={recordDisabled ? (recordDisabledReason || strings.record) : (recording ? strings.stopRecording : strings.record)} shortcut="R">
@@ -306,7 +305,8 @@ export function Dock({
                       disabled={recordDisabled}
                       className={cn(
                         'inline-flex h-11 w-11 items-center justify-center transition-colors',
-                        'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+                        'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none',
+                        recordDisabled && 'cursor-not-allowed opacity-40'
                       )}
                       aria-label={recording ? strings.stopRecording : strings.startRecording}
                     >
@@ -325,11 +325,12 @@ export function Dock({
                       type="button"
                       aria-label={strings.inputs}
                       onClick={onToggleInputsExclusive}
-                      disabled={recordDisabled}
+                      disabled={recording}
                       className={cn(
                         'inline-flex h-11 w-10 items-center justify-center transition-colors',
                         'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none',
-                        inputsOpen && 'bg-white/10 text-white'
+                        inputsOpen && 'bg-white/10 text-white',
+                        recording && 'cursor-not-allowed opacity-40'
                       )}
                     >
                       <ChevronUp
