@@ -135,7 +135,7 @@ export function DownloadPopover(props: Props) {
     <AnimatePresence>
       {open && anchorEl && (
         <div
-          className="fixed z-[70]"
+          className="fixed z-[70] isolate"
           style={{
             left,
             top,
@@ -145,13 +145,15 @@ export function DownloadPopover(props: Props) {
         >
           <motion.div
             className="isolate"
+            style={{ transform: 'translateZ(0)' }}
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="relative rounded-2xl text-xs text-white/70">
+            {/* Blur seam fix: isolate blur layer + clip to rounded bounds to avoid GPU lines. */}
+            <div className="relative rounded-2xl overflow-hidden text-xs text-white/70">
               <div
                 className="pointer-events-none absolute inset-0 rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur"
                 style={{
@@ -344,7 +346,7 @@ export function DownloadPopover(props: Props) {
                         <AnimatePresence mode="wait">
                           {isConfirming && (
                             <motion.div
-                              className="absolute left-full bottom-full mb-2 ml-2 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
+                              className="absolute left-full bottom-full mb-1 ml-1 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
                               initial={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                               exit={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}

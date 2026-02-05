@@ -131,11 +131,26 @@ export function Dock({
 
   return (
     <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
+      {/* Blur seam fix: clip blur to rounded bounds + isolate compositing. */}
       <div
-        className={cn(
-          'flex items-center gap-2 rounded-3xl border border-white/10 bg-black/45 px-3 py-2 backdrop-blur'
-        )}
+        className="relative isolate rounded-3xl overflow-hidden"
+        style={{ transform: 'translateZ(0)', contain: 'paint' }}
       >
+        <div
+          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/45 backdrop-blur"
+          style={{
+            transform: 'translateZ(0)',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden'
+          }}
+        />
+        <div
+          className={cn(
+            'relative flex items-center gap-2 rounded-3xl px-3 py-2'
+          )}
+          style={{ transform: 'translateZ(0)' }}
+        >
         <div
           className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
         >
@@ -274,6 +289,7 @@ export function Dock({
             onDeleteTake={onDeleteTake}
             onClearAll={onClearAllTakes}
           />
+        </div>
         </div>
       </div>
     </div>
