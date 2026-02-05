@@ -8,6 +8,25 @@ import { useI18n } from './i18n'
 import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
 
+/**
+ * DownloadPopover Architecture Notes:
+ *
+ * 1. LAYOUT STABILITY (The "Core" of the tray):
+ *    - We use `scrollbar-gutter: stable` (via .tele-scroll in styles.css) on the main list container.
+ *    - This is CRITICAL. It ensures the container width is identical whether a scrollbar is present or not.
+ *    - Without this, the tray would "jump" horizontally when transitioning from the Placeholder to the first Video.
+ *
+ * 2. UNIFIED ANIMATION FLOW:
+ *    - Both the "No Videos" Placeholder and the list of Takes are rendered within the SAME .tele-scroll container.
+ *    - By using a single AnimatePresence and animating the height of BOTH the placeholder (auto -> 0)
+ *      and the first take (0 -> auto) in-flow, the tray background grows smoothly without stacking or snapping.
+ *
+ * 3. AVOIDING JITTER:
+ *    - We explicitly avoid Framer Motion's `layout` and `layout="position"` props here.
+ *    - Those props often cause jitter when combined with manual height animations or fixed-width gutters.
+ *    - Instead, we rely on standard flex-col height changes.
+ */
+
 export type DownloadTake = {
   id: string
   url: string
@@ -349,7 +368,7 @@ export function DownloadPopover(props: Props) {
                                 }
                               }}
                               onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
-                              aria-label={`Delete ${strings.takeLabel(take.takeNumber)}`}
+                              aria-label={strings.deleteTakeLabel(take.takeNumber)}
                               className={cn(
                                 'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
                                 'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors',

@@ -311,7 +311,7 @@ export function Dock({
               <div className="relative">
                 <DockButton
                   label={confirmDelete ? "" : strings.deleteTakeLabel(playingTake?.takeNumber || 0)}
-                  shortcut="Delete"
+                  shortcut={strings.deleteKey}
                   onClick={() => setConfirmDelete(!confirmDelete)}
                   active={confirmDelete}
                   className={confirmDelete ? "bg-red-500/20 border-red-500/30 text-red-400" : "hover:text-red-400 hover:bg-white/10"}
