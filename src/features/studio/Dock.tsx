@@ -245,7 +245,7 @@ export function Dock({
 
             <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-            <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} side="right" sideOffset={20} onDefaultOpenDismiss={() => {
+            <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} onDefaultOpenDismiss={() => {
               setHasOpenedInputs(true)
               window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
             }}>
