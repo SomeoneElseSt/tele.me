@@ -142,28 +142,14 @@ export function Dock({
       {/* Blur seam fix: clip blur to rounded bounds + isolate compositing. */}
       <div
         className="relative isolate rounded-3xl overflow-hidden"
-        style={{ transform: 'translateZ(0)', contain: 'paint' }}
       >
         <div
-          className={cn(
-            'pointer-events-none absolute inset-0 rounded-3xl border border-white/10 shadow-glow',
-            // Root cause fix: Overlapping backdrop-filter layers trigger GPU compositing artifacts (black lines)
-            // when hover repaints occur. We disable the Dock's blur when the DownloadPopover (which also has blur)
-            // is open to prevent this conflict.
-            downloadsOpen ? 'bg-black/55' : 'bg-black/45 backdrop-blur'
-          )}
-          style={{
-            transform: 'translateZ(0)',
-            willChange: 'transform',
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden'
-          }}
+          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/45 shadow-glow"
         />
         <div
           className={cn(
             'relative flex items-center gap-2 rounded-3xl px-3 py-2'
           )}
-          style={{ transform: 'translateZ(0)' }}
         >
         <div
           className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"

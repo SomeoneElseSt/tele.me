@@ -150,7 +150,7 @@ export function DownloadPopover(props: Props) {
             Using simple opacity + y translation instead.
           */}
           <motion.div
-            className="rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur text-xs text-white/70 overflow-visible"
+            className="rounded-2xl border border-white/10 bg-black/45 shadow-glow text-xs text-white/70 overflow-visible"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}

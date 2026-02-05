@@ -81,7 +81,7 @@ export function InputsPopover(props: Props) {
             ref={popoverRef}
           >
             <motion.div
-              className="rounded-2xl border border-white/10 bg-black/70 p-4 text-xs text-white/70 shadow-glow backdrop-blur"
+              className="rounded-2xl border border-white/10 bg-black/45 p-4 text-xs text-white/70 shadow-glow"
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
