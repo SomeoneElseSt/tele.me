@@ -11,6 +11,7 @@ import {
   useState
 } from 'react'
 import { createPortal } from 'react-dom'
+import { cn } from '../lib/cn'
 import { TooltipContext } from './tooltipContext'
 
 type Side = 'top' | 'bottom' | 'left' | 'right'
@@ -23,6 +24,10 @@ type TooltipProps = {
   side?: SideOrAuto
   preferSide?: Side
   sideOffset?: number
+  defaultOpen?: boolean
+  onDefaultOpenDismiss?: () => void
+  className?: string
+  interactive?: boolean
   children: ReactNode
 }
 
@@ -70,8 +75,9 @@ function clamp(value: number, min: number, max: number) {
   return value
 }
 
-function formatLabel(label: string, shortcut?: string) {
+function formatLabel(label: ReactNode, shortcut?: string) {
   if (!shortcut) return label
+  if (typeof label !== 'string') return label
   return `${label} (${shortcut})`
 }
 
@@ -82,12 +88,19 @@ export function Tooltip({
   side = 'top',
   preferSide,
   sideOffset = 14,
+  defaultOpen,
+  onDefaultOpenDismiss,
+  className,
+  interactive,
   children
 }: TooltipProps) {
   const reactId = useId()
   const id = tooltipId ?? reactId
   const { enabled, activeId, lockedId, requestActive, releaseActive } = useContext(TooltipContext)
   const [hovered, setHovered] = useState(false)
+  const [forceOpen, setForceOpen] = useState(!!defaultOpen)
+  const closeTimerRef = useRef<number | null>(null)
+
   const [anchor, setAnchor] = useState<{
     left: number
     right: number
@@ -104,7 +117,25 @@ export function Tooltip({
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && Boolean(label)
   const locked = lockedId === id
-  const open = show && (locked || (hovered && activeId === id))
+  const open = show && (locked || forceOpen || (hovered && activeId === id))
+
+  useEffect(() => {
+    setForceOpen(!!defaultOpen)
+  }, [defaultOpen])
+
+  useEffect(() => {
+    if (forceOpen && (hovered || activeId === id) && !defaultOpen) {
+      // If the user interacts with it (hovers), we can dismiss the forced state
+      // But wait, maybe we only dismiss it if they hover and then LEAVE?
+      // Or if they click?
+      // For now, let's say if they hover it, we keep showing it (obviously), 
+      // but once they leave, we might want to stop forcing it?
+      // Actually, standard pattern is: show it until user interacts with the element or dismisses it.
+      // Simplest: if they hover, we disable forceOpen, so it behaves normally from then on (closes on leave).
+      setForceOpen(false)
+      onDefaultOpenDismiss?.()
+    }
+  }, [hovered, activeId, id, forceOpen, defaultOpen, onDefaultOpenDismiss])
 
   const updatePosition = useCallback(() => {
     if (!show) return
@@ -139,7 +170,7 @@ export function Tooltip({
     if (!el) return
     const rect = el.getBoundingClientRect()
     setTipSize({ width: rect.width, height: rect.height })
-  }, [open, text])
+  }, [open, text, anchor])
 
   useEffect(() => {
     if (!hovered) return
@@ -236,18 +267,50 @@ export function Tooltip({
   }, [anchor, margin, preferSide, side, sideOffset, tipSize])
 
   const onOpen = useCallback(() => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
     if (!show) return
     if (!anchorRef.current) return
+    if (forceOpen) {
+      setForceOpen(false)
+      onDefaultOpenDismiss?.()
+    }
     updatePosition()
     updatePosition()
     setHovered(true)
-  }, [show, updatePosition])
+  }, [show, updatePosition, forceOpen, onDefaultOpenDismiss])
 
   const onClose = useCallback(() => {
-    setHovered(false)
-    if (locked) return
-    releaseActive(id)
-  }, [id, locked, releaseActive])
+    if (interactive) {
+      closeTimerRef.current = window.setTimeout(() => {
+        setHovered(false)
+        if (locked) return
+        releaseActive(id)
+      }, 150)
+    } else {
+      setHovered(false)
+      if (locked) return
+      releaseActive(id)
+    }
+  }, [id, locked, releaseActive, interactive])
+
+  useEffect(() => {
+    return () => {
+      if (closeTimerRef.current !== null) window.clearTimeout(closeTimerRef.current)
+    }
+  }, [])
+
+  const tooltipHandlers = interactive ? {
+    onMouseEnter: () => {
+      if (closeTimerRef.current !== null) {
+        window.clearTimeout(closeTimerRef.current)
+        closeTimerRef.current = null
+      }
+    },
+    onMouseLeave: onClose
+  } : {}
 
   return (
     <>
@@ -267,7 +330,12 @@ export function Tooltip({
             {open && anchor && (
               <motion.div
                 ref={tipRef}
-                className="pointer-events-none fixed z-[120] select-none whitespace-nowrap rounded-lg border border-white/10 bg-black/85 px-2.5 py-1.5 text-[11px] font-medium text-white/90 shadow-glow backdrop-blur"
+                className={cn(
+                  "fixed z-[120] whitespace-nowrap rounded-lg border border-white/10 bg-black/85 px-2.5 py-1.5 text-[11px] font-medium text-white/90 shadow-glow backdrop-blur",
+                  interactive ? "pointer-events-auto select-text" : "pointer-events-none select-none",
+                  className
+                )}
+                {...tooltipHandlers}
                 style={{
                   left: placement?.left ?? -9999,
                   top: placement?.top ?? -9999

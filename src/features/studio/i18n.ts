@@ -52,6 +52,11 @@ type Strings = {
   downloadTakeLabel: (index: number) => string
   memoryWarningTitle: string
   memoryWarningMessage: string
+  browserWarningTitle: string
+  browserWarningMessage: string
+  continue: string
+  inputsTooltip: string
+  aboutMessage: string
 }
 
 const STRINGS: Record<LocaleCode, Strings> = {
@@ -98,7 +103,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Download take ${index}`,
     memoryWarningTitle: 'Videos are stored locally',
-    memoryWarningMessage: "Many recordings may use significant memory. Download and delete recordings you don't need."
+    memoryWarningMessage: "Many recordings may use significant memory. Download and delete recordings you don't need.",
+    browserWarningTitle: 'Browser Compatibility',
+    browserWarningMessage: 'tele.me works best in Chrome or Safari due to compatibility limitations. There are known bugs when used in different browsers.',
+    continue: 'Continue',
+    inputsTooltip: 'Inputs',
+    aboutMessage: 'tele.me is an open-source teleprompter - 100% free, no login required, and browser-based. It was developed by '
   },
   es: {
     defaultScript:
@@ -143,7 +153,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Toma ${index}`,
     downloadTakeLabel: (index) => `Descargar toma ${index}`,
     memoryWarningTitle: 'Los videos están almacenados localmente',
-    memoryWarningMessage: 'Muchas grabaciones pueden usar mucha memoria. Descarga y elimina las grabaciones que no necesites.'
+    memoryWarningMessage: 'Muchas grabaciones pueden usar mucha memoria. Descarga y elimina las grabaciones que no necesites.',
+    browserWarningTitle: 'Compatibilidad del navegador',
+    browserWarningMessage: 'tele.me funciona mejor en Chrome o Safari debido a limitaciones de compatibilidad. Hay errores conocidos al usar otros navegadores.',
+    continue: 'Continuar',
+    inputsTooltip: 'Entradas',
+    aboutMessage: 'tele.me es un teleprompter de código abierto - 100% gratis, no requiere registro y basado en navegador. Fue desarrollado por '
   },
   ja: {
     defaultScript:
@@ -188,7 +203,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `テイク ${index}`,
     downloadTakeLabel: (index) => `テイク ${index} をダウンロード`,
     memoryWarningTitle: 'ビデオはローカルに保存されています',
-    memoryWarningMessage: '多くの録画は大量のメモリを使用する可能性があります。不要な録画をダウンロードして削除してください。'
+    memoryWarningMessage: '多くの録画は大量のメモリを使用する可能性があります。不要な録画をダウンロードして削除してください。',
+    browserWarningTitle: 'ブラウザ互換性',
+    browserWarningMessage: 'tele.meは互換性の制限により、ChromeまたはSafariで最もよく動作します。他のブラウザで使用する場合、既知のバグがあります。',
+    continue: '続ける',
+    inputsTooltip: '入力',
+    aboutMessage: 'tele.meはオープンソースのテレプロンプターです - 100%無料、ログイン不要、ブラウザベース。開発者: '
   },
   hi: {
     defaultScript:
@@ -233,7 +253,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `टेक ${index}`,
     downloadTakeLabel: (index) => `टेक ${index} डाउनलोड करें`,
     memoryWarningTitle: 'वीडियो स्थानीय रूप से संग्रहीत हैं',
-    memoryWarningMessage: 'कई रिकॉर्डिंग महत्वपूर्ण मेमोरी का उपयोग कर सकते हैं। जिन रिकॉर्डिंग की आवश्यकता नहीं है उन्हें डाउनलोड और हटाएं।'
+    memoryWarningMessage: 'कई रिकॉर्डिंग महत्वपूर्ण मेमोरी का उपयोग कर सकते हैं। जिन रिकॉर्डिंग की आवश्यकता नहीं है उन्हें डाउनलोड और हटाएं।',
+    browserWarningTitle: 'ब्राउज़र अनुकूलता',
+    browserWarningMessage: 'tele.me अनुकूलता सीमाओं के कारण Chrome या Safari में सबसे अच्छा काम करता है। विभिन्न ब्राउज़रों में उपयोग करने पर ज्ञात बग हैं।',
+    continue: 'जारी रखें',
+    inputsTooltip: 'इनपुट',
+    aboutMessage: 'tele.me एक ओपन-सोर्स टेलीप्रॉम्प्टर है - 100% मुफ्त, लॉगिन की आवश्यकता नहीं, और ब्राउज़र आधारित। इसे विकसित किया गया है '
   },
   fr: {
     defaultScript:
@@ -279,7 +304,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Prise ${index}`,
     downloadTakeLabel: (index) => `Télécharger la prise ${index}`,
     memoryWarningTitle: 'Les vidéos sont stockées localement',
-    memoryWarningMessage: "De nombreux enregistrements peuvent utiliser beaucoup de mémoire. Téléchargez et supprimez les enregistrements dont vous n'avez pas besoin."
+    memoryWarningMessage: "De nombreux enregistrements peuvent utiliser beaucoup de mémoire. Téléchargez et supprimez les enregistrements dont vous n'avez pas besoin.",
+    browserWarningTitle: 'Compatibilité du navigateur',
+    browserWarningMessage: 'tele.me fonctionne mieux dans Chrome ou Safari en raison de limitations de compatibilité. Il existe des bugs connus lors de l\'utilisation dans d\'autres navigateurs.',
+    continue: 'Continuer',
+    inputsTooltip: 'Entrées',
+    aboutMessage: 'tele.me est un téléprompteur open-source - 100% gratuit, pas de connexion requise et basé sur navigateur. Il a été développé par '
   },
   de: {
     defaultScript:
@@ -324,7 +354,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Take ${index} herunterladen`,
     memoryWarningTitle: 'Videos sind lokal gespeichert',
-    memoryWarningMessage: 'Viele Aufnahmen können viel Speicher verwenden. Laden Sie Aufnahmen herunter und löschen Sie die, die Sie nicht benötigen.'
+    memoryWarningMessage: 'Viele Aufnahmen können viel Speicher verwenden. Laden Sie Aufnahmen herunter und löschen Sie die, die Sie nicht benötigen.',
+    browserWarningTitle: 'Browser-Kompatibilität',
+    browserWarningMessage: 'tele.me funktioniert aufgrund von Kompatibilitätseinschränkungen am besten in Chrome oder Safari. Es gibt bekannte Fehler bei der Verwendung in anderen Browsern.',
+    continue: 'Fortfahren',
+    inputsTooltip: 'Eingänge',
+    aboutMessage: 'tele.me ist ein Open-Source-Teleprompter - 100% kostenlos, keine Anmeldung erforderlich und browserbasiert. Entwickelt von '
   },
   zh: {
     defaultScript:
@@ -369,7 +404,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `拍摄 ${index}`,
     downloadTakeLabel: (index) => `下载拍摄 ${index}`,
     memoryWarningTitle: '视频存储在本地',
-    memoryWarningMessage: '大量录制可能会占用大量内存。下载并删除不需要的录制。'
+    memoryWarningMessage: '大量录制可能会占用大量内存。下载并删除不需要的录制。',
+    browserWarningTitle: '浏览器兼容性',
+    browserWarningMessage: '由于兼容性限制，tele.me在Chrome或Safari中效果最佳。在其他浏览器中使用时存在已知错误。',
+    continue: '继续',
+    inputsTooltip: '输入',
+    aboutMessage: 'tele.me是一个开源提词器 - 100%免费，无需登录，基于浏览器。开发者: '
   },
   ar: {
     defaultScript:
@@ -414,7 +454,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `لقطة ${index}`,
     downloadTakeLabel: (index) => `تنزيل اللقطة ${index}`,
     memoryWarningTitle: 'الفيديوهات مخزنة محلياً',
-    memoryWarningMessage: 'التسجيلات الكثيرة قد تستخدم ذاكرة كبيرة. قم بتنزيل وحذف التسجيلات التي لا تحتاجها.'
+    memoryWarningMessage: 'التسجيلات الكثيرة قد تستخدم ذاكرة كبيرة. قم بتنزيل وحذف التسجيلات التي لا تحتاجها.',
+    browserWarningTitle: 'توافق المتصفح',
+    browserWarningMessage: 'يعمل tele.me بشكل أفضل في Chrome أو Safari بسبب قيود التوافق. توجد أخطاء معروفة عند الاستخدام في متصفحات مختلفة.',
+    continue: 'متابعة',
+    inputsTooltip: 'المدخلات',
+    aboutMessage: 'tele.me هو ملقن مفتوح المصدر - مجاني 100%، لا يتطلب تسجيل الدخول، ويعمل على المتصفح. تم تطويره بواسطة '
   },
   pt: {
     defaultScript:
@@ -459,7 +504,12 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Baixar take ${index}`,
     memoryWarningTitle: 'Os vídeos estão armazenados localmente',
-    memoryWarningMessage: 'Muitas gravações podem usar memória significativa. Baixe e exclua as gravações que não precisa.'
+    memoryWarningMessage: 'Muitas gravações podem usar memória significativa. Baixe e exclua as gravações que não precisa.',
+    browserWarningTitle: 'Compatibilidade do navegador',
+    browserWarningMessage: 'tele.me funciona melhor no Chrome ou Safari devido a limitações de compatibilidade. Existem bugs conhecidos ao usar em outros navegadores.',
+    continue: 'Continuar',
+    inputsTooltip: 'Entradas',
+    aboutMessage: 'tele.me é um teleprompter de código aberto - 100% gratuito, não requer login e baseado em navegador. Foi desenvolvido por '
   },
   ru: {
     defaultScript:
@@ -504,8 +554,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Дубль ${index}`,
     downloadTakeLabel: (index) => `Скачать дубль ${index}`,
     memoryWarningTitle: 'Видео хранятся локально',
-    memoryWarningMessage: 'Много записей могут использовать значительную память. Скачайте и удалите записи, которые вам не нужны.'
-  }
+    memoryWarningMessage: 'Много записей могут использовать значительную память. Скачайте и удалите записи, которые вам не нужны.',
+    browserWarningTitle: 'Совместимость браузера',
+    browserWarningMessage: 'tele.me лучше всего работает в Chrome или Safari из-за ограничений совместимости. При использовании в других браузерах есть известные ошибки.',
+    continue: 'Продолжить',
+    inputsTooltip: 'Входы',
+    aboutMessage: 'tele.me — это телесуфлёр с открытым исходным кодом, 100% бесплатный, не требует входа и работающий в браузере. Разработан '
+  },
 }
 
 type I18nContextValue = {

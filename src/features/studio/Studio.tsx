@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Film } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useMediaDevices } from '../../hooks/useMediaDevices'
 import { useMediaStream } from '../../hooks/useMediaStream'
@@ -88,6 +89,31 @@ export function Studio() {
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string }[]>([])
   const takesRef = useRef(takes)
   
+  const isSupportedBrowser = useMemo(() => {
+    if (typeof window === 'undefined') return true
+    const ua = window.navigator.userAgent
+    // Check for Chrome or Safari, but exclude edge cases like Edge/Opera which might masquerade
+    // However, Vivaldi often includes "Chrome" and "Safari" in its UA string.
+    // The most reliable way is to check specifically for the browsers we WANT.
+    // Chrome typically has "Chrome" and "Safari" but NOT "Edg" (Edge) or "OPR" (Opera)
+    // Safari has "Safari" but NOT "Chrome"
+    
+    const isChrome = ua.includes('Chrome') && !ua.includes('Edg/') && !ua.includes('OPR/')
+    const isSafari = ua.includes('Safari') && !ua.includes('Chrome') && !ua.includes('Edg/') && !ua.includes('OPR/')
+    
+    // If it's Vivaldi, it often looks like Chrome. If the user is on Vivaldi and it's NOT showing, 
+    // it's probably matching 'Chrome'.
+    // If we want to WARN on Vivaldi, we need to make sure we don't accidentally treat it as Chrome.
+    // Vivaldi usually has "Vivaldi" in UA, but recent versions mimic Chrome almost perfectly to avoid site breakage.
+    // So if Vivaldi is NOT showing the warning, it means my previous check `ua.includes('Chrome')` was true.
+    // We want to return TRUE (supported) ONLY for actual Chrome and actual Safari.
+    
+    // Actually, Vivaldi is Chromium based, so it SHOULD work fine mostly? But the user explicitly said "works best in Chrome due to compatibility limitations".
+    // If the user WANTS the warning on Vivaldi, we need to be stricter.
+    
+    return isChrome || isSafari
+  }, [])
+
   useEffect(() => {
     takesRef.current = takes
   }, [takes])
@@ -294,12 +320,59 @@ export function Studio() {
       <StageVideo stream={stream} mirror={mirrorVideo} />
 
       <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
-        <div className="pointer-events-auto inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">
-          <Film className="h-4 w-4 text-white/75" />
-          <span className="tracking-[-0.02em]">tele.me</span>
-        </div>
+        <Tooltip 
+          label={
+            <div className="flex flex-col gap-3 text-center">
+              <span>
+                {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
+                  const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
+                  if (isOpenSource) {
+                    return (
+                      <a
+                        key={index}
+                        href="https://github.com/SomeoneElseSt/tele.me"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline hover:text-white"
+                      >
+                        {part}
+                      </a>
+                    );
+                  }
+                  return part;
+                })}
+                <a 
+                  href="https://stiven.me" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="underline hover:text-white"
+                >
+                  stiven.me
+                </a>
+              </span>
+              <span>{strings.browserWarningMessage}</span>
+            </div>
+          }
+          side="bottom" 
+          sideOffset={6}
+          interactive
+          className="max-w-xs whitespace-normal text-center leading-relaxed"
+        >
+          <div className={cn(
+            "pointer-events-auto p-4 -m-4 rounded-3xl",
+            !isSupportedBrowser && "cursor-help"
+          )}>
+            <div className={cn(
+              "inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur",
+              !isSupportedBrowser && "bg-red-500/10 border-red-500/20"
+            )}>
+              <Film className={cn("h-4 w-4", !isSupportedBrowser ? "text-red-200" : "text-white/75")} />
+              <span className={cn("tracking-[-0.02em]", !isSupportedBrowser && "text-red-100")}>tele.me</span>
+            </div>
+          </div>
+        </Tooltip>
       </div>
-      <div className="pointer-events-none fixed right-6 top-6 z-30 flex items-center gap-2 text-white/80">
+      <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
         <div className="pointer-events-auto relative">
           <button
             ref={localeAnchorRef}

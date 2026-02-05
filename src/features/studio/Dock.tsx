@@ -91,6 +91,11 @@ export function Dock({
   const [downloadsOpen, setDownloadsOpen] = useState(false)
   const downloadAnchorRef = useRef<HTMLButtonElement | null>(null)
 
+  const [hasOpenedInputs, setHasOpenedInputs] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem('teleme:has_opened_inputs_v2') === 'true'
+  })
+
   const onCloseInputs = useCallback(() => setInputsOpen(false), [])
   const onOpenDrawer = useCallback(() => {
     setInputsOpen(false)
@@ -106,7 +111,11 @@ export function Dock({
   const onToggleInputsExclusive = useCallback(() => {
     setDownloadsOpen(false)
     setInputsOpen((v) => !v)
-  }, [])
+    if (!hasOpenedInputs) {
+      setHasOpenedInputs(true)
+      window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+    }
+  }, [hasOpenedInputs])
   const onToggleDownloadsExclusive = useCallback(() => {
     setInputsOpen(false)
     setDownloadsOpen((v) => !v)
@@ -236,7 +245,10 @@ export function Dock({
 
             <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-            <Tooltip label={strings.inputs} shortcut="I">
+            <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} side="right" sideOffset={20} onDefaultOpenDismiss={() => {
+              setHasOpenedInputs(true)
+              window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+            }}>
               <button
                 ref={inputsAnchorRef}
                 type="button"
