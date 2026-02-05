@@ -187,7 +187,7 @@ export function DownloadPopover(props: Props) {
                       className={cn(
                         'inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors',
                         persistVideos
-                          ? 'border-white/20 bg-white/12 text-white'
+                          ? 'border-white/20 bg-white/12 text-white/80'
                           : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
                       )}
                     >

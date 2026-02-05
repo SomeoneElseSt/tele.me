@@ -137,7 +137,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Fix to top',
     unfixFromTop: 'Unfix from top',
     persistVideos: 'Save videos locally',
-    persistVideosTooltip: 'By default, videos are kept only in memory and lost on reload to save space. Enable this to keep videos across reloads (max 10 videos).',
+    persistVideosTooltip: 'By default, videos are kept only in memory and lost on reload to save space. Enable this to keep videos across reloads (10 videos max).',
     persistVideosWillSave10: 'Will save the 10 most recent videos locally. Enable to keep them across reloads.',
     maxVideosReached: 'Maximum of 10 videos can be saved locally. Delete some videos or disable persistent storage to record more.'
   },
@@ -202,7 +202,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Fijar arriba',
     unfixFromTop: 'Desfijar de arriba',
     persistVideos: 'Guardar videos localmente',
-    persistVideosTooltip: 'Por defecto, los videos se mantienen solo en memoria y se pierden al recargar para ahorrar espacio. Activa esto para mantener videos entre recargas (máx 10 videos).',
+    persistVideosTooltip: 'Por defecto, los videos se mantienen solo en memoria y se pierden al recargar para ahorrar espacio. Activa esto para mantener videos entre recargas (10 videos máx).',
     persistVideosWillSave10: 'Guardará los 10 videos más recientes localmente. Activa para mantenerlos entre recargas.',
     maxVideosReached: 'Máximo de 10 videos pueden guardarse localmente. Elimina algunos videos o desactiva el almacenamiento persistente para grabar más.'
   },
@@ -267,7 +267,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: '上部に固定',
     unfixFromTop: '上部から解除',
     persistVideos: 'ビデオをローカルに保存',
-    persistVideosTooltip: 'デフォルトでは、ビデオはメモリにのみ保持され、リロード時に失われます。これを有効にすると、リロード後もビデオを保持できます（最大10本）。',
+    persistVideosTooltip: 'デフォルトでは、ビデオはメモリにのみ保持され、リロード時に失われます。これを有効にすると、リロード後もビデオを保持できます（10本最大）。',
     persistVideosWillSave10: '最新の10本のビデオをローカルに保存します。有効にするとリロード後も保持されます。',
     maxVideosReached: 'ローカルに保存できるビデオは最大10本です。ビデオを削除するか、永続ストレージを無効にして録画を続けてください。'
   },
@@ -398,7 +398,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Fixer en haut',
     unfixFromTop: 'Défixer du haut',
     persistVideos: 'Enregistrer les vidéos localement',
-    persistVideosTooltip: 'Par défaut, les vidéos sont conservées uniquement en mémoire et perdues au rechargement pour économiser de l\'espace. Activez ceci pour conserver les vidéos entre les rechargements (max 10 vidéos).',
+    persistVideosTooltip: 'Par défaut, les vidéos sont conservées uniquement en mémoire et perdues au rechargement pour économiser de l\'espace. Activez ceci pour conserver les vidéos entre les rechargements (10 vidéos max).',
     persistVideosWillSave10: 'Enregistrera les 10 vidéos les plus récentes localement. Activez pour les conserver entre les rechargements.',
     maxVideosReached: 'Maximum de 10 vidéos peuvent être enregistrées localement. Supprimez des vidéos ou désactivez le stockage persistant pour enregistrer davantage.'
   },
@@ -463,7 +463,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Oben fixieren',
     unfixFromTop: 'Von oben lösen',
     persistVideos: 'Videos lokal speichern',
-    persistVideosTooltip: 'Standardmäßig werden Videos nur im Speicher gehalten und beim Neuladen gelöscht, um Platz zu sparen. Aktivieren Sie dies, um Videos über Neuladungen hinweg zu behalten (max. 10 Videos).',
+    persistVideosTooltip: 'Standardmäßig werden Videos nur im Speicher gehalten und beim Neuladen gelöscht, um Platz zu sparen. Aktivieren Sie dies, um Videos über Neuladungen hinweg zu behalten (10 Videos max.).',
     persistVideosWillSave10: 'Speichert die 10 neuesten Videos lokal. Aktivieren, um sie über Neuladungen hinweg zu behalten.',
     maxVideosReached: 'Maximal 10 Videos können lokal gespeichert werden. Löschen Sie einige Videos oder deaktivieren Sie den persistenten Speicher, um mehr aufzunehmen.'
   },
@@ -528,7 +528,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: '固定到顶部',
     unfixFromTop: '从顶部取消固定',
     persistVideos: '本地保存视频',
-    persistVideosTooltip: '默认情况下，视频仅保存在内存中，重新加载时会丢失以节省空间。启用此选项可在重新加载后保留视频（最多10个视频）。',
+    persistVideosTooltip: '默认情况下，视频仅保存在内存中，重新加载时会丢失以节省空间。启用此选项可在重新加载后保留视频（10个视频最多）。',
     persistVideosWillSave10: '将在本地保存最近的10个视频。启用以在重新加载后保留它们。',
     maxVideosReached: '最多可以在本地保存10个视频。删除一些视频或禁用持久存储以录制更多。'
   },
@@ -593,7 +593,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'تثبيت في الأعلى',
     unfixFromTop: 'إلغاء التثبيت من الأعلى',
     persistVideos: 'حفظ الفيديوهات محلياً',
-    persistVideosTooltip: 'افتراضياً، يتم الاحتفاظ بالفيديوهات في الذاكرة فقط وتُفقد عند إعادة التحميل لتوفير المساحة. قم بتمكين هذا للاحتفاظ بالفيديوهات عبر عمليات إعادة التحميل (حد أقصى 10 فيديوهات).',
+    persistVideosTooltip: 'افتراضياً، يتم الاحتفاظ بالفيديوهات في الذاكرة فقط وتُفقد عند إعادة التحميل لتوفير المساحة. قم بتمكين هذا للاحتفاظ بالفيديوهات عبر عمليات إعادة التحميل (10 فيديوهات كحد أقصى).',
     persistVideosWillSave10: 'سيحفظ أحدث 10 فيديوهات محلياً. قم بالتمكين للاحتفاظ بها عبر عمليات إعادة التحميل.',
     maxVideosReached: 'يمكن حفظ 10 فيديوهات كحد أقصى محلياً. احذف بعض الفيديوهات أو عطّل التخزين الدائم لتسجيل المزيد.'
   },
@@ -658,7 +658,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Fixar no topo',
     unfixFromTop: 'Desfixar do topo',
     persistVideos: 'Salvar vídeos localmente',
-    persistVideosTooltip: 'Por padrão, os vídeos são mantidos apenas na memória e perdidos ao recarregar para economizar espaço. Ative isso para manter vídeos entre recarregamentos (máx 10 vídeos).',
+    persistVideosTooltip: 'Por padrão, os vídeos são mantidos apenas na memória e perdidos ao recarregar para economizar espaço. Ative isso para manter vídeos entre recarregamentos (10 vídeos máx).',
     persistVideosWillSave10: 'Salvará os 10 vídeos mais recentes localmente. Ative para mantê-los entre recarregamentos.',
     maxVideosReached: 'Máximo de 10 vídeos podem ser salvos localmente. Exclua alguns vídeos ou desative o armazenamento persistente para gravar mais.'
   },
@@ -723,7 +723,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Закрепить сверху',
     unfixFromTop: 'Открепить сверху',
     persistVideos: 'Сохранять видео локально',
-    persistVideosTooltip: 'По умолчанию видео хранятся только в памяти и теряются при перезагрузке для экономии места. Включите это, чтобы сохранять видео между перезагрузками (макс. 10 видео).',
+    persistVideosTooltip: 'По умолчанию видео хранятся только в памяти и теряются при перезагрузке для экономии места. Включите это, чтобы сохранять видео между перезагрузками (10 видео макс.).',
     persistVideosWillSave10: 'Сохранит 10 последних видео локально. Включите, чтобы сохранить их между перезагрузками.',
     maxVideosReached: 'Максимум 10 видео можно сохранить локально. Удалите некоторые видео или отключите постоянное хранилище, чтобы записать больше.'
   },
@@ -788,7 +788,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     fixToTop: 'Przypnij do góry',
     unfixFromTop: 'Odepnij od góry',
     persistVideos: 'Zapisuj wideo lokalnie',
-    persistVideosTooltip: 'Domyślnie wideo są przechowywane tylko w pamięci i tracone po przeładowaniu, aby zaoszczędzić miejsce. Włącz to, aby zachować wideo po przeładowaniu (maks. 10).',
+    persistVideosTooltip: 'Domyślnie wideo są przechowywane tylko w pamięci i tracone po przeładowaniu, aby zaoszczędzić miejsce. Włącz to, aby zachować wideo po przeładowaniu (10 ujęć maks.).',
     persistVideosWillSave10: 'Zapisze 10 ostatnich wideo lokalnie. Włącz, aby zachować je po przeładowaniu.',
     maxVideosReached: 'Maksymalnie 10 wideo może być zapisanych lokalnie. Usuń niektóre wideo lub wyłącz trwałe przechowywanie, aby nagrać więcej.'
   },
