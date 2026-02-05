@@ -55,6 +55,7 @@ export function DownloadPopover(props: Props) {
   const prevTakeIdsRef = useRef<string[]>([])
   const prevCountRef = useRef(takes.length)
   const swapTimeoutRef = useRef<number | null>(null)
+  const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -334,6 +335,13 @@ export function DownloadPopover(props: Props) {
                         </a>
                         <div className="relative">
                           <button
+                            ref={(el) => {
+                              if (el) {
+                                deleteButtonRefs.current.set(take.id, el)
+                              } else {
+                                deleteButtonRefs.current.delete(take.id)
+                              }
+                            }}
                             onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
                             aria-label={`Delete ${strings.takeLabel(take.takeNumber)}`}
                             disabled={isRemoving}
@@ -345,39 +353,54 @@ export function DownloadPopover(props: Props) {
                             <Trash2 className="h-4 w-4" />
                           </button>
                           <AnimatePresence>
-                            {isConfirming && (
-                              <motion.div
-                                className="absolute left-full bottom-full -mb-4 ml-1 z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5"
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 4 }}
-                                transition={{ duration: 0.12, ease: 'easeOut' }}
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs text-white/60">Confirm?</span>
-                                  <div className="flex items-center gap-1">
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        removeTake(take.id)
-                                      }}
-                                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                                    >
-                                      <Check className="h-3.5 w-3.5" />
-                                    </button>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        setConfirmingTakeId(null)
-                                      }}
-                                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                                    >
-                                      <X className="h-3.5 w-3.5" />
-                                    </button>
+                            {isConfirming && (() => {
+                              const buttonEl = deleteButtonRefs.current.get(take.id)
+                              let shouldShowLeft = false
+                              if (buttonEl) {
+                                const rect = buttonEl.getBoundingClientRect()
+                                const tooltipWidth = 120
+                                const spaceOnRight = window.innerWidth - rect.right
+                                shouldShowLeft = spaceOnRight < tooltipWidth
+                              }
+                              
+                              return (
+                                <motion.div
+                                  key={take.id}
+                                  className={cn(
+                                    'absolute bottom-full -mb-4 z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5',
+                                    shouldShowLeft ? 'right-full mr-1' : 'left-full ml-1'
+                                  )}
+                                  initial={{ opacity: 0, y: 4 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: 4 }}
+                                  transition={{ duration: 0.12, ease: 'easeOut' }}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs text-white/60">Confirm?</span>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          removeTake(take.id)
+                                        }}
+                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                                      >
+                                        <Check className="h-3.5 w-3.5" />
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setConfirmingTakeId(null)
+                                        }}
+                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                                      >
+                                        <X className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
                                   </div>
-                                </div>
-                              </motion.div>
-                            )}
+                                </motion.div>
+                              )
+                            })()}
                           </AnimatePresence>
                         </div>
                       </div>
