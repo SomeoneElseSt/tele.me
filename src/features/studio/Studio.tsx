@@ -372,8 +372,9 @@ export function Studio() {
       recorder.stop()
       return
     }
+    if (!canRecord) return
     recorder.start()
-  }, [recorder])
+  }, [recorder, canRecord])
 
   const onTogglePrompter = useCallback(() => {
     if (!prompterOpen) {

@@ -138,6 +138,11 @@ export function DownloadPopover(props: Props) {
     window.setTimeout(() => setRemovingTakeIds([]), REMOVE_FADE_MS)
   }
 
+  // Calculate confirmation popup position
+  const confirmButtonEl = confirmingTakeId ? deleteButtonRefs.current.get(confirmingTakeId) : null
+  const confirmRect = confirmButtonEl?.getBoundingClientRect()
+  const shouldShowLeft = confirmRect ? (window.innerWidth - confirmRect.right < 120) : false
+
   return createPortal(
     <AnimatePresence>
       {open && anchorEl && (
@@ -150,11 +155,6 @@ export function DownloadPopover(props: Props) {
             transform: 'translateY(-100%)'
           }}
         >
-          {/* 
-            Removed 'isolate' and 'scale' animations - these were causing black line artifacts
-            during tooltip animations due to stacking context + transform interactions.
-            Using simple opacity + y translation instead.
-          */}
           <motion.div
             className="relative text-xs text-white/70 overflow-visible rounded-2xl border border-white/10 bg-black/40 shadow-glow backdrop-blur"
             initial={{ opacity: 0, y: 10 }}
@@ -301,11 +301,15 @@ export function DownloadPopover(props: Props) {
                 </div>
                 <div
                   className={cn(
-                    'transition-[max-height,opacity] duration-200 ease-out overflow-visible',
+                    'transition-[max-height,opacity] duration-200 ease-out overflow-y-auto tele-scroll overscroll-contain pr-1 -mr-1',
                     showList
                       ? 'max-h-96 opacity-100'
                       : 'max-h-0 opacity-0 pointer-events-none'
                   )}
+                  onScroll={() => {
+                    // Close confirmation popup on scroll to avoid floating UI issues
+                    if (confirmingTakeId) setConfirmingTakeId(null)
+                  }}
                 >
                   {takes.map((take, index) => {
                     const extension = getFileExtension(take.mimeType)
@@ -388,61 +392,12 @@ export function DownloadPopover(props: Props) {
                             disabled={isRemoving}
                             className={cn(
                               'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
-                              'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors'
+                              'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors',
+                              isConfirming && 'bg-red-500/20 border-red-500/30 text-red-400'
                             )}
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
-                          <AnimatePresence>
-                            {isConfirming && (() => {
-                              const buttonEl = deleteButtonRefs.current.get(take.id)
-                              let shouldShowLeft = false
-                              if (buttonEl) {
-                                const rect = buttonEl.getBoundingClientRect()
-                                const tooltipWidth = 120
-                                const spaceOnRight = window.innerWidth - rect.right
-                                shouldShowLeft = spaceOnRight < tooltipWidth
-                              }
-
-                              return (
-                                <motion.div
-                                  key={take.id}
-                                  className={cn(
-                                    'absolute bottom-full -mb-4 z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5',
-                                    shouldShowLeft ? 'right-full mr-1' : 'left-full ml-1'
-                                  )}
-                                  initial={{ opacity: 0, y: 4 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: 4 }}
-                                  transition={{ duration: 0.12, ease: 'easeOut' }}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs text-white/60">Confirm?</span>
-                                    <div className="flex items-center gap-1">
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          removeTake(take.id)
-                                        }}
-                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                                      >
-                                        <Check className="h-3.5 w-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          setConfirmingTakeId(null)
-                                        }}
-                                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                                      >
-                                        <X className="h-3.5 w-3.5" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </motion.div>
-                              )
-                            })()}
-                          </AnimatePresence>
                         </div>
                       </div>
                     )
@@ -451,6 +406,51 @@ export function DownloadPopover(props: Props) {
               </div>
             </div>
           </motion.div>
+
+          {/* Render Delete Confirmation Popup Outside List to Avoid Overflow Clipping */}
+          <AnimatePresence>
+            {confirmButtonEl && confirmRect && (
+              <motion.div
+                key="delete-confirm"
+                className={cn(
+                  'fixed z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5'
+                )}
+                style={{
+                  bottom: window.innerHeight - confirmRect.top + 8,
+                  left: shouldShowLeft ? 'auto' : confirmRect.left + 4,
+                  right: shouldShowLeft ? window.innerWidth - confirmRect.right + 4 : 'auto',
+                }}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 4 }}
+                transition={{ duration: 0.12, ease: 'easeOut' }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/60">Confirm?</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (confirmingTakeId) removeTake(confirmingTakeId)
+                      }}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                    >
+                      <Check className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setConfirmingTakeId(null)
+                      }}
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </AnimatePresence>,
