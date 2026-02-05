@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Film } from 'lucide-react'
+import { Film, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
@@ -88,6 +88,9 @@ export function Studio() {
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number }[]>([])
   const takesRef = useRef(takes)
+  const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
+  const [videoPlaying, setVideoPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   
   useEffect(() => {
     takesRef.current = takes
@@ -268,6 +271,35 @@ export function Studio() {
     })
   }, [])
 
+  const onPlayTake = useCallback((takeId: string) => {
+    setPlayingTakeId(takeId)
+    setVideoPlaying(false)
+    if (prompterOpen) {
+      setPrompterOpen(false)
+      setPlaying(false)
+    }
+  }, [prompterOpen])
+
+  const onCloseVideo = useCallback(() => {
+    if (videoRef.current) {
+      videoRef.current.pause()
+      videoRef.current.currentTime = 0
+    }
+    setPlayingTakeId(null)
+    setVideoPlaying(false)
+  }, [])
+
+  const onToggleVideoPlayback = useCallback(() => {
+    if (!videoRef.current) return
+    if (videoRef.current.paused) {
+      void videoRef.current.play()
+      setVideoPlaying(true)
+    } else {
+      videoRef.current.pause()
+      setVideoPlaying(false)
+    }
+  }, [])
+
   useEffect(() => {
     const url = recorder.url
     const mimeType = recorder.mimeType
@@ -284,44 +316,73 @@ export function Studio() {
 
   useHotkeys(
     useMemo(
-      () => ({
-        r: () => onToggleRecord(),
-        space: () => onTogglePrompter(),
-        t: () => onToggleDrawer(),
-        h: () => {
-          if (prompterOpen) {
-            if (prompterControlsOpen) {
-              setForceCloseControls(true)
-              window.setTimeout(() => {
-                setForceCloseControls(false)
-                setPrompterOpen(false)
-                setPlaying(false)
-              }, 150)
+      () => {
+        const hotkeys: Record<string, () => void> = {}
+        
+        if (playingTakeId) {
+          hotkeys.space = () => onToggleVideoPlayback()
+          hotkeys.escape = () => onCloseVideo()
+        } else {
+          hotkeys.r = () => onToggleRecord()
+          hotkeys.space = () => onTogglePrompter()
+          hotkeys.t = () => onToggleDrawer()
+          hotkeys.h = () => {
+            if (prompterOpen) {
+              if (prompterControlsOpen) {
+                setForceCloseControls(true)
+                window.setTimeout(() => {
+                  setForceCloseControls(false)
+                  setPrompterOpen(false)
+                  setPlaying(false)
+                }, 150)
+                return
+              }
+              setPrompterOpen(false)
+              setPlaying(false)
               return
             }
-            setPrompterOpen(false)
-            setPlaying(false)
-            return
+            setPrompterOpen(true)
           }
-          setPrompterOpen(true)
-        },
-        m: () => {
-          setMarkdownEnabled((prev) => !prev)
-        },
-        escape: () => {
-          setDrawerOpen(false)
-          setPlaying(false)
+          hotkeys.m = () => {
+            setMarkdownEnabled((prev) => !prev)
+          }
+          hotkeys.escape = () => {
+            setDrawerOpen(false)
+            setPlaying(false)
+          }
         }
-      }),
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen]
+        
+        return hotkeys
+      },
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo]
     ),
     true
   )
 
+  const playingTake = playingTakeId ? takes.find(t => t.id === playingTakeId) : null
+
   return (
     <I18nProvider locale={locale}>
       <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
-      <StageVideo stream={stream} mirror={mirrorVideo} />
+      {playingTake ? (
+        <div className="absolute inset-0 bg-black">
+          <video
+            ref={videoRef}
+            src={playingTake.url}
+            className="h-full w-full object-contain"
+            onPlay={() => setVideoPlaying(true)}
+            onPause={() => setVideoPlaying(false)}
+            onEnded={() => {
+              setVideoPlaying(false)
+              if (videoRef.current) {
+                videoRef.current.currentTime = 0
+              }
+            }}
+          />
+        </div>
+      ) : (
+        <StageVideo stream={stream} mirror={mirrorVideo} />
+      )}
 
       <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
         <Tooltip 
@@ -482,6 +543,11 @@ export function Studio() {
         onToggleDrawer={onToggleDrawer}
         onDeleteTake={onDeleteTake}
         onClearAllTakes={onClearAllTakes}
+        onPlayTake={onPlayTake}
+        playingTakeId={playingTakeId}
+        videoPlaying={videoPlaying}
+        onToggleVideoPlayback={onToggleVideoPlayback}
+        onCloseVideo={onCloseVideo}
       />
 
       <SettingsDrawer

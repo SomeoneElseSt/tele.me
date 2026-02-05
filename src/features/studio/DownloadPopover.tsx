@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Check, Download, Film, Trash2, X } from 'lucide-react'
+import { AlertCircle, Check, Download, Film, Play, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
@@ -22,6 +22,7 @@ type Props = {
   onClose: () => void
   onDeleteTake: (takeId: string) => void
   onClearAll: () => void
+  onPlayTake: (takeId: string) => void
 }
 
 const POPOVER_WIDTH = 300
@@ -43,7 +44,7 @@ function getFileExtension(mimeType?: string): string {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll } = props
+  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake } = props
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
@@ -311,10 +312,13 @@ export function DownloadPopover(props: Props) {
                             'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
                           )}
                         >
-                          <span className="inline-flex items-center gap-2">
-                            <Film className="h-4 w-4 text-white/60" />
+                          <button
+                            onClick={() => onPlayTake(take.id)}
+                            className="inline-flex items-center gap-2 hover:text-white transition-colors"
+                          >
+                            <Play className="h-4 w-4 text-white/60" />
                             <span>{strings.takeLabel(take.takeNumber)}</span>
-                          </span>
+                          </button>
                           <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
                         </div>
                         <a

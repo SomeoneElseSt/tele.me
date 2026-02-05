@@ -18,7 +18,7 @@ type Side = 'top' | 'bottom' | 'left' | 'right'
 type SideOrAuto = Side | 'auto'
 
 type TooltipProps = {
-  label: string
+  label: ReactNode
   shortcut?: string
   tooltipId?: string
   side?: SideOrAuto

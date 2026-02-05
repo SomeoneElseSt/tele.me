@@ -41,6 +41,8 @@ type Strings = {
   startRecording: string
   playPrompter: string
   pausePrompter: string
+  playVideo: string
+  pauseVideo: string
   inputsTitle: string
   videosTitle: string
   noCameras: string
@@ -93,6 +95,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Start recording',
     playPrompter: 'Play prompter',
     pausePrompter: 'Pause prompter',
+    playVideo: 'Play video',
+    pauseVideo: 'Pause video',
     inputsTitle: 'Inputs',
     videosTitle: 'Videos',
     noCameras: 'No cameras',
@@ -143,6 +147,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Iniciar grabación',
     playPrompter: 'Reproducir prompter',
     pausePrompter: 'Pausar prompter',
+    playVideo: 'Reproducir video',
+    pauseVideo: 'Pausar video',
     inputsTitle: 'Entradas',
     videosTitle: 'Videos',
     noCameras: 'Sin cámaras',
@@ -193,6 +199,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: '録画開始',
     playPrompter: 'プロンプター再生',
     pausePrompter: 'プロンプター停止',
+    playVideo: '動画再生',
+    pauseVideo: '動画停止',
     inputsTitle: '入力',
     videosTitle: '動画',
     noCameras: 'カメラなし',
@@ -243,6 +251,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'रिकॉर्डिंग शुरू करें',
     playPrompter: 'टेलीप्रॉम्प्टर चलाएँ',
     pausePrompter: 'टेलीप्रॉम्प्टर रोकें',
+    playVideo: 'वीडियो चलाएँ',
+    pauseVideo: 'वीडियो रोकें',
     inputsTitle: 'इनपुट',
     videosTitle: 'वीडियो',
     noCameras: 'कोई कैमरा नहीं',
@@ -294,6 +304,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Démarrer l’enregistrement',
     playPrompter: 'Lire le prompteur',
     pausePrompter: 'Mettre en pause',
+    playVideo: 'Lire la vidéo',
+    pauseVideo: 'Mettre en pause',
     inputsTitle: 'Entrées',
     videosTitle: 'Vidéos',
     noCameras: 'Aucune caméra',
@@ -344,6 +356,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Aufnahme starten',
     playPrompter: 'Teleprompter abspielen',
     pausePrompter: 'Teleprompter pausieren',
+    playVideo: 'Video abspielen',
+    pauseVideo: 'Video pausieren',
     inputsTitle: 'Eingänge',
     videosTitle: 'Videos',
     noCameras: 'Keine Kameras',
@@ -394,6 +408,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: '开始录制',
     playPrompter: '播放提示器',
     pausePrompter: '暂停提示器',
+    playVideo: '播放视频',
+    pauseVideo: '暂停视频',
     inputsTitle: '输入',
     videosTitle: '视频',
     noCameras: '没有摄像头',
@@ -444,6 +460,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'بدء التسجيل',
     playPrompter: 'تشغيل الملقن',
     pausePrompter: 'إيقاف مؤقت',
+    playVideo: 'تشغيل الفيديو',
+    pauseVideo: 'إيقاف الفيديو',
     inputsTitle: 'المدخلات',
     videosTitle: 'الفيديوهات',
     noCameras: 'لا توجد كاميرات',
@@ -494,6 +512,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Iniciar gravação',
     playPrompter: 'Reproduzir teleprompter',
     pausePrompter: 'Pausar teleprompter',
+    playVideo: 'Reproduzir vídeo',
+    pauseVideo: 'Pausar vídeo',
     inputsTitle: 'Entradas',
     videosTitle: 'Vídeos',
     noCameras: 'Sem câmeras',
@@ -544,6 +564,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     startRecording: 'Начать запись',
     playPrompter: 'Запустить телесуфлёр',
     pausePrompter: 'Пауза',
+    playVideo: 'Воспроизвести видео',
+    pauseVideo: 'Приостановить видео',
     inputsTitle: 'Входы',
     videosTitle: 'Видео',
     noCameras: 'Нет камер',
