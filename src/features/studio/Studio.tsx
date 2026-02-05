@@ -27,7 +27,8 @@ const DEFAULT_SPEED = 52
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.45
 const DEFAULT_MIRROR_VIDEO = true
-const DEFAULT_MIRROR_TEXT = false
+type TextAlign = 'left' | 'center' | 'right'
+const DEFAULT_TEXT_ALIGN: TextAlign = 'left'
 const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }
 
 function getCenteredFrame(frame: PrompterFrame) {
@@ -81,7 +82,7 @@ export function Studio() {
   const [speed, setSpeed] = useState(DEFAULT_SPEED)
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE)
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
-  const [mirrorText, setMirrorText] = useState(DEFAULT_MIRROR_TEXT)
+  const [textAlign, setTextAlign] = useState<TextAlign>(DEFAULT_TEXT_ALIGN)
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
   const [forceCloseControls, setForceCloseControls] = useState(false)
@@ -506,12 +507,12 @@ export function Studio() {
         markdownEnabled={markdownEnabled}
         speed={speed}
         fontSize={fontSize}
-        mirrorText={mirrorText}
+        textAlign={textAlign}
         playing={playing}
         onOpacityChange={setOpacity}
         onSpeedChange={setSpeed}
         onFontSizeChange={setFontSize}
-        onMirrorTextChange={setMirrorText}
+        onTextAlignChange={setTextAlign}
         onTogglePlaying={onTogglePrompter}
         onClose={() => {
           setPrompterOpen(false)

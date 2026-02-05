@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { FlipHorizontal2, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -21,13 +21,13 @@ type Props = {
   markdownEnabled: boolean
   speed: number
   fontSize: number
-  mirrorText: boolean
+  textAlign: 'left' | 'center' | 'right'
   playing: boolean
   onFrameChange: (update: Partial<PrompterFrame>) => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
-  onMirrorTextChange: (value: boolean) => void
+  onTextAlignChange: (value: 'left' | 'center' | 'right') => void
   onTogglePlaying: () => void
   onClose: () => void
   onControlsOpenChange?: (open: boolean) => void
@@ -457,22 +457,22 @@ function ControlsBarPortal({
   opacity,
   speed,
   fontSize,
-  mirrorText,
+  textAlign,
   onOpacityChange,
   onSpeedChange,
   onFontSizeChange,
-  onMirrorTextChange
+  onTextAlignChange
 }: {
   open: boolean
   frame: PrompterFrame
   opacity: number
   speed: number
   fontSize: number
-  mirrorText: boolean
+  textAlign: 'left' | 'center' | 'right'
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
-  onMirrorTextChange: (value: boolean) => void
+  onTextAlignChange: (value: 'left' | 'center' | 'right') => void
 }) {
   const { strings } = useI18n()
   // Match teleprompter opacity for visual consistency (no contrast difference)
@@ -595,34 +595,50 @@ function ControlsBarPortal({
                   onChange={onOpacityChange}
                 />
 
-                <div className="flex w-[104px] items-center justify-center px-3">
-                  <Tooltip label={strings.mirrorText}>
+                <div className="flex items-center justify-center gap-1.5 px-3">
+                  <Tooltip label={strings.alignLeft}>
                     <button
                       type="button"
-                      onClick={() => onMirrorTextChange(!mirrorText)}
-                      aria-label={strings.mirrorText}
+                      onClick={() => onTextAlignChange('left')}
+                      aria-label={strings.alignLeft}
                       className={cn(
-                        'inline-flex h-10 items-center gap-2 rounded-xl border px-3 text-xs transition-colors',
-                        mirrorText
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        textAlign === 'left'
                           ? 'border-white/18 bg-white/10 text-white'
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                       )}
                     >
-                      <FlipHorizontal2 className="h-4 w-4 text-white/70" />
-                      <span
-                        className={cn(
-                          'relative inline-flex h-5 w-8 items-center rounded-full border border-white/10 bg-white/8 transition-colors',
-                          mirrorText && 'bg-white/15'
-                        )}
-                        aria-hidden="true"
-                      >
-                        <span
-                          className={cn(
-                            'absolute left-[2px] top-[2px] h-[14px] w-[14px] rounded-full bg-white/70 transition-transform',
-                            mirrorText ? 'translate-x-[14px]' : 'translate-x-0'
-                          )}
-                        />
-                      </span>
+                      <AlignLeft className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip label={strings.alignCenter}>
+                    <button
+                      type="button"
+                      onClick={() => onTextAlignChange('center')}
+                      aria-label={strings.alignCenter}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        textAlign === 'center'
+                          ? 'border-white/18 bg-white/10 text-white'
+                          : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
+                      )}
+                    >
+                      <AlignCenter className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip label={strings.alignRight}>
+                    <button
+                      type="button"
+                      onClick={() => onTextAlignChange('right')}
+                      aria-label={strings.alignRight}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        textAlign === 'right'
+                          ? 'border-white/18 bg-white/10 text-white'
+                          : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
+                      )}
+                    >
+                      <AlignRight className="h-4 w-4" />
                     </button>
                   </Tooltip>
                 </div>
@@ -645,13 +661,13 @@ export function FloatingPrompter(props: Props) {
     markdownEnabled,
     speed,
     fontSize,
-    mirrorText,
+    textAlign,
     playing,
     onFrameChange,
     onOpacityChange,
     onSpeedChange,
     onFontSizeChange,
-    onMirrorTextChange,
+    onTextAlignChange,
     onTogglePlaying,
     onClose,
     onControlsOpenChange,
@@ -834,10 +850,10 @@ export function FloatingPrompter(props: Props) {
           <div className="relative h-[calc(100%-52px)]">
             <div
               ref={scrollerRef}
-              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto')}
+              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
               style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
             >
-              <div className={cn('px-6 py-6 text-white/92', mirrorText && '-scale-x-100')}>
+              <div className="px-6 py-6 text-white/92 select-none" style={{ textAlign }}>
                 {markdownEnabled ? (
                   <div
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
@@ -885,11 +901,11 @@ export function FloatingPrompter(props: Props) {
             opacity={opacity}
             speed={speed}
             fontSize={fontSize}
-            mirrorText={mirrorText}
+            textAlign={textAlign}
             onOpacityChange={onOpacityChange}
             onSpeedChange={onSpeedChange}
             onFontSizeChange={onFontSizeChange}
-            onMirrorTextChange={onMirrorTextChange}
+            onTextAlignChange={onTextAlignChange}
           />
         </motion.div>
       )}
