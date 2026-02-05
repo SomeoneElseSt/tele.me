@@ -137,7 +137,11 @@ export function Dock({
         style={{ transform: 'translateZ(0)', contain: 'paint' }}
       >
         <div
-          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/45 backdrop-blur"
+          className={cn(
+            'pointer-events-none absolute inset-0 rounded-3xl border border-white/10 shadow-glow',
+            // Avoid overlapping backdrop-filter layers when the tray is open (causes GPU seams).
+            downloadsOpen ? 'bg-black/60' : 'bg-black/45 backdrop-blur'
+          )}
           style={{
             transform: 'translateZ(0)',
             willChange: 'transform',

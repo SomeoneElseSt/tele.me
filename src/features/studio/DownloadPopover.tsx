@@ -135,7 +135,7 @@ export function DownloadPopover(props: Props) {
     <AnimatePresence>
       {open && anchorEl && (
         <div
-          className="fixed z-[70] isolate"
+          className="fixed z-[70]"
           style={{
             left,
             top,
@@ -144,7 +144,6 @@ export function DownloadPopover(props: Props) {
           }}
         >
           <motion.div
-            className="isolate"
             style={{ transform: 'translateZ(0)' }}
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -153,9 +152,9 @@ export function DownloadPopover(props: Props) {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Blur seam fix: isolate blur layer + clip to rounded bounds to avoid GPU lines. */}
-            <div className="relative rounded-2xl overflow-hidden text-xs text-white/70">
+            <div className="relative rounded-2xl text-xs text-white/70 isolate">
               <div
-                className="pointer-events-none absolute inset-0 rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur"
+                className="pointer-events-none absolute inset-0 rounded-2xl border border-white/10 bg-black/70 shadow-glow backdrop-blur overflow-hidden"
                 style={{
                   transform: 'translateZ(0)',
                   willChange: 'transform',
@@ -163,7 +162,7 @@ export function DownloadPopover(props: Props) {
                   WebkitBackfaceVisibility: 'hidden'
                 }}
               />
-              <div className="relative p-4">
+              <div className="relative p-4 overflow-visible">
                 <div className="flex items-center justify-between">
                 <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
                 <div className="flex items-center gap-2">
@@ -346,7 +345,7 @@ export function DownloadPopover(props: Props) {
                         <AnimatePresence mode="wait">
                           {isConfirming && (
                             <motion.div
-                              className="absolute left-full bottom-full mb-1 ml-1 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
+                              className="absolute left-full bottom-full mb-1 ml-1 z-20 rounded-xl border border-white/10 bg-black/80 px-2.5 py-1.5 backdrop-blur"
                               initial={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
                               animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
                               exit={{ opacity: 0, x: -10, y: 10, scale: 0.95 }}
