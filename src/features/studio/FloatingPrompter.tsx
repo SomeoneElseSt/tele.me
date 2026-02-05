@@ -910,9 +910,16 @@ export function FloatingPrompter(props: Props) {
             <div
               ref={scrollerRef}
               className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
-              style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX + (fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : 0) }}
+              style={{ bottom: fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX }}
             >
-              <div className={cn('px-6 text-white/92 select-none', fixedToTop ? 'pt-2 pb-6' : 'py-6')} style={{ textAlign }}>
+              <div 
+                className="px-6 text-white/92 select-none" 
+                style={{ 
+                  textAlign,
+                  paddingTop: fixedToTop ? 4 : 24,
+                  paddingBottom: fixedToTop ? 4 : 24
+                }}
+              >
                 {markdownEnabled ? (
                   <div
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
