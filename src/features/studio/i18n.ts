@@ -59,12 +59,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Your script goes here.\n\n' +
       'Space: play/pause\n' +
-      'R: record\n' +
-      'T: edit text\n' +
+      'R: record/stop recording\n' +
+      'D: show and download videos\n' +
       'C: teleprompter controls\n' +
       'H: hide/show prompter\n' +
-      'I: control inputs\n' +
-      'D: download videos\n\n' +
+      'I: control inputs\n\n' +
       'To use markdown rendering and font, open the edit text pane (T) and enable it (M)',
     language: 'Language',
     script: 'Script',
@@ -79,7 +78,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Speed',
     textSize: 'Text size',
     opacity: 'Opacity',
-    text: 'Text',
+    text: 'Edit Text',
     camera: 'Camera',
     mic: 'Mic',
     inputs: 'Inputs',
@@ -105,12 +104,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Tu guion va aquí.\n\n' +
       'Espacio: reproducir/pausar\n' +
-      'R: grabar\n' +
-      'T: editar texto\n' +
+      'R: grabar/detener grabación\n' +
+      'D: mostrar y descargar videos\n' +
       'C: controles del teleprompter\n' +
       'H: ocultar/mostrar teleprompter\n' +
-      'I: controlar entradas\n' +
-      'D: descargar videos\n\n' +
+      'I: controlar entradas\n\n' +
       'Para usar el renderizado y la tipografía de markdown, abre el panel de edición de texto (T) y actívalo (M)',
     language: 'Idioma',
     script: 'Guion',
@@ -125,7 +123,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Velocidad',
     textSize: 'Tamaño de texto',
     opacity: 'Opacidad',
-    text: 'Texto',
+    text: 'Editar texto',
     camera: 'Cámara',
     mic: 'Micrófono',
     inputs: 'Entradas',
@@ -151,12 +149,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'ここにスクリプトを書きます。\n\n' +
       'スペース: 再生/一時停止\n' +
-      'R: 録画\n' +
-      'T: テキスト編集\n' +
+      'R: 録画/録画停止\n' +
+      'D: 動画を表示してダウンロード\n' +
       'C: プロンプター操作\n' +
       'H: プロンプター表示/非表示\n' +
-      'I: 入力設定\n' +
-      'D: 動画をダウンロード\n\n' +
+      'I: 入力設定\n\n' +
       'Markdown 表示と書式を使うには、テキスト編集パネル (T) を開いて有効化 (M) してください',
     language: '言語',
     script: 'スクリプト',
@@ -171,7 +168,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: '速度',
     textSize: '文字サイズ',
     opacity: '不透明度',
-    text: 'テキスト',
+    text: 'テキストを編集',
     camera: 'カメラ',
     mic: 'マイク',
     inputs: '入力',
@@ -197,12 +194,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'आपकी स्क्रिप्ट यहाँ जाती है।\n\n' +
       'स्पेस: चलाएँ/रोकें\n' +
-      'R: रिकॉर्ड\n' +
-      'T: टेक्स्ट संपादित करें\n' +
+      'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
+      'D: वीडियो दिखाएँ और डाउनलोड करें\n' +
       'C: टेलीप्रॉम्प्टर नियंत्रण\n' +
       'H: टेलीप्रॉम्प्टर दिखाएँ/छिपाएँ\n' +
-      'I: इनपुट नियंत्रित करें\n' +
-      'D: वीडियो डाउनलोड करें\n\n' +
+      'I: इनपुट नियंत्रित करें\n\n' +
       'Markdown रेंडरिंग और फ़ॉन्ट के लिए, टेक्स्ट संपादन पैन (T) खोलें और इसे सक्षम करें (M)',
     language: 'भाषा',
     script: 'स्क्रिप्ट',
@@ -217,7 +213,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'गति',
     textSize: 'टेक्स्ट आकार',
     opacity: 'अपारदर्शिता',
-    text: 'टेक्स्ट',
+    text: 'टेक्स्ट संपादित करें',
     camera: 'कैमरा',
     mic: 'माइक',
     inputs: 'इनपुट',
@@ -243,8 +239,8 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Votre script va ici.\n\n' +
       'Espace : lecture/pause\n' +
-      'R : enregistrer\n' +
-      'T : éditer le texte\n' +
+      'R : enregistrer/arrêter l\'enregistrement\n' +
+      'T : éditer le texte du prompteur\n' +
       'C : contrôles du prompteur\n' +
       'H : afficher/masquer le prompteur\n' +
       'I : contrôler les entrées\n' +
@@ -263,7 +259,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Vitesse',
     textSize: 'Taille du texte',
     opacity: 'Opacité',
-    text: 'Texte',
+    text: 'Modifier le texte',
     camera: 'Caméra',
     mic: 'Micro',
     inputs: 'Entrées',
@@ -289,12 +285,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Ihr Skript kommt hierher.\n\n' +
       'Leertaste: abspielen/pausieren\n' +
-      'R: aufnehmen\n' +
-      'T: Text bearbeiten\n' +
+      'R: aufnehmen/Aufnahme stoppen\n' +
+      'D: Videos anzeigen und herunterladen\n' +
       'C: Teleprompter-Steuerung\n' +
       'H: Teleprompter ein-/ausblenden\n' +
-      'I: Eingänge steuern\n' +
-      'D: Videos herunterladen\n\n' +
+      'I: Eingänge steuern\n\n' +
       'Für Markdown-Rendering und Schrift öffnen Sie das Text-Panel (T) und aktivieren es (M)',
     language: 'Sprache',
     script: 'Skript',
@@ -309,7 +304,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Geschwindigkeit',
     textSize: 'Textgröße',
     opacity: 'Deckkraft',
-    text: 'Text',
+    text: 'Text bearbeiten',
     camera: 'Kamera',
     mic: 'Mikro',
     inputs: 'Eingänge',
@@ -335,12 +330,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       '你的脚本写在这里。\n\n' +
       '空格：播放/暂停\n' +
-      'R：录制\n' +
-      'T：编辑文本\n' +
+      'R：录制/停止录制\n' +
+      'D：显示并下载视频\n' +
       'C：提示器控制\n' +
       'H：隐藏/显示提示器\n' +
-      'I：控制输入\n' +
-      'D：下载视频\n\n' +
+      'I：控制输入\n\n' +
       '要使用 Markdown 渲染和字体，请打开文本编辑面板 (T) 并启用它 (M)',
     language: '语言',
     script: '脚本',
@@ -355,7 +349,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: '速度',
     textSize: '文字大小',
     opacity: '不透明度',
-    text: '文本',
+    text: '编辑文本',
     camera: '摄像头',
     mic: '麦克风',
     inputs: '输入',
@@ -381,12 +375,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'ضع النص هنا.\n\n' +
       'مسافة: تشغيل/إيقاف\n' +
-      'R: تسجيل\n' +
-      'T: تعديل النص\n' +
+      'R: تسجيل/إيقاف التسجيل\n' +
+      'D: عرض وتنزيل الفيديوهات\n' +
       'C: عناصر التحكم بالتلقين\n' +
       'H: إظهار/إخفاء التلقين\n' +
-      'I: التحكم بالمدخلات\n' +
-      'D: تنزيل الفيديوهات\n\n' +
+      'I: التحكم بالمدخلات\n\n' +
       'لاستخدام عرض Markdown والخط، افتح لوحة تحرير النص (T) وفعّلها (M)',
     language: 'اللغة',
     script: 'النص',
@@ -401,7 +394,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'السرعة',
     textSize: 'حجم النص',
     opacity: 'الشفافية',
-    text: 'النص',
+    text: 'تعديل النص',
     camera: 'الكاميرا',
     mic: 'الميكروفون',
     inputs: 'المدخلات',
@@ -427,12 +420,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Seu script vai aqui.\n\n' +
       'Espaço: reproduzir/pausar\n' +
-      'R: gravar\n' +
-      'T: editar texto\n' +
+      'R: gravar/parar gravação\n' +
+      'D: mostrar e baixar vídeos\n' +
       'C: controles do teleprompter\n' +
       'H: mostrar/ocultar teleprompter\n' +
-      'I: controlar entradas\n' +
-      'D: baixar vídeos\n\n' +
+      'I: controlar entradas\n\n' +
       'Para usar a renderização e fonte Markdown, abra o painel de edição (T) e ative (M)',
     language: 'Idioma',
     script: 'Script',
@@ -447,7 +439,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Velocidade',
     textSize: 'Tamanho do texto',
     opacity: 'Opacidade',
-    text: 'Texto',
+    text: 'Editar texto',
     camera: 'Câmera',
     mic: 'Microfone',
     inputs: 'Entradas',
@@ -473,12 +465,11 @@ const STRINGS: Record<LocaleCode, Strings> = {
     defaultScript:
       'Ваш текст здесь.\n\n' +
       'Пробел: воспроизвести/пауза\n' +
-      'R: запись\n' +
-      'T: редактировать текст\n' +
+      'R: запись/остановить запись\n' +
+      'D: показать и скачать видео\n' +
       'C: управление телесуфлёром\n' +
       'H: скрыть/показать телесуфлёр\n' +
-      'I: управление входами\n' +
-      'D: скачать видео\n\n' +
+      'I: управление входами\n\n' +
       'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)',
     language: 'Язык',
     script: 'Скрипт',
@@ -493,7 +484,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     speed: 'Скорость',
     textSize: 'Размер текста',
     opacity: 'Прозрачность',
-    text: 'Текст',
+    text: 'Редактировать текст',
     camera: 'Камера',
     mic: 'Микрофон',
     inputs: 'Входы',
