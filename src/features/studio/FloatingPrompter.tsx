@@ -30,6 +30,8 @@ type Props = {
   onMirrorTextChange: (value: boolean) => void
   onTogglePlaying: () => void
   onClose: () => void
+  onControlsOpenChange?: (open: boolean) => void
+  forceCloseControls?: boolean
 }
 
 const GRIP_HIT_SIZE_PX = 32
@@ -650,12 +652,21 @@ export function FloatingPrompter(props: Props) {
     onFontSizeChange,
     onMirrorTextChange,
     onTogglePlaying,
-    onClose
+    onClose,
+    onControlsOpenChange,
+    forceCloseControls
   } = props
 
   const tooltip = useTooltipController()
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
+  
+  useEffect(() => {
+    if (forceCloseControls && quickOpen) {
+      setQuickOpen(false)
+      onControlsOpenChange?.(false)
+    }
+  }, [forceCloseControls, quickOpen, onControlsOpenChange])
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
@@ -676,14 +687,20 @@ export function FloatingPrompter(props: Props) {
   useHotkeys(
     useMemo(
       () => ({
-        c: () => setQuickOpen((prev) => !prev),
+        c: () => {
+          setQuickOpen((prev) => {
+            const next = !prev
+            onControlsOpenChange?.(next)
+            return next
+          })
+        },
         space: () => onTogglePlaying(),
         escape: () => {
           if (!playing) return
           onTogglePlaying()
         }
       }),
-      [onTogglePlaying, playing]
+      [onTogglePlaying, playing, onControlsOpenChange]
     ),
     open
   )
@@ -721,9 +738,10 @@ export function FloatingPrompter(props: Props) {
       tooltip.clear()
       setResizing(false)
       setQuickOpen(false)
+      onControlsOpenChange?.(false)
     }
     wasOpenRef.current = open
-  }, [open, tooltip])
+  }, [open, tooltip, onControlsOpenChange])
 
   return (
     <AnimatePresence>
@@ -768,7 +786,13 @@ export function FloatingPrompter(props: Props) {
               <Tooltip label={strings.controls} shortcut="C">
                 <button
                   type="button"
-                  onClick={() => setQuickOpen((v) => !v)}
+                  onClick={() => {
+                    setQuickOpen((v) => {
+                      const next = !v
+                      onControlsOpenChange?.(next)
+                      return next
+                    })
+                  }}
                   aria-label="Prompter controls"
                   onPointerDown={(e) => e.stopPropagation()}
                   className={cn(

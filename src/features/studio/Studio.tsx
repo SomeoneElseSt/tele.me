@@ -82,6 +82,8 @@ export function Studio() {
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY)
   const [mirrorText, setMirrorText] = useState(DEFAULT_MIRROR_TEXT)
   const [prompterOpen, setPrompterOpen] = useState(true)
+  const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
+  const [forceCloseControls, setForceCloseControls] = useState(false)
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string }[]>([])
   const takesRef = useRef(takes)
@@ -258,6 +260,15 @@ export function Studio() {
         t: () => onToggleDrawer(),
         h: () => {
           if (prompterOpen) {
+            if (prompterControlsOpen) {
+              setForceCloseControls(true)
+              window.setTimeout(() => {
+                setForceCloseControls(false)
+                setPrompterOpen(false)
+                setPlaying(false)
+              }, 150)
+              return
+            }
             setPrompterOpen(false)
             setPlaying(false)
             return
@@ -272,7 +283,7 @@ export function Studio() {
           setPlaying(false)
         }
       }),
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen]
     ),
     true
   )
@@ -376,6 +387,8 @@ export function Studio() {
           setPlaying(false)
         }}
         onFrameChange={onFrameChange}
+        onControlsOpenChange={setPrompterControlsOpen}
+        forceCloseControls={forceCloseControls}
       />
 
       <Dock
