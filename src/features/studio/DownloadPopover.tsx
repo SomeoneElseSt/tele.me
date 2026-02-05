@@ -407,7 +407,6 @@ export function DownloadPopover(props: Props) {
             </div>
           </motion.div>
 
-          {/* Render Delete Confirmation Popup Outside List to Avoid Overflow Clipping */}
           <AnimatePresence>
             {confirmButtonEl && confirmRect && (
               <motion.div

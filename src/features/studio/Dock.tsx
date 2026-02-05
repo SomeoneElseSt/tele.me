@@ -1,6 +1,7 @@
-import { AlignLeft, ChevronUp, Download, Maximize, Pause, Play, Type, Video, X } from 'lucide-react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { AlignLeft, Check, ChevronUp, Download, Maximize, Pause, Play, Trash2, Type, Video, X } from 'lucide-react'
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { InputsPopover, type InputDevice } from './InputsPopover'
@@ -47,10 +48,11 @@ type DockButtonProps = {
   onClick: () => void
   disabled?: boolean
   active?: boolean
+  className?: string
   children: ReactNode
 }
 
-function DockButton({ label, shortcut, onClick, disabled, active, children }: DockButtonProps) {
+function DockButton({ label, shortcut, onClick, disabled, active, className, children }: DockButtonProps) {
   return (
     <Tooltip label={label} shortcut={shortcut}>
       <button
@@ -64,7 +66,8 @@ function DockButton({ label, shortcut, onClick, disabled, active, children }: Do
           disabled && 'cursor-not-allowed opacity-40',
           active
             ? 'border-white/20 bg-white/10 text-white'
-            : 'border-white/10 bg-white/6 text-white/80 hover:bg-white/10'
+            : 'border-white/10 bg-white/6 text-white/80 hover:bg-white/10',
+          className
         )}
       >
         {children}
@@ -111,10 +114,23 @@ export function Dock({
   const [downloadsOpen, setDownloadsOpen] = useState(false)
   const downloadAnchorRef = useRef<HTMLButtonElement | null>(null)
 
+  // Track delete confirmation state for the active video
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const [hasOpenedInputs, setHasOpenedInputs] = useState(() => {
     if (typeof window === 'undefined') return false
     return window.localStorage.getItem('teleme:has_opened_inputs_v2') === 'true'
   })
+
+  // Reset confirmation when playing video changes
+  useEffect(() => {
+    setConfirmDelete(false)
+  }, [playingTakeId])
+
+  const playingTake = useMemo(
+    () => (playingTakeId ? takes.find((t) => t.id === playingTakeId) : null),
+    [takes, playingTakeId]
+  )
 
   const onCloseInputs = useCallback(() => setInputsOpen(false), [])
   const onOpenDrawer = useCallback(() => {
@@ -141,6 +157,34 @@ export function Dock({
     setDownloadsOpen((v) => !v)
   }, [])
 
+  const handleDownloadActive = useCallback(async () => {
+    if (!playingTake) return
+
+    try {
+      const response = await fetch(playingTake.url)
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+
+      const a = document.createElement('a')
+      a.href = url
+      const ext = playingTake.mimeType?.includes('mp4') ? 'mp4' : 'webm'
+      a.download = `teleme-${new Date(playingTake.createdAt).toISOString().replaceAll(':', '')}.${ext}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      setTimeout(() => URL.revokeObjectURL(url), 100)
+    } catch {
+      alert('Download failed')
+    }
+  }, [playingTake])
+
+  const handleDeleteActive = useCallback(() => {
+    if (!playingTakeId) return
+    onDeleteTake(playingTakeId)
+    onCloseVideo()
+  }, [playingTakeId, onDeleteTake, onCloseVideo])
+
   useHotkeys(
     useMemo(
       () => ({
@@ -148,18 +192,41 @@ export function Dock({
           onToggleInputsExclusive()
         },
         d: () => {
-          onToggleDownloadsExclusive()
+          if (playingTakeId && playingTake) {
+            handleDownloadActive()
+          } else {
+            onToggleDownloadsExclusive()
+          }
         },
         escape: () => {
+          if (confirmDelete) {
+            setConfirmDelete(false)
+            return
+          }
           if (inputsOpen) {
             setInputsOpen(false)
           }
           if (downloadsOpen) {
             setDownloadsOpen(false)
           }
+        },
+        delete: () => {
+          if (playingTakeId) {
+            setConfirmDelete((v) => !v)
+          }
+        },
+        backspace: () => {
+          if (playingTakeId) {
+            setConfirmDelete((v) => !v)
+          }
+        },
+        enter: () => {
+          if (confirmDelete) {
+            handleDeleteActive()
+          }
         }
       }),
-      [downloadsOpen, inputsOpen, onToggleDownloadsExclusive, onToggleInputsExclusive]
+      [downloadsOpen, inputsOpen, onToggleDownloadsExclusive, onToggleInputsExclusive, playingTakeId, playingTake, handleDownloadActive, confirmDelete, handleDeleteActive]
     ),
     true
   )
@@ -168,19 +235,18 @@ export function Dock({
   const isVideoPlaying = playingTakeId !== null
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-40 -translate-x-1/2">
-      {/* Blur seam fix: clip blur to rounded bounds + isolate compositing. */}
-      <div
-        className="relative isolate rounded-3xl overflow-hidden"
-      >
-        <div
-          className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 bg-black/40 shadow-glow backdrop-blur"
-        />
-        <div
-          className={cn(
-            'relative flex items-center gap-2 rounded-3xl px-3 py-2'
-          )}
-        >
+    // Fixed container centered with flex to avoid transform scaling trap on fixed children
+    <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none">
+      <div className="pointer-events-auto relative">
+        {/* Background Pill - Clipped for blur */}
+        <div className="absolute inset-0 rounded-3xl overflow-hidden">
+          <div className="absolute inset-0 bg-black/40 shadow-glow backdrop-blur" />
+        </div>
+        {/* Border Overlay - Not clipped so anti-aliasing stays clean */}
+        <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none" />
+
+        {/* Content - Unclipped so tooltips/popups can escape */}
+        <div className="relative flex items-center gap-2 px-3 py-2">
           {!isVideoPlaying && (
             <div
               className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
@@ -197,6 +263,17 @@ export function Dock({
 
           {isVideoPlaying ? (
             <>
+              <Tooltip label={strings.close} shortcut="Esc">
+                <button
+                  type="button"
+                  onClick={onCloseVideo}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                  aria-label={strings.close}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </Tooltip>
+
               <DockButton
                 label={videoPlaying ? strings.pauseVideo : strings.playVideo}
                 shortcut="Space"
@@ -222,16 +299,63 @@ export function Dock({
                   </span>
                 </span>
               </DockButton>
-              <Tooltip label={strings.close} shortcut="Esc">
-                <button
-                  type="button"
-                  onClick={onCloseVideo}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                  aria-label={strings.close}
+
+              <DockButton
+                label={strings.download}
+                shortcut="D"
+                onClick={handleDownloadActive}
+              >
+                <Download className="h-4 w-4" />
+              </DockButton>
+
+              <div className="relative">
+                <DockButton
+                  label={confirmDelete ? "" : strings.deleteTakeLabel(playingTake?.takeNumber || 0)}
+                  shortcut="Delete"
+                  onClick={() => setConfirmDelete(!confirmDelete)}
+                  active={confirmDelete}
+                  className={confirmDelete ? "bg-red-500/20 border-red-500/30 text-red-400" : "hover:text-red-400 hover:bg-white/10"}
                 >
-                  <X className="h-4 w-4" />
-                </button>
-              </Tooltip>
+                  <Trash2 className="h-4 w-4" />
+                </DockButton>
+                <AnimatePresence>
+                  {confirmDelete && (
+                    <motion.div
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5 whitespace-nowrap"
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 4 }}
+                      transition={{ duration: 0.12, ease: 'easeOut' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-white/60">Confirm?</span>
+                        <div className="flex items-center gap-1">
+                          <Tooltip label={strings.confirm} shortcut="Enter">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleDeleteActive()
+                              }}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                            </button>
+                          </Tooltip>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setConfirmDelete(false)
+                            }}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </>
           ) : (
             <>

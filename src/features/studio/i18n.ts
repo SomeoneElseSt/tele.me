@@ -1,7 +1,7 @@
 import { createContext, createElement, useContext } from 'react'
 import type { ReactNode } from 'react'
 
-export type LocaleCode = 'en' | 'es' | 'ja' | 'hi' | 'fr' | 'de' | 'zh' | 'ar' | 'pt' | 'ru'
+export type LocaleCode = 'en' | 'es' | 'ja' | 'hi' | 'fr' | 'de' | 'zh' | 'ar' | 'pt' | 'ru' | 'pl'
 
 export const LOCALES: { code: LocaleCode; label: string; short: string }[] = [
   { code: 'en', label: 'English', short: 'EN' },
@@ -13,7 +13,8 @@ export const LOCALES: { code: LocaleCode; label: string; short: string }[] = [
   { code: 'zh', label: '中文', short: 'ZH' },
   { code: 'ar', label: 'العربية', short: 'AR' },
   { code: 'pt', label: 'Português', short: 'PT' },
-  { code: 'ru', label: 'Русский', short: 'RU' }
+  { code: 'ru', label: 'Русский', short: 'RU' },
+  { code: 'pl', label: 'Polski', short: 'PL' }
 ]
 
 type Strings = {
@@ -39,6 +40,7 @@ type Strings = {
   mic: string
   inputs: string
   videos: string
+  download: string
   record: string
   stopRecording: string
   startRecording: string
@@ -55,11 +57,13 @@ type Strings = {
   recordFirstVideo: string
   takeLabel: (index: number) => string
   downloadTakeLabel: (index: number) => string
+  deleteTakeLabel: (index: number) => string
   memoryWarningTitle: string
   memoryWarningMessage: string
   browserWarningTitle: string
   browserWarningMessage: string
   continue: string
+  confirm: string
   inputsTooltip: string
   aboutMessage: string
   fullscreen: string
@@ -103,12 +107,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Mic',
     inputs: 'Inputs',
     videos: 'Videos',
+    download: 'Download',
     record: 'Record',
     stopRecording: 'Stop recording',
     startRecording: 'Start recording',
     playPrompter: 'Play prompter',
     pausePrompter: 'Pause prompter',
-    playVideo: 'Play video',
+    playVideo: 'Play Video',
     pauseVideo: 'Pause video',
     inputsTitle: 'Inputs',
     videosTitle: 'Videos',
@@ -119,11 +124,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Record your first video to download it.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Download take ${index}`,
+    deleteTakeLabel: (index) => `Delete Take ${index}`,
     memoryWarningTitle: 'Videos are stored locally',
     memoryWarningMessage: "Many recordings may use significant memory. Download and delete recordings you don't need.",
     browserWarningTitle: 'Browser Compatibility',
     browserWarningMessage: 'tele.me works best in Chrome or Safari due to compatibility limitations. There are known bugs when used in different browsers.',
     continue: 'Continue',
+    confirm: 'Confirm',
     inputsTooltip: 'Inputs',
     aboutMessage: 'tele.me is an open-source teleprompter - 100% free, no login required, and browser-based. It was developed by ',
     fullscreen: 'Fullscreen',
@@ -165,6 +172,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Micrófono',
     inputs: 'Entradas',
     videos: 'Videos',
+    download: 'Descargar',
     record: 'Grabar',
     stopRecording: 'Detener grabación',
     startRecording: 'Iniciar grabación',
@@ -181,11 +189,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Graba tu primer video para descargarlo.',
     takeLabel: (index) => `Toma ${index}`,
     downloadTakeLabel: (index) => `Descargar toma ${index}`,
+    deleteTakeLabel: (index) => `Eliminar toma ${index}`,
     memoryWarningTitle: 'Los videos están almacenados localmente',
     memoryWarningMessage: 'Muchas grabaciones pueden usar mucha memoria. Descarga y elimina las grabaciones que no necesites.',
     browserWarningTitle: 'Compatibilidad del navegador',
     browserWarningMessage: 'tele.me funciona mejor en Chrome o Safari debido a limitaciones de compatibilidad. Hay errores conocidos al usar otros navegadores.',
     continue: 'Continuar',
+    confirm: 'Confirmar',
     inputsTooltip: 'Entradas',
     aboutMessage: 'tele.me es un teleprompter de código abierto - 100% gratis, no requiere registro y basado en navegador. Fue desarrollado por ',
     fullscreen: 'Pantalla completa',
@@ -227,6 +237,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'マイク',
     inputs: '入力',
     videos: '動画',
+    download: 'ダウンロード',
     record: '録画',
     stopRecording: '録画停止',
     startRecording: '録画開始',
@@ -243,11 +254,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: '最初の動画を録画してダウンロードしてください。',
     takeLabel: (index) => `テイク ${index}`,
     downloadTakeLabel: (index) => `テイク ${index} をダウンロード`,
+    deleteTakeLabel: (index) => `テイク ${index} を削除`,
     memoryWarningTitle: 'ビデオはローカルに保存されています',
     memoryWarningMessage: '多くの録画は大量のメモリを使用する可能性があります。不要な録画をダウンロードして削除してください。',
     browserWarningTitle: 'ブラウザ互換性',
     browserWarningMessage: 'tele.meは互換性の制限により、ChromeまたはSafariで最もよく動作します。他のブラウザで使用する場合、既知のバグがあります。',
     continue: '続ける',
+    confirm: '確認',
     inputsTooltip: '入力',
     aboutMessage: 'tele.meはオープンソースのテレプロンプターです - 100%無料、ログイン不要、ブラウザベース。開発者: ',
     fullscreen: 'フルスクリーン',
@@ -289,6 +302,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'माइक',
     inputs: 'इनपुट',
     videos: 'वीडियो',
+    download: 'डाउनलोड',
     record: 'रिकॉर्ड',
     stopRecording: 'रिकॉर्डिंग बंद करें',
     startRecording: 'रिकॉर्डिंग शुरू करें',
@@ -305,11 +319,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'डाउनलोड करने के लिए अपना पहला वीडियो रिकॉर्ड करें।',
     takeLabel: (index) => `टेक ${index}`,
     downloadTakeLabel: (index) => `टेक ${index} डाउनलोड करें`,
+    deleteTakeLabel: (index) => `टेक ${index} हटाएं`,
     memoryWarningTitle: 'वीडियो स्थानीय रूप से संग्रहीत हैं',
     memoryWarningMessage: 'कई रिकॉर्डिंग महत्वपूर्ण मेमोरी का उपयोग कर सकते हैं। जिन रिकॉर्डिंग की आवश्यकता नहीं है उन्हें डाउनलोड और हटाएं।',
     browserWarningTitle: 'ब्राउज़र अनुकूलता',
     browserWarningMessage: 'tele.me अनुकूलता सीमाओं के कारण Chrome या Safari में सबसे अच्छा काम करता है। विभिन्न ब्राउज़रों में उपयोग करने पर ज्ञात बग हैं।',
     continue: 'जारी रखें',
+    confirm: 'पुष्टि करें',
     inputsTooltip: 'इनपुट',
     aboutMessage: 'tele.me एक ओपन-सोर्स टेलीप्रॉम्प्टर है - 100% मुफ्त, लॉगिन की आवश्यकता नहीं, और ब्राउज़र आधारित। इसे विकसित किया गया है ',
     fullscreen: 'पूर्ण स्क्रीन',
@@ -352,6 +368,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Micro',
     inputs: 'Entrées',
     videos: 'Vidéos',
+    download: 'Télécharger',
     record: 'Enregistrer',
     stopRecording: 'Arrêter l’enregistrement',
     startRecording: 'Démarrer l’enregistrement',
@@ -368,11 +385,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Enregistrez votre première vidéo pour la télécharger.',
     takeLabel: (index) => `Prise ${index}`,
     downloadTakeLabel: (index) => `Télécharger la prise ${index}`,
+    deleteTakeLabel: (index) => `Supprimer la prise ${index}`,
     memoryWarningTitle: 'Les vidéos sont stockées localement',
     memoryWarningMessage: "De nombreux enregistrements peuvent utiliser beaucoup de mémoire. Téléchargez et supprimez les enregistrements dont vous n'avez pas besoin.",
     browserWarningTitle: 'Compatibilité du navigateur',
     browserWarningMessage: 'tele.me fonctionne mieux dans Chrome ou Safari en raison de limitations de compatibilité. Il existe des bugs connus lors de l\'utilisation dans d\'autres navigateurs.',
     continue: 'Continuer',
+    confirm: 'Confirmer',
     inputsTooltip: 'Entrées',
     aboutMessage: 'tele.me est un téléprompteur open-source - 100% gratuit, pas de connexion requise et basé sur navigateur. Il a été développé par ',
     fullscreen: 'Plein écran',
@@ -414,6 +433,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Mikro',
     inputs: 'Eingänge',
     videos: 'Videos',
+    download: 'Herunterladen',
     record: 'Aufnehmen',
     stopRecording: 'Aufnahme stoppen',
     startRecording: 'Aufnahme starten',
@@ -430,11 +450,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Nehmen Sie Ihr erstes Video auf, um es herunterzuladen.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Take ${index} herunterladen`,
+    deleteTakeLabel: (index) => `Take ${index} löschen`,
     memoryWarningTitle: 'Videos sind lokal gespeichert',
     memoryWarningMessage: 'Viele Aufnahmen können viel Speicher verwenden. Laden Sie Aufnahmen herunter und löschen Sie die, die Sie nicht benötigen.',
     browserWarningTitle: 'Browser-Kompatibilität',
     browserWarningMessage: 'tele.me funktioniert aufgrund von Kompatibilitätseinschränkungen am besten in Chrome oder Safari. Es gibt bekannte Fehler bei der Verwendung in anderen Browsern.',
     continue: 'Fortfahren',
+    confirm: 'Bestätigen',
     inputsTooltip: 'Eingänge',
     aboutMessage: 'tele.me ist ein Open-Source-Teleprompter - 100% kostenlos, keine Anmeldung erforderlich und browserbasiert. Entwickelt von ',
     fullscreen: 'Vollbild',
@@ -476,6 +498,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: '麦克风',
     inputs: '输入',
     videos: '视频',
+    download: '下载',
     record: '录制',
     stopRecording: '停止录制',
     startRecording: '开始录制',
@@ -492,11 +515,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: '录制你的第一个视频以便下载。',
     takeLabel: (index) => `拍摄 ${index}`,
     downloadTakeLabel: (index) => `下载拍摄 ${index}`,
+    deleteTakeLabel: (index) => `删除拍摄 ${index}`,
     memoryWarningTitle: '视频存储在本地',
     memoryWarningMessage: '大量录制可能会占用大量内存。下载并删除不需要的录制。',
     browserWarningTitle: '浏览器兼容性',
     browserWarningMessage: '由于兼容性限制，tele.me在Chrome或Safari中效果最佳。在其他浏览器中使用时存在已知错误。',
     continue: '继续',
+    confirm: '确认',
     inputsTooltip: '输入',
     aboutMessage: 'tele.me是一个开源提词器 - 100%免费，无需登录，基于浏览器。开发者: ',
     fullscreen: '全屏',
@@ -538,6 +563,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'الميكروفون',
     inputs: 'المدخلات',
     videos: 'الفيديوهات',
+    download: 'تنزيل',
     record: 'تسجيل',
     stopRecording: 'إيقاف التسجيل',
     startRecording: 'بدء التسجيل',
@@ -554,11 +580,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'سجّل أول فيديو لتنزيله.',
     takeLabel: (index) => `لقطة ${index}`,
     downloadTakeLabel: (index) => `تنزيل اللقطة ${index}`,
+    deleteTakeLabel: (index) => `حذف اللقطة ${index}`,
     memoryWarningTitle: 'الفيديوهات مخزنة محلياً',
     memoryWarningMessage: 'التسجيلات الكثيرة قد تستخدم ذاكرة كبيرة. قم بتنزيل وحذف التسجيلات التي لا تحتاجها.',
     browserWarningTitle: 'توافق المتصفح',
     browserWarningMessage: 'يعمل tele.me بشكل أفضل في Chrome أو Safari بسبب قيود التوافق. توجد أخطاء معروفة عند الاستخدام في متصفحات مختلفة.',
     continue: 'متابعة',
+    confirm: 'تأكيد',
     inputsTooltip: 'المدخلات',
     aboutMessage: 'tele.me هو ملقن مفتوح المصدر - مجاني 100%، لا يتطلب تسجيل الدخول، ويعمل على المتصفح. تم تطويره بواسطة ',
     fullscreen: 'ملء الشاشة',
@@ -600,6 +628,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Microfone',
     inputs: 'Entradas',
     videos: 'Vídeos',
+    download: 'Baixar',
     record: 'Gravar',
     stopRecording: 'Parar gravação',
     startRecording: 'Iniciar gravação',
@@ -616,11 +645,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Grave seu primeiro vídeo para baixar.',
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Baixar take ${index}`,
+    deleteTakeLabel: (index) => `Excluir take ${index}`,
     memoryWarningTitle: 'Os vídeos estão armazenados localmente',
     memoryWarningMessage: 'Muitas gravações podem usar memória significativa. Baixe e exclua as gravações que não precisa.',
     browserWarningTitle: 'Compatibilidade do navegador',
     browserWarningMessage: 'tele.me funciona melhor no Chrome ou Safari devido a limitações de compatibilidade. Existem bugs conhecidos ao usar em outros navegadores.',
     continue: 'Continuar',
+    confirm: 'Confirmar',
     inputsTooltip: 'Entradas',
     aboutMessage: 'tele.me é um teleprompter de código aberto - 100% gratuito, não requer login e baseado em navegador. Foi desenvolvido por ',
     fullscreen: 'Tela cheia',
@@ -662,6 +693,7 @@ const STRINGS: Record<LocaleCode, Strings> = {
     mic: 'Микрофон',
     inputs: 'Входы',
     videos: 'Видео',
+    download: 'Скачать',
     record: 'Запись',
     stopRecording: 'Остановить запись',
     startRecording: 'Начать запись',
@@ -678,11 +710,13 @@ const STRINGS: Record<LocaleCode, Strings> = {
     recordFirstVideo: 'Запишите первое видео для скачивания.',
     takeLabel: (index) => `Дубль ${index}`,
     downloadTakeLabel: (index) => `Скачать дубль ${index}`,
+    deleteTakeLabel: (index) => `Удалить дубль ${index}`,
     memoryWarningTitle: 'Видео хранятся локально',
     memoryWarningMessage: 'Много записей могут использовать значительную память. Скачайте и удалите записи, которые вам не нужны.',
     browserWarningTitle: 'Совместимость браузера',
     browserWarningMessage: 'tele.me лучше всего работает в Chrome или Safari из-за ограничений совместимости. При использовании в других браузерах есть известные ошибки.',
     continue: 'Продолжить',
+    confirm: 'Подтвердить',
     inputsTooltip: 'Входы',
     aboutMessage: 'tele.me — это телесуфлёр с открытым исходным кодом, 100% бесплатный, не требует входа и работающий в браузере. Разработан ',
     fullscreen: 'Полноэкранный режим',
@@ -692,6 +726,71 @@ const STRINGS: Record<LocaleCode, Strings> = {
     persistVideosTooltip: 'По умолчанию видео хранятся только в памяти и теряются при перезагрузке для экономии места. Включите это, чтобы сохранять видео между перезагрузками (макс. 10 видео).',
     persistVideosWillSave10: 'Сохранит 10 последних видео локально. Включите, чтобы сохранить их между перезагрузками.',
     maxVideosReached: 'Максимум 10 видео можно сохранить локально. Удалите некоторые видео или отключите постоянное хранилище, чтобы записать больше.'
+  },
+  pl: {
+    defaultScript:
+      'Twój tekst tutaj.\n\n' +
+      'Spacja: odtwarzaj/pauzuj\n' +
+      'R: nagraj/zatrzymaj nagrywanie\n' +
+      'D: pokaż i pobierz wideo\n' +
+      'C: sterowanie teleprompterem\n' +
+      'H: ukryj/pokaż teleprompter\n' +
+      'I: sterowanie wejściami\n\n' +
+      'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (T) i włącz go (M)',
+    language: 'Język',
+    script: 'Tekst',
+    enableMarkdown: 'Włącz Markdown',
+    close: 'Zamknij',
+    hidePrompter: 'Ukryj prompter',
+    showPrompter: 'Pokaż prompter',
+    controls: 'Sterowanie',
+    drag: 'Przeciągnij',
+    mirrorText: 'Odbij tekst',
+    alignLeft: 'Lewo',
+    alignCenter: 'Środek',
+    alignRight: 'Prawo',
+    mirrorVideo: 'Odbij wideo',
+    speed: 'Prędkość',
+    textSize: 'Rozmiar tekstu',
+    opacity: 'Przezroczystość',
+    text: 'Edytuj tekst',
+    camera: 'Kamera',
+    mic: 'Mikrofon',
+    inputs: 'Wejścia',
+    videos: 'Wideo',
+    download: 'Pobierz',
+    record: 'Nagraj',
+    stopRecording: 'Zatrzymaj nagrywanie',
+    startRecording: 'Rozpocznij nagrywanie',
+    playPrompter: 'Odtwarzaj prompter',
+    pausePrompter: 'Pauzuj prompter',
+    playVideo: 'Odtwarzaj wideo',
+    pauseVideo: 'Pauzuj wideo',
+    inputsTitle: 'Wejścia',
+    videosTitle: 'Wideo',
+    noCameras: 'Brak kamer',
+    noMics: 'Brak mikrofonów',
+    on: 'Wł.',
+    off: 'Wył.',
+    recordFirstVideo: 'Nagraj swoje pierwsze wideo, aby je pobrać.',
+    takeLabel: (index) => `Ujęcie ${index}`,
+    downloadTakeLabel: (index) => `Pobierz ujęcie ${index}`,
+    deleteTakeLabel: (index) => `Usuń ujęcie ${index}`,
+    memoryWarningTitle: 'Wideo są przechowywane lokalnie',
+    memoryWarningMessage: 'Wiele nagrań może zużywać dużo pamięci. Pobierz i usuń nagrania, których nie potrzebujesz.',
+    browserWarningTitle: 'Kompatybilność przeglądarki',
+    browserWarningMessage: 'tele.me działa najlepiej w Chrome lub Safari ze względu na ograniczenia kompatybilności. Istnieją znane błędy podczas używania w innych przeglądarkach.',
+    continue: 'Kontynuuj',
+    confirm: 'Potwierdź',
+    inputsTooltip: 'Wejścia',
+    aboutMessage: 'tele.me to teleprompter open-source - w 100% darmowy, nie wymaga logowania i działa w przeglądarce. Został stworzony przez ',
+    fullscreen: 'Pełny ekran',
+    fixToTop: 'Przypnij do góry',
+    unfixFromTop: 'Odepnij od góry',
+    persistVideos: 'Zapisuj wideo lokalnie',
+    persistVideosTooltip: 'Domyślnie wideo są przechowywane tylko w pamięci i tracone po przeładowaniu, aby zaoszczędzić miejsce. Włącz to, aby zachować wideo po przeładowaniu (maks. 10).',
+    persistVideosWillSave10: 'Zapisze 10 ostatnich wideo lokalnie. Włącz, aby zachować je po przeładowaniu.',
+    maxVideosReached: 'Maksymalnie 10 wideo może być zapisanych lokalnie. Usuń niektóre wideo lub wyłącz trwałe przechowywanie, aby nagrać więcej.'
   },
 }
 
