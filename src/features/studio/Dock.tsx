@@ -328,7 +328,7 @@ export function Dock({
                       transition={{ duration: 0.12, ease: 'easeOut' }}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/60">Confirm?</span>
+                        <span className="text-xs text-white/60">{strings.confirmQuestion}</span>
                         <div className="flex items-center gap-1">
                           <Tooltip label={strings.confirm} shortcut="Enter">
                             <button

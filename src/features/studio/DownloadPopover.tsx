@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
 import { useI18n } from './i18n'
 import { Tooltip } from '../../components/Tooltip'
+import { useHotkeys } from '../../hooks/useHotkeys'
 
 export type DownloadTake = {
   id: string
@@ -51,11 +52,8 @@ export function DownloadPopover(props: Props) {
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
-  const [removingTakeIds, setRemovingTakeIds] = useState<string[]>([])
-  const [enteringTakeIds, setEnteringTakeIds] = useState<string[]>([])
   const [showPlaceholder, setShowPlaceholder] = useState(takes.length === 0)
   const [showList, setShowList] = useState(takes.length > 0)
-  const prevTakeIdsRef = useRef<string[]>([])
   const prevCountRef = useRef(takes.length)
   const swapTimeoutRef = useRef<number | null>(null)
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
@@ -97,23 +95,7 @@ export function DownloadPopover(props: Props) {
     prevCountRef.current = nextCount
   }, [takes.length])
 
-  useEffect(() => {
-    const prevIds = prevTakeIdsRef.current
-    const nextIds = takes.map((take) => take.id)
-    const addedIds = nextIds.filter((id) => !prevIds.includes(id))
-    if (addedIds.length === 0) {
-      prevTakeIdsRef.current = nextIds
-      return
-    }
 
-    const enteringDelayMs = showList ? ENTER_DELAY_MS : SWAP_DELAY_MS + ENTER_DELAY_MS
-    setEnteringTakeIds((prev) => [...prev, ...addedIds])
-    window.setTimeout(() => {
-      setEnteringTakeIds((prev) => prev.filter((id) => !addedIds.includes(id)))
-    }, enteringDelayMs)
-
-    prevTakeIdsRef.current = nextIds
-  }, [takes, showList])
 
   useEffect(() => {
     return () => {
@@ -125,18 +107,12 @@ export function DownloadPopover(props: Props) {
 
   const removeTake = (takeId: string) => {
     setConfirmingTakeId(null)
-    setRemovingTakeIds((prev) => (prev.includes(takeId) ? prev : [...prev, takeId]))
-    window.setTimeout(() => onDeleteTake(takeId), REMOVE_FADE_MS)
-    window.setTimeout(() => {
-      setRemovingTakeIds((prev) => prev.filter((id) => id !== takeId))
-    }, REMOVE_FADE_MS)
+    onDeleteTake(takeId)
   }
 
   const removeAllTakes = () => {
     setConfirmingClearAll(false)
-    setRemovingTakeIds(takes.map((take) => take.id))
-    window.setTimeout(() => onClearAll(), REMOVE_FADE_MS)
-    window.setTimeout(() => setRemovingTakeIds([]), REMOVE_FADE_MS)
+    onClearAll()
   }
 
   // Clear confirmation states when popover closes
@@ -146,6 +122,21 @@ export function DownloadPopover(props: Props) {
       setConfirmingClearAll(false)
     }
   }, [open])
+
+  useHotkeys(
+    {
+      enter: (e) => {
+        if (confirmingTakeId) {
+          e.stopPropagation()
+          removeTake(confirmingTakeId)
+        } else if (confirmingClearAll) {
+          e.stopPropagation()
+          removeAllTakes()
+        }
+      },
+    },
+    open && (confirmingTakeId != null || confirmingClearAll)
+  )
 
   // Calculate confirmation popup position
   const confirmButtonEl = confirmingTakeId ? deleteButtonRefs.current.get(confirmingTakeId) : null
@@ -231,12 +222,12 @@ export function DownloadPopover(props: Props) {
                     <div className="relative">
                       <button
                         type="button"
-                        aria-label="Clear all recordings"
+                        aria-label={strings.clearAll}
                         onClick={() => setConfirmingClearAll(!confirmingClearAll)}
                         className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        Clear all
+                        {strings.clearAll}
                       </button>
                       <AnimatePresence>
                         {confirmingClearAll && (
@@ -248,17 +239,20 @@ export function DownloadPopover(props: Props) {
                             transition={{ duration: 0.12, ease: 'easeOut' }}
                           >
                             <div className="flex items-center gap-2">
-                              <span className="text-xs text-white/60">Delete all?</span>
+                              <span className="text-xs text-white/60">{strings.deleteAllConfirm}</span>
                               <div className="flex items-center gap-1">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    removeAllTakes()
-                                  }}
-                                  className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                                >
-                                  <Check className="h-3.5 w-3.5" />
-                                </button>
+                                <Tooltip label={strings.confirm} shortcut="Enter">
+                                  <button
+                                    autoFocus
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      removeAllTakes()
+                                    }}
+                                    className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                  </button>
+                                </Tooltip>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -314,110 +308,114 @@ export function DownloadPopover(props: Props) {
                     {strings.recordFirstVideo}
                   </div>
                 </div>
-                <div
-                  className={cn(
-                    'transition-[max-height,opacity] duration-200 ease-out overflow-y-auto tele-scroll overscroll-contain pr-1 -mr-1',
-                    showList
-                      ? 'max-h-96 opacity-100'
-                      : 'max-h-0 opacity-0 pointer-events-none'
-                  )}
+                <motion.div
+                  initial={false}
+                  animate={{
+                    maxHeight: showList ? 384 : 0,
+                    opacity: showList ? 1 : 0
+                  }}
+                  transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+                  className="flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain pr-1 -mr-1 py-1"
                   onScroll={() => {
                     // Close confirmation popup on scroll to avoid floating UI issues
                     if (confirmingTakeId) setConfirmingTakeId(null)
                   }}
                 >
-                  {takes.map((take, index) => {
-                    const extension = getFileExtension(take.mimeType)
-                    const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
+                  <AnimatePresence initial={false}>
+                    {takes.map((take, index) => {
+                      const extension = getFileExtension(take.mimeType)
+                      const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
 
-                    const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-                      e.preventDefault()
+                      const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+                        e.preventDefault()
 
-                      try {
-                        const response = await fetch(take.url)
-                        const blob = await response.blob()
-                        const url = URL.createObjectURL(blob)
+                        try {
+                          const response = await fetch(take.url)
+                          const blob = await response.blob()
+                          const url = URL.createObjectURL(blob)
 
-                        const a = document.createElement('a')
-                        a.href = url
-                        a.download = filename
-                        document.body.appendChild(a)
-                        a.click()
-                        document.body.removeChild(a)
+                          const a = document.createElement('a')
+                          a.href = url
+                          a.download = filename
+                          document.body.appendChild(a)
+                          a.click()
+                          document.body.removeChild(a)
 
-                        setTimeout(() => URL.revokeObjectURL(url), 100)
-                      } catch {
-                        alert('Download failed. Please try recording again.')
+                          setTimeout(() => URL.revokeObjectURL(url), 100)
+                        } catch {
+                          alert('Download failed. Please try recording again.')
+                        }
                       }
-                    }
 
-                    const isRemoving = removingTakeIds.includes(take.id)
-                    const isEntering = enteringTakeIds.includes(take.id)
-                    const isConfirming = confirmingTakeId === take.id && !isRemoving
+                      const isConfirming = confirmingTakeId === take.id
 
-                    return (
-                      <div
-                        key={take.id}
-                        className={cn(
-                          'flex items-center gap-2 transition-[max-height,opacity,transform,margin] duration-[180ms] ease-out overflow-visible',
-                          index === 0 ? 'mt-0' : 'mt-2',
-                          isRemoving
-                            ? 'max-h-0 opacity-0 translate-y-1 !mt-0 pointer-events-none !overflow-hidden'
-                            : isEntering
-                              ? 'max-h-0 opacity-0 -translate-y-2 !mt-0 pointer-events-none !overflow-hidden'
-                              : 'max-h-24 opacity-100 translate-y-0'
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
-                          )}
+                      return (
+                        <motion.div
+                          key={take.id}
+                          initial={{ opacity: 0, height: 0, scale: 0.98, marginBottom: 0 }}
+                          animate={{
+                            opacity: 1,
+                            height: 'auto',
+                            scale: 1,
+                            marginBottom: 8
+                          }}
+                          exit={{ opacity: 0, height: 0, scale: 0.98, marginBottom: 0 }}
+                          transition={{
+                            duration: 0.25,
+                            ease: [0.32, 0.72, 0, 1]
+                          }}
+                          className="flex items-center gap-2 shrink-0 overflow-hidden"
                         >
-                          <button
-                            onClick={() => onPlayTake(take.id)}
-                            className="inline-flex items-center gap-2 hover:text-white transition-colors"
-                          >
-                            <Play className="h-4 w-4 text-white/60" />
-                            <span>{strings.takeLabel(take.takeNumber)}</span>
-                          </button>
-                          <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
-                        </div>
-                        <a
-                          href={take.url}
-                          onClick={handleDownload}
-                          aria-label={strings.downloadTakeLabel(take.takeNumber)}
-                          className={cn(
-                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
-                            'hover:bg-white/8 transition-colors'
-                          )}
-                        >
-                          <Download className="h-4 w-4" />
-                        </a>
-                        <div className="relative">
-                          <button
-                            ref={(el) => {
-                              if (el) {
-                                deleteButtonRefs.current.set(take.id, el)
-                              } else {
-                                deleteButtonRefs.current.delete(take.id)
-                              }
-                            }}
-                            onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
-                            aria-label={`Delete ${strings.takeLabel(take.takeNumber)}`}
-                            disabled={isRemoving}
+                          <div
                             className={cn(
-                              'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
-                              'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors',
-                              isConfirming && 'bg-red-500/20 border-red-500/30 text-red-400'
+                              'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
                             )}
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
+                            <button
+                              onClick={() => onPlayTake(take.id)}
+                              className="inline-flex items-center gap-2 hover:text-white transition-colors"
+                            >
+                              <Play className="h-4 w-4 text-white/60" />
+                              <span>{strings.takeLabel(take.takeNumber)}</span>
+                            </button>
+                            <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
+                          </div>
+                          <a
+                            href={take.url}
+                            onClick={handleDownload}
+                            aria-label={strings.downloadTakeLabel(take.takeNumber)}
+                            className={cn(
+                              'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
+                              'hover:bg-white/8 transition-colors'
+                            )}
+                          >
+                            <Download className="h-4 w-4" />
+                          </a>
+                          <div className="relative">
+                            <button
+                              ref={(el) => {
+                                if (el) {
+                                  deleteButtonRefs.current.set(take.id, el)
+                                } else {
+                                  deleteButtonRefs.current.delete(take.id)
+                                }
+                              }}
+                              onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
+                              aria-label={`Delete ${strings.takeLabel(take.takeNumber)}`}
+                              className={cn(
+                                'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
+                                'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors',
+                                isConfirming && 'bg-red-500/20 border-red-500/30 text-red-400'
+                              )}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      )
+                    })}
+                  </AnimatePresence>
+                </motion.div>
               </div>
             </div>
 
@@ -438,17 +436,20 @@ export function DownloadPopover(props: Props) {
                   transition={{ duration: 0.12, ease: 'easeOut' }}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-white/60">Confirm?</span>
+                    <span className="text-xs text-white/60">{strings.confirmQuestion}</span>
                     <div className="flex items-center gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          if (confirmingTakeId) removeTake(confirmingTakeId)
-                        }}
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
+                      <Tooltip label={strings.confirm} shortcut="Enter">
+                        <button
+                          autoFocus
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (confirmingTakeId) removeTake(confirmingTakeId)
+                          }}
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                      </Tooltip>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
