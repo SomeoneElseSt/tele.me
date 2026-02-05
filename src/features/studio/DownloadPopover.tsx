@@ -59,6 +59,7 @@ export function DownloadPopover(props: Props) {
   const prevCountRef = useRef(takes.length)
   const swapTimeoutRef = useRef<number | null>(null)
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const trayRef = useRef<HTMLDivElement>(null)
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -138,10 +139,23 @@ export function DownloadPopover(props: Props) {
     window.setTimeout(() => setRemovingTakeIds([]), REMOVE_FADE_MS)
   }
 
+  // Clear confirmation states when popover closes
+  useEffect(() => {
+    if (!open) {
+      setConfirmingTakeId(null)
+      setConfirmingClearAll(false)
+    }
+  }, [open])
+
   // Calculate confirmation popup position
   const confirmButtonEl = confirmingTakeId ? deleteButtonRefs.current.get(confirmingTakeId) : null
   const confirmRect = confirmButtonEl?.getBoundingClientRect()
+  const trayRect = trayRef.current?.getBoundingClientRect()
   const shouldShowLeft = confirmRect ? (window.innerWidth - confirmRect.right < 120) : false
+
+  const confirmTop = confirmRect && trayRect ? confirmRect.top - trayRect.top : 0
+  const confirmLeft = confirmRect && trayRect ? confirmRect.left - trayRect.left : 0
+  const confirmRight = confirmRect && trayRect ? trayRect.right - confirmRect.right : 0
 
   return createPortal(
     <AnimatePresence>
@@ -156,6 +170,7 @@ export function DownloadPopover(props: Props) {
           }}
         >
           <motion.div
+            ref={trayRef}
             className="relative text-xs text-white/70 overflow-visible rounded-2xl border border-white/10 bg-black/40 shadow-glow backdrop-blur"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -405,51 +420,50 @@ export function DownloadPopover(props: Props) {
                 </div>
               </div>
             </div>
-          </motion.div>
 
-          <AnimatePresence>
-            {confirmButtonEl && confirmRect && (
-              <motion.div
-                key="delete-confirm"
-                className={cn(
-                  'fixed z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5'
-                )}
-                style={{
-                  bottom: window.innerHeight - confirmRect.top + 8,
-                  left: shouldShowLeft ? 'auto' : confirmRect.left + 4,
-                  right: shouldShowLeft ? window.innerWidth - confirmRect.right + 4 : 'auto',
-                }}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 4 }}
-                transition={{ duration: 0.12, ease: 'easeOut' }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-white/60">Confirm?</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (confirmingTakeId) removeTake(confirmingTakeId)
-                      }}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
-                    >
-                      <Check className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setConfirmingTakeId(null)
-                      }}
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                    >
-                      <X className="h-3.5 w-3.5" />
-                    </button>
+            <AnimatePresence>
+              {confirmButtonEl && confirmRect && trayRect && (
+                <motion.div
+                  key="delete-confirm"
+                  className={cn(
+                    'absolute z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5 whitespace-nowrap'
+                  )}
+                  style={{
+                    bottom: trayRect.height - confirmTop + 8,
+                    left: confirmLeft + (confirmRect.width / 2),
+                  }}
+                  initial={{ opacity: 0, y: 4, x: '-50%' }}
+                  animate={{ opacity: 1, y: 0, x: '-50%' }}
+                  exit={{ opacity: 0, y: 4, x: '-50%' }}
+                  transition={{ duration: 0.12, ease: 'easeOut' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-white/60">Confirm?</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (confirmingTakeId) removeTake(confirmingTakeId)
+                        }}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-red-500/30 bg-red-500/15 text-red-400 hover:bg-red-500/25"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setConfirmingTakeId(null)
+                        }}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       )}
     </AnimatePresence>,
