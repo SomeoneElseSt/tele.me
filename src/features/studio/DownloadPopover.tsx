@@ -12,6 +12,7 @@ export type DownloadTake = {
   url: string
   createdAt: number
   mimeType?: string
+  takeNumber: number
 }
 
 type Props = {
@@ -312,14 +313,14 @@ export function DownloadPopover(props: Props) {
                         >
                           <span className="inline-flex items-center gap-2">
                             <Film className="h-4 w-4 text-white/60" />
-                            <span>{strings.takeLabel(index + 1)}</span>
+                            <span>{strings.takeLabel(take.takeNumber)}</span>
                           </span>
                           <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
                         </div>
                         <a
                           href={take.url}
                           onClick={handleDownload}
-                          aria-label={strings.downloadTakeLabel(index + 1)}
+                          aria-label={strings.downloadTakeLabel(take.takeNumber)}
                           className={cn(
                             'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
                             'hover:bg-white/8 transition-colors'
@@ -330,7 +331,7 @@ export function DownloadPopover(props: Props) {
                         <div className="relative">
                           <button
                             onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
-                            aria-label={`Delete ${strings.takeLabel(index + 1)}`}
+                            aria-label={`Delete ${strings.takeLabel(take.takeNumber)}`}
                             disabled={isRemoving}
                             className={cn(
                               'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',

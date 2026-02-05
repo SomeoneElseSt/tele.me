@@ -86,7 +86,7 @@ export function Studio() {
   const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
   const [forceCloseControls, setForceCloseControls] = useState(false)
   const [frame, setFrame] = useState<PrompterFrame>(() => clampFrame(getCenteredFrame(DEFAULT_FRAME)))
-  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string }[]>([])
+  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number }[]>([])
   const takesRef = useRef(takes)
   
   useEffect(() => {
@@ -97,8 +97,26 @@ export function Studio() {
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
   const LOCALE_STORAGE_KEY = 'teleme:locale'
+  const TAKE_NUMBER_STORAGE_KEY = 'teleme:next_take_number'
   const [locale, setLocale] = useState<LocaleCode>('en')
   const localeRef = useRef<LocaleCode>(locale)
+  
+  const getNextTakeNumber = useCallback(() => {
+    if (typeof window === 'undefined') return 1
+    const saved = window.localStorage.getItem(TAKE_NUMBER_STORAGE_KEY)
+    if (!saved) return 1
+    const next = parseInt(saved, 10)
+    if (isNaN(next) || next < 1) return 1
+    return next
+  }, [])
+  
+  const incrementTakeNumber = useCallback(() => {
+    if (typeof window === 'undefined') return
+    const current = getNextTakeNumber()
+    const next = current + 1
+    window.localStorage.setItem(TAKE_NUMBER_STORAGE_KEY, next.toString())
+    return current
+  }, [getNextTakeNumber])
 
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,
@@ -203,7 +221,14 @@ export function Studio() {
     setPlaying((v) => !v)
   }, [prompterOpen])
 
-  const onToggleDrawer = useCallback(() => setDrawerOpen((v) => !v), [])
+  const onToggleDrawer = useCallback(() => {
+    setDrawerOpen((v) => {
+      if (!v) {
+        setLocaleOpen(false)
+      }
+      return !v
+    })
+  }, [])
   const onShowPrompter = useCallback(() => setPrompterOpen(true), [])
 
   const cameras = useMemo(() => mapDevices(strings.camera, videoInputs), [strings.camera, videoInputs])
@@ -236,6 +261,9 @@ export function Studio() {
           // ignore
         }
       })
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(TAKE_NUMBER_STORAGE_KEY, '1')
+      }
       return []
     })
   }, [])
@@ -249,9 +277,10 @@ export function Studio() {
       if (prev.some(take => take.url === url)) return prev
       
       const createdAt = Date.now()
-      return [{ id: `take-${createdAt}`, url, createdAt, mimeType }, ...prev]
+      const takeNumber = incrementTakeNumber() ?? 1
+      return [{ id: `take-${createdAt}`, url, createdAt, mimeType, takeNumber }, ...prev]
     })
-  }, [recorder.url, recorder.mimeType])
+  }, [recorder.url, recorder.mimeType, incrementTakeNumber])
 
   useHotkeys(
     useMemo(
@@ -341,62 +370,64 @@ export function Studio() {
           </div>
         </Tooltip>
       </div>
-      <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
-        <div className="pointer-events-auto relative">
-          <button
-            ref={localeAnchorRef}
-            type="button"
-            onClick={() => setLocaleOpen((prev) => !prev)}
-            className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur"
-            aria-label={strings.language}
-          >
-            <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
-              {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
-            </span>
-          </button>
-          <AnimatePresence>
-            {localeOpen && (
-              <motion.div
-                ref={localePanelRef}
-                className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
-                style={{ top: '100%' }}
-                initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
-              >
-                <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
-                  {strings.language}
-                </div>
-                <div className="mt-1 space-y-1">
-                  {LOCALES.map((item) => {
-                    const active = item.code === locale
-                    return (
-                      <button
-                        key={item.code}
-                        type="button"
-                        onClick={() => {
-                          setLocale(item.code)
-                          setLocaleOpen(false)
-                        }}
-                        className={cn(
-                          'flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-sm transition-colors',
-                          active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                        )}
-                      >
-                        <span>{item.label}</span>
-                        <span className="text-[11px] font-semibold tracking-[0.14em] text-white/60">
-                          {item.short}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+      {!drawerOpen && (
+        <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
+          <div className="pointer-events-auto relative">
+            <button
+              ref={localeAnchorRef}
+              type="button"
+              onClick={() => setLocaleOpen((prev) => !prev)}
+              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur"
+              aria-label={strings.language}
+            >
+              <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
+                {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
+              </span>
+            </button>
+            <AnimatePresence>
+              {localeOpen && (
+                <motion.div
+                  ref={localePanelRef}
+                  className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
+                  style={{ top: '100%' }}
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
+                >
+                  <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
+                    {strings.language}
+                  </div>
+                  <div className="mt-1 space-y-1">
+                    {LOCALES.map((item) => {
+                      const active = item.code === locale
+                      return (
+                        <button
+                          key={item.code}
+                          type="button"
+                          onClick={() => {
+                            setLocale(item.code)
+                            setLocaleOpen(false)
+                          }}
+                          className={cn(
+                            'flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-sm transition-colors',
+                            active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                          )}
+                        >
+                          <span>{item.label}</span>
+                          <span className="text-[11px] font-semibold tracking-[0.14em] text-white/60">
+                            {item.short}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-      </div>
+      )}
 
       {error && (
         <div className="fixed left-1/2 top-6 z-40 -translate-x-1/2">
