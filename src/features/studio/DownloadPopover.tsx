@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Check, Download, Film, Play, Trash2, X } from 'lucide-react'
+import { AlertCircle, Check, Download, Film, Loader2, Play, Save, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
@@ -23,6 +23,9 @@ type Props = {
   onDeleteTake: (takeId: string) => void
   onClearAll: () => void
   onPlayTake: (takeId: string) => void
+  persistVideos: boolean
+  onPersistVideosChange: (enabled: boolean) => void
+  isLoadingVideos?: boolean
 }
 
 const POPOVER_WIDTH = 300
@@ -44,7 +47,7 @@ function getFileExtension(mimeType?: string): string {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake } = props
+  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake, persistVideos, onPersistVideosChange, isLoadingVideos } = props
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
@@ -61,7 +64,7 @@ export function DownloadPopover(props: Props) {
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
   const left = rect ? clamp(desiredLeft, MARGIN_PX, window.innerWidth - POPOVER_WIDTH - MARGIN_PX) : 0
   const top = rect ? rect.top - GAP_PX : 0
-  
+
   const showWarning = takes.length >= 3
 
   useEffect(() => {
@@ -162,14 +165,52 @@ export function DownloadPopover(props: Props) {
           >
             <div className="p-4 overflow-visible">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
                 <div className="flex items-center gap-2">
+                  <div className="text-xs font-medium text-white/75">{strings.videosTitle}</div>
+                  {isLoadingVideos && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-white/50" />
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Tooltip
+                    label={
+                      takes.length >= 10 && !persistVideos
+                        ? strings.persistVideosWillSave10
+                        : strings.persistVideosTooltip
+                    }
+                    className="max-w-xs whitespace-normal"
+                  >
+                    <button
+                      type="button"
+                      aria-label={strings.persistVideos}
+                      onClick={() => onPersistVideosChange(!persistVideos)}
+                      className={cn(
+                        'inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors',
+                        persistVideos
+                          ? 'border-white/20 bg-white/12 text-white'
+                          : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                      )}
+                    >
+                      <div className="relative">
+                        <Save className="h-4 w-4" />
+                        <div
+                          className={cn(
+                            'absolute -bottom-0.5 -right-1 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
+                            persistVideos ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                          )}
+                        >
+                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                        </div>
+                      </div>
+                    </button>
+                  </Tooltip>
                   <div
                     className={cn(
-                      'transition-[max-height,opacity,margin] duration-200 ease-out overflow-visible',
+                      'transition-[max-width,opacity,margin] duration-200 ease-out',
+                      confirmingClearAll ? 'overflow-visible' : 'overflow-hidden',
                       takes.length > 0
-                        ? 'max-h-12 opacity-100'
-                        : 'max-h-0 opacity-0 -mt-1 pointer-events-none'
+                        ? 'max-w-[8rem] opacity-100 mr-0'
+                        : 'max-w-0 opacity-0 -mr-2 pointer-events-none'
                     )}
                   >
                     <div className="relative">
@@ -269,35 +310,35 @@ export function DownloadPopover(props: Props) {
                   {takes.map((take, index) => {
                     const extension = getFileExtension(take.mimeType)
                     const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
-                    
+
                     const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
                       e.preventDefault()
-                      
+
                       try {
                         const response = await fetch(take.url)
                         const blob = await response.blob()
                         const url = URL.createObjectURL(blob)
-                        
+
                         const a = document.createElement('a')
                         a.href = url
                         a.download = filename
                         document.body.appendChild(a)
                         a.click()
                         document.body.removeChild(a)
-                        
+
                         setTimeout(() => URL.revokeObjectURL(url), 100)
                       } catch {
                         alert('Download failed. Please try recording again.')
                       }
                     }
-                    
+
                     const isRemoving = removingTakeIds.includes(take.id)
                     const isEntering = enteringTakeIds.includes(take.id)
                     const isConfirming = confirmingTakeId === take.id && !isRemoving
-                    
+
                     return (
-                      <div 
-                        key={take.id} 
+                      <div
+                        key={take.id}
                         className={cn(
                           'flex items-center gap-2 transition-[max-height,opacity,transform,margin] duration-[180ms] ease-out overflow-visible',
                           index === 0 ? 'mt-0' : 'mt-2',
@@ -362,7 +403,7 @@ export function DownloadPopover(props: Props) {
                                 const spaceOnRight = window.innerWidth - rect.right
                                 shouldShowLeft = spaceOnRight < tooltipWidth
                               }
-                              
+
                               return (
                                 <motion.div
                                   key={take.id}

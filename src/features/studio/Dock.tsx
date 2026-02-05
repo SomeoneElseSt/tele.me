@@ -35,6 +35,10 @@ type Props = {
   onToggleVideoPlayback: () => void
   onCloseVideo: () => void
   onToggleFullscreen: () => void
+  persistVideos: boolean
+  onPersistVideosChange: (enabled: boolean) => void
+  isLoadingVideos?: boolean
+  recordDisabledReason?: string
 }
 
 type DockButtonProps = {
@@ -95,7 +99,11 @@ export function Dock({
   videoPlaying,
   onToggleVideoPlayback,
   onCloseVideo,
-  onToggleFullscreen
+  onToggleFullscreen,
+  persistVideos,
+  onPersistVideosChange,
+  isLoadingVideos,
+  recordDisabledReason
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -173,94 +181,33 @@ export function Dock({
             'relative flex items-center gap-2 rounded-3xl px-3 py-2'
           )}
         >
-        {!isVideoPlaying && (
-          <div
-            className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
-          >
-            <span
-              className={cn(
-                'h-2 w-2 rounded-full',
-                recording ? 'bg-red-400 shadow-[0_0_0_6px_rgba(248,113,113,0.12)]' : 'bg-white/25'
-              )}
-            />
-            <span className="tabular-nums">{elapsedLabel}</span>
-          </div>
-        )}
-
-        {isVideoPlaying ? (
-          <>
-            <DockButton
-              label={videoPlaying ? strings.pauseVideo : strings.playVideo}
-              shortcut="Space"
-              onClick={onToggleVideoPlayback}
-              active={videoPlaying}
+          {!isVideoPlaying && (
+            <div
+              className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
             >
-              <span className="relative flex h-4 w-4 items-center justify-center">
-                <span
-                  className={cn(
-                    'absolute transition-[opacity,transform] duration-200 ease-in-out',
-                    videoPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                  )}
-                >
-                  <Pause className="h-4 w-4" />
-                </span>
-                <span
-                  className={cn(
-                    'absolute transition-[opacity,transform] duration-200 ease-in-out',
-                    videoPlaying ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-                  )}
-                >
-                  <Play className="h-4 w-4" />
-                </span>
-              </span>
-            </DockButton>
-            <Tooltip label={strings.close} shortcut="Esc">
-              <button
-                type="button"
-                onClick={onCloseVideo}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
-                aria-label={strings.close}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </Tooltip>
-          </>
-        ) : (
-          <>
-            <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
-              <Type className="h-4 w-4" />
-            </DockButton>
+              <span
+                className={cn(
+                  'h-2 w-2 rounded-full',
+                  recording ? 'bg-red-400 shadow-[0_0_0_6px_rgba(248,113,113,0.12)]' : 'bg-white/25'
+                )}
+              />
+              <span className="tabular-nums">{elapsedLabel}</span>
+            </div>
+          )}
 
-            <DockButton label={strings.fullscreen} shortcut="F" onClick={onToggleFullscreen}>
-              <Maximize className="h-4 w-4" />
-            </DockButton>
-
-            {!prompterOpen ? (
+          {isVideoPlaying ? (
+            <>
               <DockButton
-                label={strings.showPrompter}
-                shortcut="H"
-                onClick={() => {
-                  setInputsOpen(false)
-                  onShowPrompter()
-                }}
-              >
-                <AlignLeft className="h-4 w-4" />
-              </DockButton>
-            ) : (
-              <DockButton
-                label={prompterPlaying ? strings.pausePrompter : strings.playPrompter}
+                label={videoPlaying ? strings.pauseVideo : strings.playVideo}
                 shortcut="Space"
-                onClick={() => {
-                  setInputsOpen(false)
-                  onTogglePrompter()
-                }}
-                active={prompterPlaying}
+                onClick={onToggleVideoPlayback}
+                active={videoPlaying}
               >
                 <span className="relative flex h-4 w-4 items-center justify-center">
                   <span
                     className={cn(
                       'absolute transition-[opacity,transform] duration-200 ease-in-out',
-                      prompterPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                      videoPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                     )}
                   >
                     <Pause className="h-4 w-4" />
@@ -268,116 +215,180 @@ export function Dock({
                   <span
                     className={cn(
                       'absolute transition-[opacity,transform] duration-200 ease-in-out',
-                      prompterPlaying ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                      videoPlaying ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
                     )}
                   >
                     <Play className="h-4 w-4" />
                   </span>
                 </span>
               </DockButton>
-            )}
-          </>
-        )}
-
-        {!isVideoPlaying && (
-          <>
-            <div className="relative inline-flex items-center">
-              <div
-                className={cn(
-                  'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
-                  recording
-                    ? 'border-white/20 bg-white/10 text-white'
-                    : 'border-white/10 bg-white/6 text-white/80',
-                  recordDisabled && 'opacity-40'
-                )}
-              >
-                <Tooltip label={recording ? strings.stopRecording : strings.record} shortcut="R">
-                  <button
-                    type="button"
-                    onClick={onRecordClick}
-                    disabled={recordDisabled}
-                    className={cn(
-                      'inline-flex h-11 w-11 items-center justify-center transition-colors',
-                      'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
-                    )}
-                    aria-label={recording ? strings.stopRecording : strings.startRecording}
-                  >
-                    <Video className="h-4 w-4" />
-                  </button>
-                </Tooltip>
-
-                <div className="h-full w-px bg-white/10" aria-hidden="true" />
-
-                <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} onDefaultOpenDismiss={() => {
-                  setHasOpenedInputs(true)
-                  window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
-                }}>
-                  <button
-                    ref={inputsAnchorRef}
-                    type="button"
-                    aria-label={strings.inputs}
-                    onClick={onToggleInputsExclusive}
-                    disabled={recordDisabled}
-                    className={cn(
-                      'inline-flex h-11 w-10 items-center justify-center transition-colors',
-                      'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none',
-                      inputsOpen && 'bg-white/10 text-white'
-                    )}
-                  >
-                    <ChevronUp 
-                      className={cn(
-                        'h-4 w-4 transition-all',
-                        inputsOpen ? 'rotate-180' : ''
-                      )} 
-                    />
-                  </button>
-                </Tooltip>
-              </div>
-              <InputsPopover
-                open={inputsOpen}
-                anchorEl={inputsAnchorRef.current}
-                onClose={onCloseInputs}
-                cameras={cameras}
-                mics={mics}
-                cameraId={cameraId}
-                micId={micId}
-                onCameraIdChange={onCameraIdChange}
-                onMicIdChange={onMicIdChange}
-                mirrorVideo={mirrorVideo}
-                onMirrorVideoChange={onMirrorVideoChange}
-              />
-            </div>
-
-            <div className="relative inline-flex items-center gap-2">
-              <Tooltip label={strings.videos} shortcut="D">
+              <Tooltip label={strings.close} shortcut="Esc">
                 <button
-                  ref={downloadAnchorRef}
                   type="button"
-                  aria-label={strings.videos}
-                  onClick={onToggleDownloadsExclusive}
-                  className={cn(
-                    'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
-                    'hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
-                    downloadsOpen
-                      ? 'border-white/20 bg-white/10 text-white'
-                      : 'border-white/10 bg-white/6 text-white/80'
-                  )}
+                  onClick={onCloseVideo}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/80 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30"
+                  aria-label={strings.close}
                 >
-                  <Download className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </Tooltip>
-              <DownloadPopover
-                open={downloadsOpen}
-                anchorEl={downloadAnchorRef.current}
-                takes={takes}
-                onClose={onCloseDownloads}
-                onDeleteTake={onDeleteTake}
-                onClearAll={onClearAllTakes}
-                onPlayTake={onPlayTake}
-              />
-            </div>
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
+                <Type className="h-4 w-4" />
+              </DockButton>
+
+              <DockButton label={strings.fullscreen} shortcut="F" onClick={onToggleFullscreen}>
+                <Maximize className="h-4 w-4" />
+              </DockButton>
+
+              {!prompterOpen ? (
+                <DockButton
+                  label={strings.showPrompter}
+                  shortcut="H"
+                  onClick={() => {
+                    setInputsOpen(false)
+                    onShowPrompter()
+                  }}
+                >
+                  <AlignLeft className="h-4 w-4" />
+                </DockButton>
+              ) : (
+                <DockButton
+                  label={prompterPlaying ? strings.pausePrompter : strings.playPrompter}
+                  shortcut="Space"
+                  onClick={() => {
+                    setInputsOpen(false)
+                    onTogglePrompter()
+                  }}
+                  active={prompterPlaying}
+                >
+                  <span className="relative flex h-4 w-4 items-center justify-center">
+                    <span
+                      className={cn(
+                        'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                        prompterPlaying ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                      )}
+                    >
+                      <Pause className="h-4 w-4" />
+                    </span>
+                    <span
+                      className={cn(
+                        'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                        prompterPlaying ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                      )}
+                    >
+                      <Play className="h-4 w-4" />
+                    </span>
+                  </span>
+                </DockButton>
+              )}
+            </>
+          )}
+
+          {!isVideoPlaying && (
+            <>
+              <div className="relative inline-flex items-center">
+                <div
+                  className={cn(
+                    'inline-flex h-11 overflow-hidden rounded-2xl border transition-all',
+                    recording
+                      ? 'border-white/20 bg-white/10 text-white'
+                      : 'border-white/10 bg-white/6 text-white/80',
+                    recordDisabled && 'opacity-40'
+                  )}
+                >
+                  <Tooltip label={recordDisabled ? (recordDisabledReason || strings.record) : (recording ? strings.stopRecording : strings.record)} shortcut="R">
+                    <button
+                      type="button"
+                      onClick={onRecordClick}
+                      disabled={recordDisabled}
+                      className={cn(
+                        'inline-flex h-11 w-11 items-center justify-center transition-colors',
+                        'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none'
+                      )}
+                      aria-label={recording ? strings.stopRecording : strings.startRecording}
+                    >
+                      <Video className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+
+                  <div className="h-full w-px bg-white/10" aria-hidden="true" />
+
+                  <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} onDefaultOpenDismiss={() => {
+                    setHasOpenedInputs(true)
+                    window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+                  }}>
+                    <button
+                      ref={inputsAnchorRef}
+                      type="button"
+                      aria-label={strings.inputs}
+                      onClick={onToggleInputsExclusive}
+                      disabled={recordDisabled}
+                      className={cn(
+                        'inline-flex h-11 w-10 items-center justify-center transition-colors',
+                        'hover:bg-white/10 active:bg-white/12 focus-visible:outline-none',
+                        inputsOpen && 'bg-white/10 text-white'
+                      )}
+                    >
+                      <ChevronUp
+                        className={cn(
+                          'h-4 w-4 transition-all',
+                          inputsOpen ? 'rotate-180' : ''
+                        )}
+                      />
+                    </button>
+                  </Tooltip>
+                </div>
+                <InputsPopover
+                  open={inputsOpen}
+                  anchorEl={inputsAnchorRef.current}
+                  onClose={onCloseInputs}
+                  cameras={cameras}
+                  mics={mics}
+                  cameraId={cameraId}
+                  micId={micId}
+                  onCameraIdChange={onCameraIdChange}
+                  onMicIdChange={onMicIdChange}
+                  mirrorVideo={mirrorVideo}
+                  onMirrorVideoChange={onMirrorVideoChange}
+                />
+              </div>
+
+              <div className="relative inline-flex items-center gap-2">
+                <Tooltip label={strings.videos} shortcut="D">
+                  <button
+                    ref={downloadAnchorRef}
+                    type="button"
+                    aria-label={strings.videos}
+                    onClick={onToggleDownloadsExclusive}
+                    className={cn(
+                      'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
+                      'hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
+                      downloadsOpen
+                        ? 'border-white/20 bg-white/10 text-white'
+                        : 'border-white/10 bg-white/6 text-white/80'
+                    )}
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <DownloadPopover
+                  open={downloadsOpen}
+                  anchorEl={downloadAnchorRef.current}
+                  takes={takes}
+                  onClose={onCloseDownloads}
+                  onDeleteTake={onDeleteTake}
+                  onClearAll={onClearAllTakes}
+                  onPlayTake={onPlayTake}
+                  persistVideos={persistVideos}
+                  onPersistVideosChange={onPersistVideosChange}
+                  isLoadingVideos={isLoadingVideos}
+                />
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

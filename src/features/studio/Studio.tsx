@@ -15,6 +15,7 @@ import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
 import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
+import * as videoStorage from '../../lib/videoStorage'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -39,6 +40,8 @@ const OPACITY_STORAGE_KEY = 'teleme:prompter_opacity'
 const TEXT_ALIGN_STORAGE_KEY = 'teleme:prompter_text_align'
 const FRAME_STORAGE_KEY = 'teleme:prompter_frame'
 const FIXED_TO_TOP_STORAGE_KEY = 'teleme:prompter_fixed_to_top'
+const PERSIST_VIDEOS_STORAGE_KEY = 'teleme:persist_videos'
+const MAX_PERSISTENT_VIDEOS = 10
 
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
@@ -159,17 +162,25 @@ export function Studio() {
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
   const [videoPlaying, setVideoPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  
+
   useEffect(() => {
     takesRef.current = takes
   }, [takes])
+
+  const [persistVideos, setPersistVideos] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = window.localStorage.getItem(PERSIST_VIDEOS_STORAGE_KEY)
+    return saved === 'true'
+  })
+  const [isLoadingVideos, setIsLoadingVideos] = useState(false)
+
   const [localeOpen, setLocaleOpen] = useState(false)
   const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
   const [locale, setLocale] = useState<LocaleCode>('en')
   const localeRef = useRef<LocaleCode>(locale)
-  
+
   const getNextTakeNumber = useCallback(() => {
     if (typeof window === 'undefined') return 1
     const saved = window.localStorage.getItem(TAKE_NUMBER_STORAGE_KEY)
@@ -178,7 +189,7 @@ export function Studio() {
     if (isNaN(next) || next < 1) return 1
     return next
   }, [])
-  
+
   const incrementTakeNumber = useCallback(() => {
     if (typeof window === 'undefined') return
     const current = getNextTakeNumber()
@@ -304,9 +315,55 @@ export function Studio() {
     }
   }, [])
 
+  // Load videos from IndexedDB on mount if persistVideos is enabled
+  useEffect(() => {
+    if (!persistVideos) return
+
+    const loadStoredVideos = async () => {
+      setIsLoadingVideos(true)
+      try {
+        const storedVideos = await videoStorage.loadVideos()
+        const videosWithUrls = storedVideos.map(video => ({
+          id: video.id,
+          url: URL.createObjectURL(video.blob),
+          createdAt: video.createdAt,
+          mimeType: video.mimeType,
+          takeNumber: video.takeNumber
+        }))
+        setTakes(videosWithUrls)
+      } catch (error) {
+        console.error('Failed to load videos from storage:', error)
+      } finally {
+        setIsLoadingVideos(false)
+      }
+    }
+
+    void loadStoredVideos()
+  }, []) // Only run on mount
+
   const error = recorder.error ?? streamError ?? devicesError
 
-  const canRecord = useMemo(() => ready && Boolean(stream) && recorder.supported, [ready, recorder.supported, stream])
+  const canRecord = useMemo(() => {
+    const hasMediaAccess = ready && Boolean(stream) && recorder.supported
+    if (!hasMediaAccess) return false
+
+    // Disable recording if we have 10 videos and persistent storage is enabled
+    if (persistVideos && takes.length >= MAX_PERSISTENT_VIDEOS) {
+      return false
+    }
+
+    return true
+  }, [ready, recorder.supported, stream, persistVideos, takes.length])
+
+
+  const recordDisabledReason = useMemo(() => {
+    if (!ready || !stream || !recorder.supported) return undefined
+    if (persistVideos && takes.length >= MAX_PERSISTENT_VIDEOS) {
+      return getStrings(locale).maxVideosReached
+    }
+    return undefined
+  }, [ready, stream, recorder.supported, persistVideos, takes.length, locale])
+
   const elapsedLabel = useMemo(() => formatMs(recorder.elapsedMs), [recorder.elapsedMs])
 
   const onToggleRecord = useCallback(() => {
@@ -352,10 +409,14 @@ export function Studio() {
         } catch {
           // ignore
         }
+        // Delete from IndexedDB if persistent storage is enabled
+        if (persistVideos) {
+          void videoStorage.deleteVideo(takeId)
+        }
       }
       return prev.filter(t => t.id !== takeId)
     })
-  }, [])
+  }, [persistVideos])
 
   const onClearAllTakes = useCallback(() => {
     setTakes((prev) => {
@@ -369,9 +430,50 @@ export function Studio() {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(TAKE_NUMBER_STORAGE_KEY, '1')
       }
+      // Clear IndexedDB if persistent storage is enabled
+      if (persistVideos) {
+        void videoStorage.clearAllVideos()
+      }
       return []
     })
-  }, [])
+  }, [persistVideos])
+
+  const onPersistVideosChange = useCallback(async (enabled: boolean) => {
+    setPersistVideos(enabled)
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(PERSIST_VIDEOS_STORAGE_KEY, enabled.toString())
+    }
+
+    if (enabled) {
+      // Clear existing storage first to ensure exact sync with current state
+      await videoStorage.clearAllVideos()
+
+      // Save the first 10 (most recent) videos to IndexedDB
+      const videosToSave = takes.slice(0, MAX_PERSISTENT_VIDEOS)
+      for (const take of videosToSave) {
+        try {
+          const response = await fetch(take.url)
+          const blob = await response.blob()
+
+          // Check if take was deleted while processing
+          if (!takesRef.current.some(t => t.id === take.id)) continue
+
+          await videoStorage.saveVideo({
+            id: take.id,
+            blob,
+            createdAt: take.createdAt,
+            mimeType: take.mimeType,
+            takeNumber: take.takeNumber
+          })
+        } catch (error) {
+          console.error('Failed to save video to storage:', error)
+        }
+      }
+    } else {
+      // Clear all videos from IndexedDB when disabled
+      await videoStorage.clearAllVideos()
+    }
+  }, [takes])
 
   const onPlayTake = useCallback((takeId: string) => {
     setPlayingTakeId(takeId)
@@ -406,15 +508,32 @@ export function Studio() {
     const url = recorder.url
     const mimeType = recorder.mimeType
     if (!url) return
-    
+
     setTakes((prev) => {
       if (prev.some(take => take.url === url)) return prev
-      
+
       const createdAt = Date.now()
       const takeNumber = incrementTakeNumber() ?? 1
-      return [{ id: `take-${createdAt}`, url, createdAt, mimeType, takeNumber }, ...prev]
+      const newTake = { id: `take-${createdAt}`, url, createdAt, mimeType, takeNumber }
+
+      // Save to IndexedDB if persistent storage is enabled
+      if (persistVideos) {
+        // Fetch the blob and save it
+        fetch(url)
+          .then(response => response.blob())
+          .then(blob => videoStorage.saveVideo({
+            id: newTake.id,
+            blob,
+            createdAt: newTake.createdAt,
+            mimeType: newTake.mimeType,
+            takeNumber: newTake.takeNumber
+          }))
+          .catch(error => console.error('Failed to save video to storage:', error))
+      }
+
+      return [newTake, ...prev]
     })
-  }, [recorder.url, recorder.mimeType, incrementTakeNumber])
+  }, [recorder.url, recorder.mimeType, incrementTakeNumber, persistVideos])
 
   const onToggleFullscreen = useCallback(() => {
     if (typeof document === 'undefined') return
@@ -433,7 +552,7 @@ export function Studio() {
     useMemo(
       () => {
         const hotkeys: Record<string, () => void> = {}
-        
+
         if (playingTakeId) {
           hotkeys.space = () => onToggleVideoPlayback()
           hotkeys.escape = () => onCloseVideo()
@@ -467,7 +586,7 @@ export function Studio() {
             setPlaying(false)
           }
         }
-        
+
         return hotkeys
       },
       [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen]
@@ -480,205 +599,209 @@ export function Studio() {
   return (
     <I18nProvider locale={locale}>
       <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
-      {playingTake ? (
-        <div className="absolute inset-0 bg-black">
-          <video
-            ref={videoRef}
-            src={playingTake.url}
-            className="h-full w-full object-contain"
-            onPlay={() => setVideoPlaying(true)}
-            onPause={() => setVideoPlaying(false)}
-            onEnded={() => {
-              setVideoPlaying(false)
-              if (videoRef.current) {
-                videoRef.current.currentTime = 0
-              }
-            }}
-          />
-        </div>
-      ) : (
-        <StageVideo stream={stream} mirror={mirrorVideo} />
-      )}
-
-      <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
-        <Tooltip 
-          label={
-            <div className="flex flex-col gap-3 text-center">
-              <span>
-                {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
-                  const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
-                  if (isOpenSource) {
-                    return (
-                      <a
-                        key={index}
-                        href="https://github.com/SomeoneElseSt/tele.me"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline hover:text-white"
-                      >
-                        {part}
-                      </a>
-                    );
-                  }
-                  return part;
-                })}
-                <a 
-                  href="https://stiven.me" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="underline hover:text-white"
-                >
-                  stiven.me
-                </a>
-              </span>
-              <span>{strings.browserWarningMessage}</span>
-            </div>
-          }
-          side="bottom" 
-          sideOffset={6}
-          interactive
-          className="max-w-xs whitespace-normal text-center leading-relaxed"
-        >
-          <div className="pointer-events-auto p-4 -m-4 rounded-3xl">
-            <div className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">
-              <Film className="h-4 w-4 text-white/75" />
-              <span className="tracking-[-0.02em]">tele.me</span>
-            </div>
+        {playingTake ? (
+          <div className="absolute inset-0 bg-black">
+            <video
+              ref={videoRef}
+              src={playingTake.url}
+              className="h-full w-full object-contain"
+              onPlay={() => setVideoPlaying(true)}
+              onPause={() => setVideoPlaying(false)}
+              onEnded={() => {
+                setVideoPlaying(false)
+                if (videoRef.current) {
+                  videoRef.current.currentTime = 0
+                }
+              }}
+            />
           </div>
-        </Tooltip>
-      </div>
-      {!drawerOpen && (
-        <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
-          <div className="pointer-events-auto relative">
-            <button
-              ref={localeAnchorRef}
-              type="button"
-              onClick={() => setLocaleOpen((prev) => !prev)}
-              className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur"
-              aria-label={strings.language}
-            >
-              <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
-                {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
-              </span>
-            </button>
-            <AnimatePresence>
-              {localeOpen && (
-                <motion.div
-                  ref={localePanelRef}
-                  className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
-                  style={{ top: '100%' }}
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
-                >
-                  <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
-                    {strings.language}
-                  </div>
-                  <div className="mt-1 space-y-1">
-                    {LOCALES.map((item) => {
-                      const active = item.code === locale
+        ) : (
+          <StageVideo stream={stream} mirror={mirrorVideo} />
+        )}
+
+        <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
+          <Tooltip
+            label={
+              <div className="flex flex-col gap-3 text-center">
+                <span>
+                  {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
+                    const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
+                    if (isOpenSource) {
                       return (
-                        <button
-                          key={item.code}
-                          type="button"
-                          onClick={() => {
-                            setLocale(item.code)
-                            setLocaleOpen(false)
-                          }}
-                          className={cn(
-                            'flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-sm transition-colors',
-                            active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                          )}
+                        <a
+                          key={index}
+                          href="https://github.com/SomeoneElseSt/tele.me"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline hover:text-white"
                         >
-                          <span>{item.label}</span>
-                          <span className="text-[11px] font-semibold tracking-[0.14em] text-white/60">
-                            {item.short}
-                          </span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+                          {part}
+                        </a>
+                      );
+                    }
+                    return part;
+                  })}
+                  <a
+                    href="https://stiven.me"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-white"
+                  >
+                    stiven.me
+                  </a>
+                </span>
+                <span>{strings.browserWarningMessage}</span>
+              </div>
+            }
+            side="bottom"
+            sideOffset={6}
+            interactive
+            className="max-w-xs whitespace-normal text-center leading-relaxed"
+          >
+            <div className="pointer-events-auto p-4 -m-4 rounded-3xl">
+              <div className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">
+                <Film className="h-4 w-4 text-white/75" />
+                <span className="tracking-[-0.02em]">tele.me</span>
+              </div>
+            </div>
+          </Tooltip>
         </div>
-      )}
-
-      {error && (
-        <div className="fixed left-1/2 top-6 z-40 -translate-x-1/2">
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs text-red-100 backdrop-blur">
-            {error}
+        {!drawerOpen && (
+          <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
+            <div className="pointer-events-auto relative">
+              <button
+                ref={localeAnchorRef}
+                type="button"
+                onClick={() => setLocaleOpen((prev) => !prev)}
+                className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur"
+                aria-label={strings.language}
+              >
+                <span className="text-[12px] font-semibold tracking-[0.2em] text-white/80">
+                  {LOCALES.find((item) => item.code === locale)?.short ?? 'EN'}
+                </span>
+              </button>
+              <AnimatePresence>
+                {localeOpen && (
+                  <motion.div
+                    ref={localePanelRef}
+                    className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
+                    style={{ top: '100%' }}
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
+                  >
+                    <div className="px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/50">
+                      {strings.language}
+                    </div>
+                    <div className="mt-1 space-y-1">
+                      {LOCALES.map((item) => {
+                        const active = item.code === locale
+                        return (
+                          <button
+                            key={item.code}
+                            type="button"
+                            onClick={() => {
+                              setLocale(item.code)
+                              setLocaleOpen(false)
+                            }}
+                            className={cn(
+                              'flex w-full items-center justify-between rounded-xl px-2 py-2 text-left text-sm transition-colors',
+                              active ? 'bg-white/12 text-white' : 'text-white/70 hover:bg-white/10 hover:text-white'
+                            )}
+                          >
+                            <span>{item.label}</span>
+                            <span className="text-[11px] font-semibold tracking-[0.14em] text-white/60">
+                              {item.short}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <FloatingPrompter
-        open={prompterOpen}
-        frame={frame}
-        opacity={opacity}
-        script={script}
-        markdownEnabled={markdownEnabled}
-        speed={speed}
-        fontSize={fontSize}
-        textAlign={textAlign}
-        playing={playing}
-        fixedToTop={fixedToTop}
-        onOpacityChange={setOpacity}
-        onSpeedChange={setSpeed}
-        onFontSizeChange={setFontSize}
-        onTextAlignChange={setTextAlign}
-        onFixedToTopChange={setFixedToTop}
-        onTogglePlaying={onTogglePrompter}
-        onClose={() => {
-          setPrompterOpen(false)
-          setPlaying(false)
-        }}
-        onFrameChange={onFrameChange}
-        onControlsOpenChange={setPrompterControlsOpen}
-        forceCloseControls={forceCloseControls}
-      />
+        {error && (
+          <div className="fixed left-1/2 top-6 z-40 -translate-x-1/2">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs text-red-100 backdrop-blur">
+              {error}
+            </div>
+          </div>
+        )}
 
-      <Dock
-        canRecord={canRecord}
-        recording={recorder.status === 'recording'}
-        elapsedLabel={elapsedLabel}
-        takes={takes}
-        onToggleRecord={onToggleRecord}
-        cameras={cameras}
-        mics={mics}
-        cameraId={videoDeviceId}
-        micId={audioDeviceId}
-        onCameraIdChange={setVideoDeviceId}
-        onMicIdChange={setAudioDeviceId}
-        mirrorVideo={mirrorVideo}
-        onMirrorVideoChange={setMirrorVideo}
-        prompterOpen={prompterOpen}
-        prompterPlaying={playing}
-        onTogglePrompter={onTogglePrompter}
-        onShowPrompter={onShowPrompter}
-        onToggleDrawer={onToggleDrawer}
-        onDeleteTake={onDeleteTake}
-        onClearAllTakes={onClearAllTakes}
-        onPlayTake={onPlayTake}
-        playingTakeId={playingTakeId}
-        videoPlaying={videoPlaying}
-        onToggleVideoPlayback={onToggleVideoPlayback}
-        onCloseVideo={onCloseVideo}
-        onToggleFullscreen={onToggleFullscreen}
-      />
+        <FloatingPrompter
+          open={prompterOpen}
+          frame={frame}
+          opacity={opacity}
+          script={script}
+          markdownEnabled={markdownEnabled}
+          speed={speed}
+          fontSize={fontSize}
+          textAlign={textAlign}
+          playing={playing}
+          fixedToTop={fixedToTop}
+          onOpacityChange={setOpacity}
+          onSpeedChange={setSpeed}
+          onFontSizeChange={setFontSize}
+          onTextAlignChange={setTextAlign}
+          onFixedToTopChange={setFixedToTop}
+          onTogglePlaying={onTogglePrompter}
+          onClose={() => {
+            setPrompterOpen(false)
+            setPlaying(false)
+          }}
+          onFrameChange={onFrameChange}
+          onControlsOpenChange={setPrompterControlsOpen}
+          forceCloseControls={forceCloseControls}
+        />
 
-      <SettingsDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        script={script}
-        onScriptChange={setScript}
-        markdownEnabled={markdownEnabled}
-        onMarkdownEnabledChange={setMarkdownEnabled}
-      />
+        <Dock
+          canRecord={canRecord}
+          recording={recorder.status === 'recording'}
+          elapsedLabel={elapsedLabel}
+          takes={takes}
+          onToggleRecord={onToggleRecord}
+          cameras={cameras}
+          mics={mics}
+          cameraId={videoDeviceId}
+          micId={audioDeviceId}
+          onCameraIdChange={setVideoDeviceId}
+          onMicIdChange={setAudioDeviceId}
+          mirrorVideo={mirrorVideo}
+          onMirrorVideoChange={setMirrorVideo}
+          prompterOpen={prompterOpen}
+          prompterPlaying={playing}
+          onTogglePrompter={onTogglePrompter}
+          onShowPrompter={onShowPrompter}
+          onToggleDrawer={onToggleDrawer}
+          onDeleteTake={onDeleteTake}
+          onClearAllTakes={onClearAllTakes}
+          onPlayTake={onPlayTake}
+          playingTakeId={playingTakeId}
+          videoPlaying={videoPlaying}
+          onToggleVideoPlayback={onToggleVideoPlayback}
+          onCloseVideo={onCloseVideo}
+          onToggleFullscreen={onToggleFullscreen}
+          persistVideos={persistVideos}
+          onPersistVideosChange={onPersistVideosChange}
+          isLoadingVideos={isLoadingVideos}
+          recordDisabledReason={recordDisabledReason}
+        />
 
-      <div id="studio-portal" className="pointer-events-none" />
+        <SettingsDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          script={script}
+          onScriptChange={setScript}
+          markdownEnabled={markdownEnabled}
+          onMarkdownEnabledChange={setMarkdownEnabled}
+        />
+
+        <div id="studio-portal" className="pointer-events-none" />
       </div>
     </I18nProvider>
   )
