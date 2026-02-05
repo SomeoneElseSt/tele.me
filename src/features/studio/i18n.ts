@@ -63,6 +63,8 @@ type Strings = {
   inputsTooltip: string
   aboutMessage: string
   fullscreen: string
+  fixToTop: string
+  unfixFromTop: string
 }
 
 const STRINGS: Record<LocaleCode, Strings> = {
@@ -120,7 +122,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Continue',
     inputsTooltip: 'Inputs',
     aboutMessage: 'tele.me is an open-source teleprompter - 100% free, no login required, and browser-based. It was developed by ',
-    fullscreen: 'Fullscreen'
+    fullscreen: 'Fullscreen',
+    fixToTop: 'Fix to top',
+    unfixFromTop: 'Unfix from top'
   },
   es: {
     defaultScript:
@@ -176,7 +180,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Continuar',
     inputsTooltip: 'Entradas',
     aboutMessage: 'tele.me es un teleprompter de código abierto - 100% gratis, no requiere registro y basado en navegador. Fue desarrollado por ',
-    fullscreen: 'Pantalla completa'
+    fullscreen: 'Pantalla completa',
+    fixToTop: 'Fijar arriba',
+    unfixFromTop: 'Desfijar de arriba'
   },
   ja: {
     defaultScript:
@@ -232,7 +238,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: '続ける',
     inputsTooltip: '入力',
     aboutMessage: 'tele.meはオープンソースのテレプロンプターです - 100%無料、ログイン不要、ブラウザベース。開発者: ',
-    fullscreen: 'フルスクリーン'
+    fullscreen: 'フルスクリーン',
+    fixToTop: '上部に固定',
+    unfixFromTop: '上部から解除'
   },
   hi: {
     defaultScript:
@@ -288,7 +296,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'जारी रखें',
     inputsTooltip: 'इनपुट',
     aboutMessage: 'tele.me एक ओपन-सोर्स टेलीप्रॉम्प्टर है - 100% मुफ्त, लॉगिन की आवश्यकता नहीं, और ब्राउज़र आधारित। इसे विकसित किया गया है ',
-    fullscreen: 'पूर्ण स्क्रीन'
+    fullscreen: 'पूर्ण स्क्रीन',
+    fixToTop: 'शीर्ष पर फिक्स करें',
+    unfixFromTop: 'शीर्ष से अनफिक्स करें'
   },
   fr: {
     defaultScript:
@@ -345,7 +355,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Continuer',
     inputsTooltip: 'Entrées',
     aboutMessage: 'tele.me est un téléprompteur open-source - 100% gratuit, pas de connexion requise et basé sur navigateur. Il a été développé par ',
-    fullscreen: 'Plein écran'
+    fullscreen: 'Plein écran',
+    fixToTop: 'Fixer en haut',
+    unfixFromTop: 'Défixer du haut'
   },
   de: {
     defaultScript:
@@ -401,7 +413,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Fortfahren',
     inputsTooltip: 'Eingänge',
     aboutMessage: 'tele.me ist ein Open-Source-Teleprompter - 100% kostenlos, keine Anmeldung erforderlich und browserbasiert. Entwickelt von ',
-    fullscreen: 'Vollbild'
+    fullscreen: 'Vollbild',
+    fixToTop: 'Oben fixieren',
+    unfixFromTop: 'Von oben lösen'
   },
   zh: {
     defaultScript:
@@ -457,7 +471,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: '继续',
     inputsTooltip: '输入',
     aboutMessage: 'tele.me是一个开源提词器 - 100%免费，无需登录，基于浏览器。开发者: ',
-    fullscreen: '全屏'
+    fullscreen: '全屏',
+    fixToTop: '固定到顶部',
+    unfixFromTop: '从顶部取消固定'
   },
   ar: {
     defaultScript:
@@ -513,7 +529,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'متابعة',
     inputsTooltip: 'المدخلات',
     aboutMessage: 'tele.me هو ملقن مفتوح المصدر - مجاني 100%، لا يتطلب تسجيل الدخول، ويعمل على المتصفح. تم تطويره بواسطة ',
-    fullscreen: 'ملء الشاشة'
+    fullscreen: 'ملء الشاشة',
+    fixToTop: 'تثبيت في الأعلى',
+    unfixFromTop: 'إلغاء التثبيت من الأعلى'
   },
   pt: {
     defaultScript:
@@ -569,7 +587,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Continuar',
     inputsTooltip: 'Entradas',
     aboutMessage: 'tele.me é um teleprompter de código aberto - 100% gratuito, não requer login e baseado em navegador. Foi desenvolvido por ',
-    fullscreen: 'Tela cheia'
+    fullscreen: 'Tela cheia',
+    fixToTop: 'Fixar no topo',
+    unfixFromTop: 'Desfixar do topo'
   },
   ru: {
     defaultScript:
@@ -625,7 +645,9 @@ const STRINGS: Record<LocaleCode, Strings> = {
     continue: 'Продолжить',
     inputsTooltip: 'Входы',
     aboutMessage: 'tele.me — это телесуфлёр с открытым исходным кодом, 100% бесплатный, не требует входа и работающий в браузере. Разработан ',
-    fullscreen: 'Полноэкранный режим'
+    fullscreen: 'Полноэкранный режим',
+    fixToTop: 'Закрепить сверху',
+    unfixFromTop: 'Открепить сверху'
   },
 }
 

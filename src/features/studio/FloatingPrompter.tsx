@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -458,6 +458,7 @@ function ControlsBarPortal({
   speed,
   fontSize,
   textAlign,
+  fixedToTop,
   onOpacityChange,
   onSpeedChange,
   onFontSizeChange,
@@ -469,6 +470,7 @@ function ControlsBarPortal({
   speed: number
   fontSize: number
   textAlign: 'left' | 'center' | 'right'
+  fixedToTop: boolean
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
@@ -482,16 +484,24 @@ function ControlsBarPortal({
   const upperThreshold = CONTROLS_BAR_MIN_MARGIN_PX + hysteresis
   const lowerThreshold = CONTROLS_BAR_MIN_MARGIN_PX - hysteresis
   const [side, setSide] = useState<'top' | 'bottom'>(() =>
-    spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
+    fixedToTop ? 'bottom' : spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
   )
 
   useEffect(() => {
     if (!open) return
+    if (fixedToTop) {
+      setSide('bottom')
+      return
+    }
     const next = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
     setSide(next)
-  }, [open, spaceAbove])
+  }, [open, spaceAbove, fixedToTop])
 
   useEffect(() => {
+    if (fixedToTop) {
+      setSide('bottom')
+      return
+    }
     if (side === 'top' && spaceAbove < lowerThreshold) {
       setSide('bottom')
       return
@@ -499,9 +509,9 @@ function ControlsBarPortal({
     if (side === 'bottom' && spaceAbove > upperThreshold) {
       setSide('top')
     }
-  }, [lowerThreshold, side, spaceAbove, upperThreshold])
+  }, [fixedToTop, lowerThreshold, side, spaceAbove, upperThreshold])
 
-  const isTop = side === 'top'
+  const isTop = fixedToTop ? false : side === 'top'
   const top = isTop
     ? frame.y - CONTROLS_BAR_HEIGHT_PX - CONTROLS_BAR_GAP_PX
     : frame.y + frame.height + CONTROLS_BAR_GAP_PX
@@ -677,6 +687,8 @@ export function FloatingPrompter(props: Props) {
   const tooltip = useTooltipController()
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
+  const [fixedToTop, setFixedToTop] = useState(false)
+  const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
   
   useEffect(() => {
     if (forceCloseControls && quickOpen) {
@@ -724,7 +736,7 @@ export function FloatingPrompter(props: Props) {
   )
 
   const drag = usePointerDrag({
-    enabled: open,
+    enabled: open && !fixedToTop,
     getOrigin: () => ({ x: frame.x, y: frame.y }),
     onMove: (next) => onFrameChange({ x: next.x, y: next.y }),
     onEnd: () => tooltip.unlock(DRAG_TOOLTIP_ID)
@@ -732,7 +744,7 @@ export function FloatingPrompter(props: Props) {
 
   const minWidth = Math.max(PROMPTER_MIN_WIDTH, PROMPTER_CONTROLS_MIN_WIDTH)
   const resize = usePointerResize({
-    enabled: open,
+    enabled: open && !fixedToTop,
     getOrigin: () => ({ width: frame.width, height: frame.height }),
     onResize: (next) =>
       onFrameChange({
@@ -751,6 +763,20 @@ export function FloatingPrompter(props: Props) {
     [resize]
   )
 
+  const onFixToTop = useCallback(() => {
+    originalPositionRef.current = { x: frame.x, y: frame.y }
+    setFixedToTop(true)
+    onFrameChange({ y: 0 })
+  }, [frame.x, frame.y, onFrameChange])
+
+  const onUnfixFromTop = useCallback(() => {
+    setFixedToTop(false)
+    if (originalPositionRef.current) {
+      onFrameChange(originalPositionRef.current)
+      originalPositionRef.current = null
+    }
+  }, [onFrameChange])
+
   useEffect(() => {
     if (wasOpenRef.current && !open) {
       // Save scroll position when hiding
@@ -761,6 +787,8 @@ export function FloatingPrompter(props: Props) {
       tooltip.clear()
       setResizing(false)
       setQuickOpen(false)
+      setFixedToTop(false)
+      originalPositionRef.current = null
       onControlsOpenChange?.(false)
     } else if (!wasOpenRef.current && open) {
       // Restore scroll position when showing
@@ -775,16 +803,25 @@ export function FloatingPrompter(props: Props) {
     wasOpenRef.current = open
   }, [open, tooltip, onControlsOpenChange])
 
+  useEffect(() => {
+    if (fixedToTop && frame.y !== 0) {
+      onFrameChange({ y: 0 })
+    }
+  }, [fixedToTop, frame.y, onFrameChange])
+
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          className={cn('fixed z-40 overflow-hidden rounded-2xl border border-white/10 shadow-glow')}
+          className={cn(
+            'fixed z-40 overflow-hidden border border-white/10 shadow-glow flex flex-col',
+            fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl'
+          )}
           style={{
             width: frame.width,
             height: frame.height,
             x: frame.x,
-            y: frame.y,
+            y: fixedToTop ? 0 : frame.y,
             backgroundColor: `rgba(0,0,0,${opacity})`
           }}
           initial={{ opacity: 0, scale: 0.98 }}
@@ -792,68 +829,90 @@ export function FloatingPrompter(props: Props) {
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ type: 'spring', stiffness: 420, damping: 40, mass: 0.8 }}
         >
-          <div
-            className={cn(
-              'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
-              'cursor-grab active:cursor-grabbing select-none touch-none'
-            )}
-            style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
-            onPointerDown={drag.onPointerDown}
-          >
+          {fixedToTop && (
+            <div className="h-px w-full bg-white/10" />
+          )}
+          
+          {!fixedToTop && (
+            <div
+              className={cn(
+                'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
+                'cursor-grab active:cursor-grabbing select-none touch-none'
+              )}
+              style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+              onPointerDown={drag.onPointerDown}
+            >
               <Tooltip label={strings.hidePrompter} shortcut="H">
                 <button
                   type="button"
                   onClick={onClose}
                   aria-label={strings.hidePrompter}
-                onPointerDown={(e) => e.stopPropagation()}
-                className={cn(
-                  'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                  'hover:bg-white/10 hover:text-white'
-                )}
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </Tooltip>
-            <div className="flex items-center gap-1">
-              <Tooltip label={strings.controls} shortcut="C">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setQuickOpen((v) => {
-                      const next = !v
-                      onControlsOpenChange?.(next)
-                      return next
-                    })
-                  }}
-                  aria-label="Prompter controls"
                   onPointerDown={(e) => e.stopPropagation()}
                   className={cn(
                     'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                    'hover:bg-white/10 hover:text-white',
-                    quickOpen && 'border-white/18 bg-white/10 text-white'
+                    'hover:bg-white/10 hover:text-white'
                   )}
                 >
-                  <SlidersHorizontal className="h-4 w-4" />
+                  <X className="h-4 w-4" />
                 </button>
               </Tooltip>
-              <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
-                <span
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
-                  onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
-                >
-                  <Move className="h-4 w-4 text-white/60" />
-                </span>
-              </Tooltip>
+              <div className="flex items-center gap-1">
+                <Tooltip label={strings.fixToTop}>
+                  <button
+                    type="button"
+                    onClick={onFixToTop}
+                    aria-label={strings.fixToTop}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white'
+                    )}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <Tooltip label={strings.controls} shortcut="C">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickOpen((v) => {
+                        const next = !v
+                        onControlsOpenChange?.(next)
+                        return next
+                      })
+                    }}
+                    aria-label="Prompter controls"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white',
+                      quickOpen && 'border-white/18 bg-white/10 text-white'
+                    )}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                {!fixedToTop && (
+                  <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                    <span
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
+                      onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
+                    >
+                      <Move className="h-4 w-4 text-white/60" />
+                    </span>
+                  </Tooltip>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="relative h-[calc(100%-52px)]">
+          <div className="relative flex-1">
             <div
               ref={scrollerRef}
               className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
-              style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX }}
+              style={{ bottom: SCROLLBAR_BOTTOM_GUTTER_PX + (fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : 0) }}
             >
-              <div className="px-6 py-6 text-white/92 select-none" style={{ textAlign }}>
+              <div className={cn('px-6 text-white/92 select-none', fixedToTop ? 'pt-2 pb-6' : 'py-6')} style={{ textAlign }}>
                 {markdownEnabled ? (
                   <div
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
@@ -872,28 +931,94 @@ export function FloatingPrompter(props: Props) {
               </div>
             </div>
 
+            {!fixedToTop && (
+              <div
+                aria-hidden="true"
+                className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+                style={{
+                  right: GRIP_INSET_PX,
+                  bottom: GRIP_INSET_PX,
+                  width: GRIP_VISUAL_SIZE_PX,
+                  height: GRIP_VISUAL_SIZE_PX
+                }}
+              />
+            )}
+          </div>
+
+          {fixedToTop && (
             <div
-              aria-hidden="true"
-              className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+              className={cn(
+                'flex items-center justify-between gap-2 border-t border-white/10 px-4 text-white/85',
+                'select-none touch-none'
+              )}
+              style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+            >
+              <Tooltip label={strings.hidePrompter} shortcut="H">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label={strings.hidePrompter}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className={cn(
+                    'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                    'hover:bg-white/10 hover:text-white'
+                  )}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              <div className="flex items-center gap-1">
+                <Tooltip label={strings.unfixFromTop}>
+                  <button
+                    type="button"
+                    onClick={onUnfixFromTop}
+                    aria-label={strings.unfixFromTop}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white'
+                    )}
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <Tooltip label={strings.controls} shortcut="C">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQuickOpen((v) => {
+                        const next = !v
+                        onControlsOpenChange?.(next)
+                        return next
+                      })
+                    }}
+                    aria-label="Prompter controls"
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white',
+                      quickOpen && 'border-white/18 bg-white/10 text-white'
+                    )}
+                  >
+                    <SlidersHorizontal className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+              </div>
+            </div>
+          )}
+
+          {!fixedToTop && (
+            <div
+              className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
               style={{
                 right: GRIP_INSET_PX,
                 bottom: GRIP_INSET_PX,
-                width: GRIP_VISUAL_SIZE_PX,
-                height: GRIP_VISUAL_SIZE_PX
+                width: GRIP_HIT_SIZE_PX,
+                height: GRIP_HIT_SIZE_PX
               }}
+              onPointerDown={onResizePointerDown}
             />
-          </div>
-
-          <div
-            className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
-            style={{
-              right: GRIP_INSET_PX,
-              bottom: GRIP_INSET_PX,
-              width: GRIP_HIT_SIZE_PX,
-              height: GRIP_HIT_SIZE_PX
-            }}
-            onPointerDown={onResizePointerDown}
-          />
+          )}
 
           <ControlsBarPortal
             open={quickOpen}
@@ -902,6 +1027,7 @@ export function FloatingPrompter(props: Props) {
             speed={speed}
             fontSize={fontSize}
             textAlign={textAlign}
+            fixedToTop={fixedToTop}
             onOpacityChange={onOpacityChange}
             onSpeedChange={onSpeedChange}
             onFontSizeChange={onFontSizeChange}
