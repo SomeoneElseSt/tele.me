@@ -417,7 +417,7 @@ function ControlCell({
                 'cursor-grab',
                 dragging
                   ? // Slightly brighter while dragging, keep blur/tint intact.
-                    'scale-[1.07] cursor-grabbing border-white/55 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
+                  'scale-[1.07] cursor-grabbing border-white/55 text-white shadow-[0_0_0_1px_rgba(255,255,255,0.3),0_0_18px_rgba(255,255,255,0.08),0_18px_34px_rgba(0,0,0,0.55)]'
                   : 'transition-[transform,background-color,border-color,color] duration-220 ease-out'
               )}
             >
@@ -692,7 +692,7 @@ export function FloatingPrompter(props: Props) {
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
-  
+
   useEffect(() => {
     if (forceCloseControls && quickOpen) {
       setQuickOpen(false)
@@ -846,7 +846,7 @@ export function FloatingPrompter(props: Props) {
           {fixedToTop && (
             <div className="h-px w-full bg-white/10" />
           )}
-          
+
           {!fixedToTop && (
             <div
               className={cn(
@@ -926,12 +926,12 @@ export function FloatingPrompter(props: Props) {
               className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
               style={{ bottom: fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX }}
             >
-              <div 
-                className="px-6 text-white/92 select-none" 
-                style={{ 
+              <div
+                className="px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
+                style={{
                   textAlign,
-                  paddingTop: fixedToTop ? 4 : 24,
-                  paddingBottom: fixedToTop ? 4 : 24
+                  paddingTop: fixedToTop ? 8 : 24,
+                  paddingBottom: playing ? frame.height * 0.7 : 24
                 }}
               >
                 {markdownEnabled ? (
