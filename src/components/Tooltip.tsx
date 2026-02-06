@@ -126,18 +126,12 @@ export function Tooltip({
   }, [defaultOpen])
 
   useEffect(() => {
-    if (forceOpen && (hovered || activeId === id) && !defaultOpen) {
+    if (forceOpen && (hovered || activeId === id)) {
       // If the user interacts with it (hovers), we can dismiss the forced state
-      // But wait, maybe we only dismiss it if they hover and then LEAVE?
-      // Or if they click?
-      // For now, let's say if they hover it, we keep showing it (obviously), 
-      // but once they leave, we might want to stop forcing it?
-      // Actually, standard pattern is: show it until user interacts with the element or dismisses it.
-      // Simplest: if they hover, we disable forceOpen, so it behaves normally from then on (closes on leave).
       setForceOpen(false)
       onDefaultOpenDismiss?.()
     }
-  }, [hovered, activeId, id, forceOpen, defaultOpen, onDefaultOpenDismiss])
+  }, [hovered, activeId, id, forceOpen, onDefaultOpenDismiss])
 
   const updatePosition = useCallback(() => {
     if (!show) return

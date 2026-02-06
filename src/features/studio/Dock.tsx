@@ -120,7 +120,7 @@ export function Dock({
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const [hasOpenedInputs, setHasOpenedInputs] = useState(() => {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined') return true // Default to true (hidden) on server to match hydration if persisted
     return window.localStorage.getItem('teleme:has_opened_inputs_v2') === 'true'
   })
 
@@ -458,10 +458,15 @@ export function Dock({
 
                   <div className="h-full w-px bg-white/10" aria-hidden="true" />
 
-                  <Tooltip label={strings.inputsTooltip} shortcut="I" defaultOpen={!inputsOpen && !hasOpenedInputs} onDefaultOpenDismiss={() => {
-                    setHasOpenedInputs(true)
-                    window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
-                  }}>
+                  <Tooltip
+                    label={strings.inputsTooltip}
+                    shortcut="I"
+                    defaultOpen={!inputsOpen && !hasOpenedInputs}
+                    onDefaultOpenDismiss={() => {
+                      setHasOpenedInputs(true)
+                      window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+                    }}
+                  >
                     <button
                       ref={inputsAnchorRef}
                       type="button"
