@@ -28,6 +28,7 @@ type TooltipProps = {
   onDefaultOpenDismiss?: () => void
   className?: string
   interactive?: boolean
+  enabled?: boolean
   children: ReactNode
 }
 
@@ -92,6 +93,7 @@ export function Tooltip({
   onDefaultOpenDismiss,
   className,
   interactive,
+  enabled: enabledProp = true,
   children
 }: TooltipProps) {
   const reactId = useId()
@@ -115,7 +117,7 @@ export function Tooltip({
   const lastAnchorRef = useRef<{ cx: number; cy: number } | null>(null)
 
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
-  const show = enabled && Boolean(label)
+  const show = enabled && enabledProp && Boolean(label)
   const locked = lockedId === id
   const open = show && (locked || forceOpen || (hovered && activeId === id))
 

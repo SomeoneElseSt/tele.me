@@ -1,11 +1,12 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, FlipHorizontal, Mic, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
 import { clamp } from '../../hooks/geometry'
 import { useI18n } from './i18n'
 import { Tooltip } from '../../components/Tooltip'
+import { useTooltipController } from '../../components/useTooltipController'
 
 export type InputDevice = { id: string; label: string }
 
@@ -46,6 +47,7 @@ export function InputsPopover(props: Props) {
     onMirrorVideoChange
   } = props
   const { strings } = useI18n()
+  const tooltip = useTooltipController()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -65,6 +67,12 @@ export function InputsPopover(props: Props) {
     window.addEventListener('pointerdown', onPointerDown, true)
     return () => window.removeEventListener('pointerdown', onPointerDown, true)
   }, [anchorEl, onClose, open])
+
+  useEffect(() => {
+    if (!open) {
+      tooltip.clear()
+    }
+  }, [open, tooltip])
 
   return createPortal(
     <AnimatePresence>
@@ -88,82 +96,85 @@ export function InputsPopover(props: Props) {
               transition={{ type: 'spring', stiffness: 520, damping: 38, mass: 0.7 }}
               onClick={(e) => e.stopPropagation()}
             >
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="text-xs font-medium text-white/75">{strings.inputsTitle}</div>
-                <Tooltip label={strings.close} shortcut="Esc">
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-white/75">{strings.inputsTitle}</div>
+                  <Tooltip label={strings.close} shortcut="Esc">
+                    <button
+                      type="button"
+                      aria-label={strings.close}
+                      onClick={() => {
+                        tooltip.clear()
+                        onClose()
+                      }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white outline-none"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  <div className="relative">
+                    <select
+                      value={toSelectValue(cameraId)}
+                      onChange={(e) => onCameraIdChange(e.target.value || undefined)}
+                      className={cn(
+                        'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 pr-10 text-sm text-white/85 transition-all outline-none',
+                        'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                      )}
+                    >
+                      {cameras.length === 0 && <option value="">{strings.noCameras}</option>}
+                      {cameras.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
+                      <Camera className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  <div className="relative">
+                    <select
+                      value={toSelectValue(micId)}
+                      onChange={(e) => onMicIdChange(e.target.value || undefined)}
+                      className={cn(
+                        'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 pr-10 text-sm text-white/85 transition-all outline-none',
+                        'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                      )}
+                    >
+                      {mics.length === 0 && <option value="">{strings.noMics}</option>}
+                      {mics.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
+                      <Mic className="h-4 w-4" />
+                    </div>
+                  </div>
+
                   <button
                     type="button"
-                    aria-label={strings.close}
-                    onClick={onClose}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                    onClick={() => onMirrorVideoChange(!mirrorVideo)}
+                    className={cn(
+                      'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-all outline-none',
+                      mirrorVideo
+                        ? 'border-white/20 bg-white/12 text-white'
+                        : 'border-white/10 bg-white/6 text-white/80 hover:bg-white/10 hover:border-white/20'
+                    )}
                   >
-                    <X className="h-4 w-4" />
+                    <span className="inline-flex items-center gap-2">
+                      <FlipHorizontal className="h-4 w-4" />
+                      <span>{strings.mirrorVideo}</span>
+                    </span>
+                    <span className="text-xs text-white/55">{mirrorVideo ? strings.on : strings.off}</span>
                   </button>
-                </Tooltip>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <div className="relative">
-                  <select
-                    value={toSelectValue(cameraId)}
-                    onChange={(e) => onCameraIdChange(e.target.value || undefined)}
-                    className={cn(
-                      'h-11 w-full appearance-none rounded-2xl border bg-white/4 px-4 pr-10 text-sm text-white/85',
-                      'border-white/10 focus:outline-none focus:ring-2 focus:ring-white/25'
-                    )}
-                  >
-                    {cameras.length === 0 && <option value="">{strings.noCameras}</option>}
-                    {cameras.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                    <Camera className="h-4 w-4" />
-                  </div>
                 </div>
-
-                <div className="relative">
-                  <select
-                    value={toSelectValue(micId)}
-                    onChange={(e) => onMicIdChange(e.target.value || undefined)}
-                    className={cn(
-                      'h-11 w-full appearance-none rounded-2xl border bg-white/4 px-4 pr-10 text-sm text-white/85',
-                      'border-white/10 focus:outline-none focus:ring-2 focus:ring-white/25'
-                    )}
-                  >
-                    {mics.length === 0 && <option value="">{strings.noMics}</option>}
-                    {mics.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.label}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                    <Mic className="h-4 w-4" />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => onMirrorVideoChange(!mirrorVideo)}
-                  className={cn(
-                    'flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-all',
-                    mirrorVideo
-                      ? 'border-white/18 bg-white/8 text-white'
-                      : 'border-white/10 bg-white/4 text-white/80 hover:bg-white/6'
-                  )}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    <FlipHorizontal className="h-4 w-4" />
-                    <span>{strings.mirrorVideo}</span>
-                  </span>
-                  <span className="text-xs text-white/55">{mirrorVideo ? strings.on : strings.off}</span>
-                </button>
               </div>
-            </div>
             </motion.div>
           </div>
         </>

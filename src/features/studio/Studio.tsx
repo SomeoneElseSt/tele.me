@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Camera, Film, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Tooltip } from '../../components/Tooltip'
+import { Tooltip, TooltipProvider } from '../../components/Tooltip'
+import { useTooltipController } from '../../components/useTooltipController'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useMediaDevices } from '../../hooks/useMediaDevices'
 import { useMediaStream } from '../../hooks/useMediaStream'
@@ -178,6 +179,7 @@ export function Studio() {
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
 
   const [localeOpen, setLocaleOpen] = useState(false)
+  const tooltip = useTooltipController()
   const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
@@ -572,6 +574,7 @@ export function Studio() {
           hotkeys.space = () => onTogglePrompter()
           hotkeys.t = () => onToggleDrawer()
           hotkeys.h = () => {
+            tooltip.clear()
             if (prompterIsPip) return
             if (prompterOpen) {
               if (prompterControlsOpen) {
@@ -594,6 +597,7 @@ export function Studio() {
           }
           hotkeys.f = () => onToggleFullscreen()
           hotkeys.escape = () => {
+            tooltip.clear()
             setDrawerOpen(false)
             setPlaying(false)
           }

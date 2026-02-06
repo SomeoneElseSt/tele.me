@@ -7,6 +7,7 @@ import { clamp } from '../../hooks/geometry'
 import { useI18n } from './i18n'
 import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
+import { useTooltipController } from '../../components/useTooltipController'
 
 /**
  * DownloadPopover Architecture Notes:
@@ -72,6 +73,7 @@ export function DownloadPopover(props: Props) {
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
   const trayRef = useRef<HTMLDivElement>(null)
+  const tooltip = useTooltipController()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
@@ -96,8 +98,9 @@ export function DownloadPopover(props: Props) {
     if (!open) {
       setConfirmingTakeId(null)
       setConfirmingClearAll(false)
+      tooltip.clear()
     }
-  }, [open])
+  }, [open, tooltip])
 
   useHotkeys(
     {
@@ -169,8 +172,8 @@ export function DownloadPopover(props: Props) {
                       className={cn(
                         'inline-flex h-9 w-9 items-center justify-center rounded-xl border transition-colors',
                         persistVideos
-                          ? 'border-white/20 bg-white/12 text-white/80'
-                          : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white'
+                          ? 'border-white/20 bg-white/12 text-white/80 outline-none'
+                          : 'border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white outline-none'
                       )}
                     >
                       <div className="relative">
@@ -200,7 +203,7 @@ export function DownloadPopover(props: Props) {
                         type="button"
                         aria-label={strings.clearAll}
                         onClick={() => setConfirmingClearAll(!confirmingClearAll)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white outline-none"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {strings.clearAll}
@@ -249,8 +252,11 @@ export function DownloadPopover(props: Props) {
                     <button
                       type="button"
                       aria-label={strings.close}
-                      onClick={onClose}
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                      onClick={() => {
+                        tooltip.clear()
+                        onClose()
+                      }}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white outline-none"
                     >
                       <X className="h-4 w-4" />
                     </button>
