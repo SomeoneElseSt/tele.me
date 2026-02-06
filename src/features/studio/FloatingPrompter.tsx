@@ -639,9 +639,9 @@ function ControlsBarPortal({
                       onClick={() => onTextAlignChange('left')}
                       aria-label={strings.alignLeft}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors outline-none',
                         textAlign === 'left'
-                          ? 'border-white/18 bg-white/10 text-white'
+                          ? (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                       )}
                     >
@@ -654,9 +654,9 @@ function ControlsBarPortal({
                       onClick={() => onTextAlignChange('center')}
                       aria-label={strings.alignCenter}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors outline-none',
                         textAlign === 'center'
-                          ? 'border-white/18 bg-white/10 text-white'
+                          ? (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                       )}
                     >
@@ -669,9 +669,9 @@ function ControlsBarPortal({
                       onClick={() => onTextAlignChange('right')}
                       aria-label={strings.alignRight}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors outline-none',
                         textAlign === 'right'
-                          ? 'border-white/18 bg-white/10 text-white'
+                          ? (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                           : 'border-white/10 bg-white/5 text-white/75 hover:bg-white/8'
                       )}
                     >
@@ -1000,7 +1000,7 @@ export function FloatingPrompter(props: Props) {
                     aria-label={strings.hidePrompter}
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
                       isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
@@ -1018,9 +1018,9 @@ export function FloatingPrompter(props: Props) {
                         aria-label={playing ? strings.pausePrompter : strings.playPrompter}
                         onPointerDown={(e) => e.stopPropagation()}
                         className={cn(
-                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                           'hover:bg-white/10 hover:text-white',
-                          playing && 'border-white/18 bg-white/10 text-white'
+                          playing && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                         )}
                       >
                         {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -1034,7 +1034,7 @@ export function FloatingPrompter(props: Props) {
                       aria-label={strings.fixToTop}
                       onPointerDown={(e) => e.stopPropagation()}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                         'hover:bg-white/10 hover:text-white',
                         isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                       )}
@@ -1056,9 +1056,9 @@ export function FloatingPrompter(props: Props) {
                       aria-label="Prompter controls"
                       onPointerDown={(e) => e.stopPropagation()}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                         'hover:bg-white/10 hover:text-white',
-                        quickOpen && 'border-white/18 bg-white/10 text-white'
+                        quickOpen && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                       )}
                     >
                       <SlidersHorizontal className="h-4 w-4" />
@@ -1076,9 +1076,9 @@ export function FloatingPrompter(props: Props) {
                           aria-label={label}
                           onPointerDown={(e) => e.stopPropagation()}
                           className={cn(
-                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                             'hover:bg-white/10 hover:text-white',
-                            isPip && 'border-white/18 bg-white/10 text-white',
+                            isPip && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white'),
                             isSafari && 'opacity-40 cursor-not-allowed'
                           )}
                           disabled={isSafari}
@@ -1168,7 +1168,7 @@ export function FloatingPrompter(props: Props) {
                     aria-label={strings.hidePrompter}
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
                       isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
@@ -1186,7 +1186,7 @@ export function FloatingPrompter(props: Props) {
                         aria-label={playing ? strings.pausePrompter : strings.playPrompter}
                         onPointerDown={(e) => e.stopPropagation()}
                         className={cn(
-                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                           'hover:bg-white/10 hover:text-white',
                           playing && 'border-white/18 bg-white/10 text-white'
                         )}
@@ -1202,7 +1202,7 @@ export function FloatingPrompter(props: Props) {
                       aria-label={strings.unfixFromTop}
                       onPointerDown={(e) => e.stopPropagation()}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                         'hover:bg-white/10 hover:text-white',
                         isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                       )}
@@ -1224,7 +1224,7 @@ export function FloatingPrompter(props: Props) {
                       aria-label="Prompter controls"
                       onPointerDown={(e) => e.stopPropagation()}
                       className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                         'hover:bg-white/10 hover:text-white',
                         quickOpen && 'border-white/18 bg-white/10 text-white'
                       )}
@@ -1244,7 +1244,7 @@ export function FloatingPrompter(props: Props) {
                           aria-label={label}
                           onPointerDown={(e) => e.stopPropagation()}
                           className={cn(
-                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                             'hover:bg-white/10 hover:text-white',
                             isPip && 'border-white/18 bg-white/10 text-white',
                             isSafari && 'opacity-40 cursor-not-allowed'

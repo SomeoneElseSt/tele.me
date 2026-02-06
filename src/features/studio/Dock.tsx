@@ -63,7 +63,7 @@ function DockButton({ label, shortcut, onClick, disabled, active, className, chi
         disabled={disabled}
         className={cn(
           'inline-flex h-11 w-11 items-center justify-center rounded-2xl border transition-all',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30',
+          'focus:outline-none',
           disabled && 'cursor-not-allowed opacity-40',
           active
             ? 'border-white/20 bg-white/10 text-white'
