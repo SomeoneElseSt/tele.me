@@ -86,7 +86,7 @@ export function SettingsDrawer(props: Props) {
             transition={{ duration: 0.2 }}
           >
             <header className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col items-start gap-0.5">
                 <div className="text-sm font-semibold text-white/90">{strings.script}</div>
                 {(() => {
                   const words = script.trim().split(/\s+/).length
@@ -95,7 +95,7 @@ export function SettingsDrawer(props: Props) {
                   const s = Math.round((minutes - m) * 60)
                   if (m === 0 && s === 0) return null
                   return (
-                    <div className="text-xs font-medium text-white/50">
+                    <div className="text-[10px] font-medium text-white/50 tracking-wide">
                       {strings.speakingTime} ~ {m > 0 ? `${m}m ` : ''}{s}s
                     </div>
                   )

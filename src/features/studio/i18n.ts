@@ -179,7 +179,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'Y: fix/unfix from top\n' +
       'P: pop teleprompter out/in',
     shortcutsTitle: 'Shortcuts',
-    speakingTime: 'Speaking time',
+    speakingTime: 'Speaking Time',
   },
   es: {
     defaultScript:
