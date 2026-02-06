@@ -170,8 +170,9 @@ export function Studio() {
   }, [takes])
 
   const [persistVideos, setPersistVideos] = useState(() => {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined') return true
     const saved = window.localStorage.getItem(PERSIST_VIDEOS_STORAGE_KEY)
+    if (saved === null) return true // Default to true if never set
     return saved === 'true'
   })
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
