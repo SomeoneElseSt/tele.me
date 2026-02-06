@@ -679,7 +679,7 @@ export function Studio() {
         {!drawerOpen && (
           <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
             <div
-              className="pointer-events-auto relative p-4 -m-4"
+              className="pointer-events-auto relative"
               onMouseEnter={(e) => {
                 if (e.buttons !== 0) return
                 if (localeHoverTimeoutRef.current) clearTimeout(localeHoverTimeoutRef.current)
@@ -691,6 +691,8 @@ export function Studio() {
                 }, 150)
               }}
             >
+              {/* Invisible guard to keep the hover state active when moving mouse between button and panel */}
+              {localeOpen && <div className="absolute -inset-4 z-0" />}
               <button
                 ref={localeAnchorRef}
                 type="button"
@@ -705,8 +707,7 @@ export function Studio() {
                 {localeOpen && (
                   <motion.div
                     ref={localePanelRef}
-                    className="absolute right-4 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
-                    style={{ top: '56px' }}
+                    className="absolute right-0 top-full mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
                     initial={{ opacity: 0, y: -6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.98 }}

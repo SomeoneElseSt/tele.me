@@ -1060,21 +1060,30 @@ export function FloatingPrompter(props: Props) {
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <Tooltip label={isPip ? strings.popInPrompter : strings.popOutPrompter} shortcut="P">
-                  <button
-                    type="button"
-                    onClick={togglePip}
-                    aria-label={isPip ? strings.popInPrompter : strings.popOutPrompter}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white',
-                      isPip && 'border-white/18 bg-white/10 text-white'
-                    )}
-                  >
-                    {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
-                  </button>
-                </Tooltip>
+                {(() => {
+                  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                  const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
+
+                  return (
+                    <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
+                      <button
+                        type="button"
+                        onClick={isSafari ? undefined : togglePip}
+                        aria-label={label}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className={cn(
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                          'hover:bg-white/10 hover:text-white',
+                          isPip && 'border-white/18 bg-white/10 text-white',
+                          isSafari && 'opacity-40 cursor-not-allowed'
+                        )}
+                        disabled={isSafari}
+                      >
+                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                      </button>
+                    </Tooltip>
+                  )
+                })()}
                 <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
                   <span
                     className={cn(
@@ -1220,21 +1229,30 @@ export function FloatingPrompter(props: Props) {
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <Tooltip label={isPip ? strings.popInPrompter : strings.popOutPrompter} shortcut="P">
-                  <button
-                    type="button"
-                    onClick={togglePip}
-                    aria-label={isPip ? strings.popInPrompter : strings.popOutPrompter}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white',
-                      isPip && 'border-white/18 bg-white/10 text-white'
-                    )}
-                  >
-                    {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
-                  </button>
-                </Tooltip>
+                {(() => {
+                  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                  const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
+
+                  return (
+                    <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
+                      <button
+                        type="button"
+                        onClick={isSafari ? undefined : togglePip}
+                        aria-label={label}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className={cn(
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                          'hover:bg-white/10 hover:text-white',
+                          isPip && 'border-white/18 bg-white/10 text-white',
+                          isSafari && 'opacity-40 cursor-not-allowed'
+                        )}
+                        disabled={isSafari}
+                      >
+                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                      </button>
+                    </Tooltip>
+                  )
+                })()}
                 <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
                   <span
                     className={cn(

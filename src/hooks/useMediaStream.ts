@@ -40,26 +40,34 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
 
     const constraints: MediaStreamConstraints = {
       audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
-      video: videoDeviceId 
-        ? { 
-            deviceId: { exact: videoDeviceId },
+      video: videoDeviceId
+        ? {
+          deviceId: { exact: videoDeviceId },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+        : facingMode
+          ? {
+            facingMode,
             width: { ideal: 1920 },
             height: { ideal: 1080 }
           }
-        : facingMode 
-          ? { 
-              facingMode,
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            }
           : {
-              width: { ideal: 1920 },
-              height: { ideal: 1080 }
-            }
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
     }
 
     const next = await navigator.mediaDevices.getUserMedia(constraints).catch((err: unknown) => {
-      const message = err instanceof Error ? err.message : 'Failed to start camera.'
+      let message = err instanceof Error ? err.message : 'Failed to start camera.'
+
+      // Specifically handle Brave browser permissions issues
+      // @ts-ignore - Navigator.brave is Brave-specific
+      const isBrave = Boolean(navigator.brave && typeof navigator.brave.isBrave === 'function')
+      if (isBrave && (message.includes('denied') || (typeof message === 'string' && message.toLowerCase().includes('allowed')))) {
+        message = 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site.'
+      }
+
       setError(message)
       setReady(true)
       return null
