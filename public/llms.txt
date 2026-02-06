@@ -1,0 +1,31 @@
+# tele.me
+
+> A free, privacy-focused online teleprompter application that runs entirely in the browser. No accounts, no logins, no data collection. Features advanced controls including adjustable speed, mirroring (Picture-in-Picture), customization, and full-screen support.
+
+## Key Features
+
+- **100% Client-Side**: All processing happens in your browser—no server uploads or data collection.
+- **No Registration**: Instant access without creating accounts or providing personal information.
+- **Professional Controls**: Adjustable scroll speed, markdown rendering, customizable fonts and sizes.
+- **Picture-in-Picture Mode**: Read your script in a floating window while using other applications.
+- **Pro Recording**: Integrated video capture using AVC3 for robust MP4 exports with **no watermarks**.
+- **Multilingual Support**: Available in 11 languages, including English, Spanish, Japanese, Hindi, French, German, Chinese, Arabic, Portuguese, Russian, and Polish.
+- **Privacy First**: Your camera data and recordings never leave your device.
+- **Free Forever**: No premium tiers, subscriptions, watermarks, or hidden costs.
+
+## Use Cases
+
+Perfect for video creators, presenters, journalists, educators, public speakers, content creators, live streamers, and anyone needing a reliable teleprompter without software installation.
+
+## Technical Details
+
+- Pure React implementation with Vite.
+- Works offline after initial load using browser caching.
+- Supports keyboard shortcuts: Space (Play/Pause), M (Markdown), P (PiP), C (Controls).
+- Responsive design optimized for desktop and mobile.
+- Zero cookies or tracking scripts.
+
+## Getting Started
+
+- **General Users**: Visit [tele.me](https://tele.me) to start using the teleprompter immediately in your browser.
+- **Technical Users**: For local use or offline setups, clone the repository from [GitHub](https://github.com/SomeoneElseSt/tele.me), install dependencies with `pnpm install`, and run locally with `pnpm run dev`.

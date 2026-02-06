@@ -1,0 +1,50 @@
+{
+    "version": "1.0",
+    "site_info": {
+        "name": "tele.me",
+        "description": "Free browser-based teleprompter with professional features. No login required, fully client-side.",
+        "home_url": "https://tele.me"
+    },
+    "authentication": {
+        "required": false
+    },
+    "intents": {
+        "supported": [
+            {
+                "type": "read_content",
+                "description": "View teleprompter features and technical specifications",
+                "authentication_required": false,
+                "endpoints": [
+                    {
+                        "path": "/",
+                        "methods": [
+                            "GET"
+                        ],
+                        "documentation_url": "https://tele.me"
+                    }
+                ]
+            },
+            {
+                "type": "use_application",
+                "description": "Launch and use the teleprompter directly in browser",
+                "authentication_required": false,
+                "endpoints": [
+                    {
+                        "path": "/",
+                        "methods": [
+                            "GET"
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "policies": {
+        "rate_limits": {
+            "requests_per_minute": 60
+        },
+        "agent_identification": {
+            "required": false
+        }
+    }
+}

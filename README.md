@@ -4,13 +4,13 @@ A minimalist, high-performance web teleprompter and video recorder. Zero account
 
 ## Features
 
-- **Free and Open**: 100% free to use.
-- **No Log In**: Use without an account.
-- **Fluid Prompter**: Smooth prompter with customizable speed and markdown rendering.
-- **Picture-in-Picture**: Pop the prompter into a window to read while using other apps.
-- **Pro Recording**: Download directly as MP4 without watermarks or recording limits.
-- **Privacy First**: No information is sent anywhere. All happens in your device.
-- **Localization**: Translated to 11 languages (English, Español, 日本語, हिन्दी, Français, Deutsch, 中文, العربية, Português, Русский, Polski).
+- **Free and Open** 💸: 100% free to use.
+- **No Log In** 🔑: Use without an account.
+- **High Performance** ✨: Smooth prompter with customizable speed and markdown rendering.
+- **Picture-in-Picture** 📺: Pop the prompter into a window to read while using other apps.
+- **Pro Recording** 🎥: Download directly as MP4 without watermarks or recording limits.
+- **Privacy First** 🔒: No information is sent anywhere. All happens in your device.
+- **Localization** 🌍: Translated to 11 languages (English, Español, 日本語, हिन्दी, Français, Deutsch, 中文, العربية, Português, Русский, Polski).
 
 ---
 
