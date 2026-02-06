@@ -25,7 +25,7 @@ import {
   type PrompterFrame
 } from './types'
 
-const DEFAULT_SPEED = 52
+const DEFAULT_SPEED = 100
 const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.45
 const DEFAULT_MIRROR_VIDEO = true
