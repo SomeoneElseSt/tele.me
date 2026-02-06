@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, MonitorUp, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -11,7 +11,7 @@ import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
-import { useI18n } from './i18n'
+import { useI18n, STRINGS } from './i18n'
 
 type Props = {
   open: boolean
@@ -33,6 +33,7 @@ type Props = {
   onTogglePlaying: () => void
   onClose: () => void
   onControlsOpenChange?: (open: boolean) => void
+  onPipChange?: (isPip: boolean) => void
   forceCloseControls?: boolean
 }
 
@@ -298,7 +299,8 @@ function ControlCell({
   max,
   step,
   onChange,
-  formatValue
+  formatValue,
+  disabled
 }: {
   Thumb: ComponentType<{ t: MotionValue<number> }>
   title: string
@@ -308,6 +310,7 @@ function ControlCell({
   step: number
   onChange: (value: number) => void
   formatValue?: (value: number) => string
+  disabled?: boolean
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null)
   const activePointerIdRef = useRef<number | null>(null)
@@ -383,18 +386,19 @@ function ControlCell({
 
   return (
     <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-4 pb-2">
-      <div className="flex items-end justify-between gap-3">
+      <div className={cn("flex items-end justify-between gap-3", disabled && "opacity-40")}>
         <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
         <div className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55">
           {formatValue ? formatValue(value) : `${value}`}
         </div>
       </div>
 
-      <div className="relative mt-2.5 h-9">
+      <div className={cn("relative mt-2.5 h-9", disabled && "pointer-events-none")}>
         <div
           className={cn(
             'relative mx-4 h-full touch-none select-none',
-            'cursor-pointer outline-none'
+            'cursor-pointer outline-none',
+            disabled && "blur-[2px] opacity-40"
           )}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -464,7 +468,9 @@ function ControlsBarPortal({
   onOpacityChange,
   onSpeedChange,
   onFontSizeChange,
-  onTextAlignChange
+  onTextAlignChange,
+  isPip,
+  pipWindow
 }: {
   open: boolean
   frame: PrompterFrame
@@ -477,6 +483,8 @@ function ControlsBarPortal({
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
   onTextAlignChange: (value: 'left' | 'center' | 'right') => void
+  isPip?: boolean
+  pipWindow?: any
 }) {
   const { strings } = useI18n()
   // Match teleprompter opacity for visual consistency (no contrast difference)
@@ -524,7 +532,9 @@ function ControlsBarPortal({
   const portalEl =
     typeof document === 'undefined'
       ? null
-      : (document.getElementById('studio-portal') ?? document.body)
+      : isPip && pipWindow
+        ? pipWindow.document.body
+        : (document.getElementById('studio-portal') ?? document.body)
 
   if (!portalEl) return null
 
@@ -532,14 +542,19 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <motion.div
-          className="pointer-events-auto fixed z-[65]"
-          style={{
+          className="pointer-events-auto fixed z-[75]"
+          style={isPip ? {
+            left: 20,
+            right: 20,
+            bottom: 20,
+            perspective: 1200
+          } : {
             left: frame.x,
             top,
             width: frame.width,
             perspective: 1200
           }}
-          animate={{ top }}
+          animate={isPip ? {} : { top }}
           transition={{ type: 'spring', stiffness: 360, damping: 48, mass: 0.9 }}
           onPointerDown={(e) => e.stopPropagation()}
         >
@@ -605,6 +620,7 @@ function ControlsBarPortal({
                   step={0.01}
                   formatValue={(v) => `${Math.round(v * 100)}%`}
                   onChange={onOpacityChange}
+                  disabled={isPip}
                 />
 
                 <div className="flex items-center justify-center gap-1.5 px-3">
@@ -685,12 +701,15 @@ export function FloatingPrompter(props: Props) {
     onTogglePlaying,
     onClose,
     onControlsOpenChange,
+    onPipChange,
     forceCloseControls
   } = props
 
   const tooltip = useTooltipController()
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
+  const [isPip, setIsPip] = useState(false)
+  const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
@@ -699,10 +718,108 @@ export function FloatingPrompter(props: Props) {
       onControlsOpenChange?.(false)
     }
   }, [forceCloseControls, quickOpen, onControlsOpenChange])
+
+  // Handle PiP exit
+  useEffect(() => {
+    return () => {
+      if (pipWindowRef.current) {
+        pipWindowRef.current.close()
+      }
+    }
+  }, [])
+
+  const togglePip = useCallback(async () => {
+    if (isPip) {
+      if (pipWindowRef.current) {
+        pipWindowRef.current.close()
+      }
+      setIsPip(false)
+      props.onPipChange?.(false)
+      return
+    }
+
+    try {
+      // @ts-ignore - Document Picture-in-Picture is a newer API
+      const pip = await window.documentPictureInPicture.requestWindow({
+        width: frame.width,
+        height: frame.height + 60, // Add some room for header/controls
+      })
+
+      // Copy styles to PiP window
+      const styleSheets = Array.from(document.styleSheets)
+      styleSheets.forEach((styleSheet) => {
+        try {
+          const cssRules = Array.from(styleSheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join('')
+          const style = document.createElement('style')
+          style.textContent = cssRules
+          pip.document.head.appendChild(style)
+        } catch (e) {
+          // Cross-origin stylesheets will fail to read cssRules
+          if (styleSheet.href) {
+            const link = document.createElement('link')
+            link.rel = 'stylesheet'
+            link.href = styleSheet.href
+            pip.document.head.appendChild(link)
+          }
+        }
+      })
+
+      // Add a dark background to PiP window
+      pip.document.body.style.backgroundColor = 'black'
+      pip.document.body.style.margin = '0'
+      pip.document.body.style.overflow = 'hidden'
+
+      pipWindowRef.current = pip
+      setIsPip(true)
+      props.onPipChange?.(true)
+
+      pip.addEventListener('pagehide', () => {
+        setIsPip(false)
+        props.onPipChange?.(false)
+        pipWindowRef.current = null
+      })
+    } catch (e) {
+      console.error('Failed to enter PiP:', e)
+      alert('Picture-in-Picture failed. Make sure you are using a supported browser (Chrome 116+).')
+    }
+  }, [isPip, frame.width, frame.height])
+
+  // Sync hotkeys to PiP window
+  useEffect(() => {
+    if (isPip && pipWindowRef.current) {
+      const handleKeyDown = (e: any) => {
+        if (e.code === 'Space') {
+          e.preventDefault()
+          onTogglePlaying()
+        } else if (e.code === 'KeyP') {
+          togglePip()
+        }
+      }
+      pipWindowRef.current.addEventListener('keydown', handleKeyDown)
+      return () => pipWindowRef.current?.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isPip, onTogglePlaying, onClose, togglePip])
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
   const savedScrollTopRef = useRef<number>(0)
+
+  const displayScript = useMemo(() => {
+    if (isPip) {
+      if (!script.trim()) return strings.pipEditHint
+
+      const isDefault = Object.values(STRINGS).some((s) => s.defaultScript === script)
+      if (isDefault) {
+        const lines = script.split('\n')
+        const firstLine = lines[0] || ''
+        const rest = lines.slice(1).join('\n').trim()
+        return `${firstLine}\n\n${strings.pipEditHint}\n\n${rest}`
+      }
+    }
+    return script
+  }, [isPip, script, strings.pipEditHint])
 
   useRafLoop(
     (deltaMs) => {
@@ -732,7 +849,7 @@ export function FloatingPrompter(props: Props) {
 
   const minWidth = Math.max(PROMPTER_MIN_WIDTH, PROMPTER_CONTROLS_MIN_WIDTH)
   const resize = usePointerResize({
-    enabled: open && !fixedToTop,
+    enabled: open && !fixedToTop && !isPip,
     getOrigin: () => ({ width: frame.width, height: frame.height }),
     onResize: (next) =>
       onFrameChange({
@@ -744,7 +861,7 @@ export function FloatingPrompter(props: Props) {
 
   const onResizePointerDown = useCallback(
     (event: React.PointerEvent) => {
-      if (event.button !== 0) return
+      if (event.button !== 0 || isPip) return
       setResizing(true)
       resize.onPointerDown(event)
     },
@@ -776,6 +893,7 @@ export function FloatingPrompter(props: Props) {
           })
         },
         y: () => {
+          if (isPip) return
           if (fixedToTop) {
             onUnfixFromTop()
           } else {
@@ -786,9 +904,10 @@ export function FloatingPrompter(props: Props) {
         escape: () => {
           if (!playing) return
           onTogglePlaying()
-        }
+        },
+        p: () => togglePip()
       }),
-      [onTogglePlaying, playing, onControlsOpenChange, fixedToTop, onFixToTop, onUnfixFromTop]
+      [onTogglePlaying, playing, onControlsOpenChange, fixedToTop, onFixToTop, onUnfixFromTop, togglePip]
     ),
     open
   )
@@ -823,31 +942,31 @@ export function FloatingPrompter(props: Props) {
     }
   }, [fixedToTop, frame.y, onFrameChange])
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
           className={cn(
-            'fixed z-[70] overflow-hidden border border-white/10 shadow-glow flex flex-col',
+            'fixed z-[65] overflow-hidden border border-white/10 shadow-glow flex flex-col pointer-events-auto',
             fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl'
           )}
           style={{
-            width: frame.width,
-            height: frame.height,
-            x: frame.x,
-            y: fixedToTop ? 0 : frame.y,
+            width: isPip ? '100vw' : frame.width,
+            height: isPip ? '100vh' : frame.height,
+            x: isPip ? 0 : frame.x,
+            y: isPip ? 0 : (fixedToTop ? 0 : frame.y),
             backgroundColor: `rgba(0,0,0,${opacity})`
           }}
-          initial={{ opacity: 0, scale: 0.98 }}
+          initial={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.98 }}
+          exit={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
           transition={{ type: 'spring', stiffness: 420, damping: 40, mass: 0.8 }}
         >
-          {fixedToTop && (
+          {fixedToTop && !isPip && (
             <div className="h-px w-full bg-white/10" />
           )}
 
-          {!fixedToTop && (
+          {(!fixedToTop || isPip) && (
             <div
               className={cn(
                 'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
@@ -864,8 +983,10 @@ export function FloatingPrompter(props: Props) {
                   onPointerDown={(e) => e.stopPropagation()}
                   className={cn(
                     'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                    'hover:bg-white/10 hover:text-white'
+                    'hover:bg-white/10 hover:text-white',
+                    isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                   )}
+                  disabled={isPip}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -879,8 +1000,10 @@ export function FloatingPrompter(props: Props) {
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white'
+                      'hover:bg-white/10 hover:text-white',
+                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
+                    disabled={isPip}
                   >
                     <ArrowUp className="h-4 w-4" />
                   </button>
@@ -906,16 +1029,32 @@ export function FloatingPrompter(props: Props) {
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                {!fixedToTop && (
-                  <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
-                    <span
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
-                      onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
-                    >
-                      <Move className="h-4 w-4 text-white/60" />
-                    </span>
-                  </Tooltip>
-                )}
+                <Tooltip label={isPip ? strings.popInPrompter : strings.popOutPrompter} shortcut="P">
+                  <button
+                    type="button"
+                    onClick={togglePip}
+                    aria-label={isPip ? strings.popInPrompter : strings.popOutPrompter}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white',
+                      isPip && 'border-white/18 bg-white/10 text-white'
+                    )}
+                  >
+                    {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                  </button>
+                </Tooltip>
+                <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                  <span
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
+                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                    )}
+                    onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
+                  >
+                    <Move className="h-4 w-4 text-white/60" />
+                  </span>
+                </Tooltip>
               </div>
             </div>
           )}
@@ -939,14 +1078,14 @@ export function FloatingPrompter(props: Props) {
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {renderMarkdownBlocks(script)}
+                    {renderMarkdownBlocks(displayScript)}
                   </div>
                 ) : (
                   <pre
                     className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {script}
+                    {displayScript}
                   </pre>
                 )}
               </div>
@@ -955,7 +1094,11 @@ export function FloatingPrompter(props: Props) {
             {!fixedToTop && (
               <div
                 aria-hidden="true"
-                className={cn('grip-visual absolute z-0', resizing && 'is-active')}
+                className={cn(
+                  'grip-visual absolute z-0',
+                  resizing && 'is-active',
+                  isPip && 'opacity-20 grayscale brightness-50'
+                )}
                 style={{
                   right: GRIP_INSET_PX,
                   bottom: GRIP_INSET_PX,
@@ -966,7 +1109,7 @@ export function FloatingPrompter(props: Props) {
             )}
           </div>
 
-          {fixedToTop && (
+          {fixedToTop && !isPip && (
             <div
               className={cn(
                 'flex items-center justify-between gap-2 border-t border-white/10 px-4 text-white/85',
@@ -983,8 +1126,10 @@ export function FloatingPrompter(props: Props) {
                   onPointerDown={(e) => e.stopPropagation()}
                   className={cn(
                     'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                    'hover:bg-white/10 hover:text-white'
+                    'hover:bg-white/10 hover:text-white',
+                    isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                   )}
+                  disabled={isPip}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -998,8 +1143,10 @@ export function FloatingPrompter(props: Props) {
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white'
+                      'hover:bg-white/10 hover:text-white',
+                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
+                    disabled={isPip}
                   >
                     <ArrowDown className="h-4 w-4" />
                   </button>
@@ -1025,10 +1172,28 @@ export function FloatingPrompter(props: Props) {
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
                 </Tooltip>
+                <Tooltip label={isPip ? strings.popInPrompter : strings.popOutPrompter} shortcut="P">
+                  <button
+                    type="button"
+                    onClick={togglePip}
+                    aria-label={isPip ? strings.popInPrompter : strings.popOutPrompter}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white',
+                      isPip && 'border-white/18 bg-white/10 text-white'
+                    )}
+                  >
+                    {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                  </button>
+                </Tooltip>
                 <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
                   <span
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6"
-                    onPointerDown={() => tooltip.lock(DRAG_TOOLTIP_ID)}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
+                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                    )}
+                    onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
                   >
                     <Move className="h-4 w-4 text-white/60" />
                   </span>
@@ -1039,7 +1204,10 @@ export function FloatingPrompter(props: Props) {
 
           {!fixedToTop && (
             <div
-              className={cn('grip-hit absolute z-20 cursor-nwse-resize touch-none')}
+              className={cn(
+                'grip-hit absolute z-20 touch-none',
+                !isPip && 'cursor-nwse-resize'
+              )}
               style={{
                 right: GRIP_INSET_PX,
                 bottom: GRIP_INSET_PX,
@@ -1062,9 +1230,12 @@ export function FloatingPrompter(props: Props) {
             onSpeedChange={onSpeedChange}
             onFontSizeChange={onFontSizeChange}
             onTextAlignChange={onTextAlignChange}
+            isPip={isPip}
+            pipWindow={pipWindowRef.current}
           />
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    isPip && pipWindowRef.current ? pipWindowRef.current.document.body : (document.getElementById('studio-portal') || document.body)
   )
 }

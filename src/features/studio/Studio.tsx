@@ -127,6 +127,7 @@ export function Studio() {
   })
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
+  const [prompterIsPip, setPrompterIsPip] = useState(false)
   const [forceCloseControls, setForceCloseControls] = useState(false)
   const [fixedToTop, setFixedToTop] = useState(() => {
     if (typeof window === 'undefined') return false
@@ -567,6 +568,7 @@ export function Studio() {
           hotkeys.space = () => onTogglePrompter()
           hotkeys.t = () => onToggleDrawer()
           hotkeys.h = () => {
+            if (prompterIsPip) return
             if (prompterOpen) {
               if (prompterControlsOpen) {
                 setForceCloseControls(true)
@@ -595,7 +597,7 @@ export function Studio() {
 
         return hotkeys
       },
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip]
     ),
     true
   )
@@ -762,6 +764,7 @@ export function Studio() {
           }}
           onFrameChange={onFrameChange}
           onControlsOpenChange={setPrompterControlsOpen}
+          onPipChange={setPrompterIsPip}
           forceCloseControls={forceCloseControls}
         />
 
@@ -807,7 +810,7 @@ export function Studio() {
           onMarkdownEnabledChange={setMarkdownEnabled}
         />
 
-        <div id="studio-portal" className="pointer-events-none" />
+        <div id="studio-portal" />
       </div>
     </I18nProvider>
   )
