@@ -170,7 +170,7 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
   while (i < lines.length) {
     const line = lines[i] ?? ''
     if (line.trim() === '') {
-      blocks.push(<div key={`spacer-${i}`} className="h-4" />)
+      blocks.push(<div key={`spacer-${i}`} style={{ height: '1.35em' }} />)
       i += 1
       continue
     }
@@ -181,10 +181,10 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       const textContent = headingMatch[2] ?? ''
       const headingClass = cn(
         'font-semibold tracking-[-0.02em] text-white',
-        level === 1 && 'text-[1.45em] leading-[1.2] mb-3',
-        level === 2 && 'text-[1.25em] leading-[1.25] mb-2.5',
-        level === 3 && 'text-[1.1em] leading-[1.3] mb-2',
-        level > 3 && 'text-[1em] leading-[1.35] mb-2'
+        level === 1 && 'text-[1.45em] leading-[1.2]',
+        level === 2 && 'text-[1.25em] leading-[1.25]',
+        level === 3 && 'text-[1.1em] leading-[1.3]',
+        level > 3 && 'text-[1em] leading-[1.35]'
       )
       if (level === 1) {
         blocks.push(
@@ -233,14 +233,14 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*[-*+]\s+/, '')
         items.push(
-          <li key={`ul-${i}`} className="mb-1.5 last:mb-0">
+          <li key={`ul-${i}`}>
             {renderInlineMarkdown(itemText)}
           </li>
         )
         i += 1
       }
       blocks.push(
-        <ul key={`ul-block-${i}`} className="mb-3 list-disc pl-6 text-white/92">
+        <ul key={`ul-block-${i}`} className="list-disc pl-6 text-white/92">
           {items}
         </ul>
       )
@@ -253,14 +253,14 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*\d+\.\s+/, '')
         items.push(
-          <li key={`ol-${i}`} className="mb-1.5 last:mb-0">
+          <li key={`ol-${i}`}>
             {renderInlineMarkdown(itemText)}
           </li>
         )
         i += 1
       }
       blocks.push(
-        <ol key={`ol-block-${i}`} className="mb-3 list-decimal pl-6 text-white/92">
+        <ol key={`ol-block-${i}`} className="list-decimal pl-6 text-white/92">
           {items}
         </ol>
       )
@@ -279,7 +279,7 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
     const paragraphText = paragraphLines.join('\n')
     const paragraphParts = paragraphText.split('\n')
     blocks.push(
-      <p key={`p-${i}`} className="mb-3 last:mb-0 text-white/92">
+      <p key={`p-${i}`} className="text-white/92">
         {paragraphParts.map((segment, idx) => (
           <span key={`p-${i}-${idx}`}>
             {renderInlineMarkdown(segment)}
@@ -1135,8 +1135,11 @@ export function FloatingPrompter(props: Props) {
                   <>
                     <div
                       aria-hidden="true"
-                      className="col-start-1 row-start-1 invisible whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] pointer-events-none"
-                      style={{ fontSize }}
+                      className={cn(
+                        'col-start-1 row-start-1 invisible whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] pointer-events-none',
+                        !markdownEnabled && 'font-mono'
+                      )}
+                      style={{ fontSize, fontFamily: markdownEnabled ? 'inherit' : 'monospace' }}
                     >
                       {script + '\n\n\n'}
                     </div>
@@ -1147,7 +1150,7 @@ export function FloatingPrompter(props: Props) {
                         fontSize,
                         textAlign,
                         color: 'inherit',
-                        fontFamily: 'inherit',
+                        fontFamily: markdownEnabled ? 'inherit' : 'monospace',
                         lineHeight: '1.35',
                         letterSpacing: '-0.02em',
                         fontWeight: 500
@@ -1179,8 +1182,8 @@ export function FloatingPrompter(props: Props) {
                   </div>
                 ) : (
                   <pre
-                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] font-sans"
-                    style={{ fontSize, fontFamily: 'inherit' }}
+                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
+                    style={{ fontSize }}
                   >
                     {displayScript + '\n\n\n'}
                   </pre>
