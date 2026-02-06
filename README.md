@@ -1,4 +1,4 @@
-# tele.me 🎬
+# teleme.me 🎬
 
 A minimalist, high-performance web teleprompter and video recorder. Zero accounts + zero tracking = zero hassle. Everything runs locally in your browser.
 
@@ -18,7 +18,7 @@ A minimalist, high-performance web teleprompter and video recorder. Zero account
 
 ### Architecture Overview
 
-Teleme is built as a highly-decoupled React application that prioritizes layout stability and low-latency interaction.
+Teleme.me is built as a highly-decoupled React application that prioritizes layout stability and low-latency interaction.
 
 ```mermaid
 graph TD
@@ -95,5 +95,5 @@ pnpm run dev
 
 This will open a Localhost window. 
 
-> I (stiven.me) built this side project because I was exceedingly frustrated with existing teleprompter applications. They are slow, bloated, require you to log in with an account, pay, and don't support picture-in-picture mode. I build this asking the question 'what does a 10X better teleprompter look like?', and the answer is tele.me.
+> I (stiven.me) built this side project because I was exceedingly frustrated with existing teleprompter applications. They are slow, bloated, require you to log in with an account, pay, and don't support picture-in-picture mode. I build this asking the question 'what does a 10X better teleprompter look like?', and the answer is teleme.me.
 >> If you find bugs, [let me know](mailto:strnmrtnz@icloud.com), or open a PR with a video showing what the bug was and how you fixed it. 

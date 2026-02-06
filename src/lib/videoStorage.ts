@@ -3,7 +3,7 @@
  * Stores video blobs with metadata for cross-session persistence
  */
 
-const DB_NAME = 'teleme-videos'
+const DB_NAME = 'teleme.me-videos'
 const DB_VERSION = 1
 const STORE_NAME = 'videos'
 const MAX_VIDEOS = 10

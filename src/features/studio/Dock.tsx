@@ -121,7 +121,7 @@ export function Dock({
 
   const [hasOpenedInputs, setHasOpenedInputs] = useState(() => {
     if (typeof window === 'undefined') return true // Default to true (hidden) on server to match hydration if persisted
-    return window.localStorage.getItem('teleme:has_opened_inputs_v2') === 'true'
+    return window.localStorage.getItem('teleme.me:has_opened_inputs_v2') === 'true'
   })
 
   // Reset confirmation when playing video changes
@@ -151,7 +151,7 @@ export function Dock({
     setInputsOpen((v) => !v)
     if (!hasOpenedInputs) {
       setHasOpenedInputs(true)
-      window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+      window.localStorage.setItem('teleme.me:has_opened_inputs_v2', 'true')
     }
   }, [hasOpenedInputs])
   const onToggleDownloadsExclusive = useCallback(() => {
@@ -170,7 +170,7 @@ export function Dock({
       const a = document.createElement('a')
       a.href = url
       const ext = playingTake.mimeType?.includes('mp4') ? 'mp4' : 'webm'
-      a.download = `teleme-${new Date(playingTake.createdAt).toISOString().replaceAll(':', '')}.${ext}`
+      a.download = `teleme.me-${new Date(playingTake.createdAt).toISOString().replaceAll(':', '')}.${ext}`
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
@@ -464,7 +464,7 @@ export function Dock({
                     defaultOpen={!inputsOpen && !hasOpenedInputs}
                     onDefaultOpenDismiss={() => {
                       setHasOpenedInputs(true)
-                      window.localStorage.setItem('teleme:has_opened_inputs_v2', 'true')
+                      window.localStorage.setItem('teleme.me:has_opened_inputs_v2', 'true')
                     }}
                   >
                     <button

@@ -34,4 +34,4 @@ User-agent: CCBot
 Allow: /
 
 # Sitemap location
-Sitemap: https://tele.me/sitemap.xml
+Sitemap: https://teleme.me/sitemap.xml

@@ -1,4 +1,4 @@
-# tele.me
+# teleme.me
 
 > A free, privacy-focused online teleprompter application that runs entirely in the browser. No accounts, no logins, no data collection. Features advanced controls including adjustable speed, mirroring (Picture-in-Picture), customization, and full-screen support.
 
@@ -28,5 +28,5 @@ Perfect for video creators, presenters, journalists, educators, public speakers,
 
 ## Getting Started
 
-- **General Users**: Visit [tele.me](https://tele.me) to start using the teleprompter immediately in your browser.
-- **Technical Users**: For local use or offline setups, clone the repository from [GitHub](https://github.com/SomeoneElseSt/tele.me), install dependencies with `pnpm install`, and run locally with `pnpm run dev`.
+- **General Users**: Visit [teleme.me](https://teleme.me) to start using the teleprompter immediately in your browser.
+- **Technical Users**: For local use or offline setups, clone the repository from [GitHub](https://github.com/SomeoneElseSt/teleme.me), install dependencies with `pnpm install`, and run locally with `pnpm run dev`.

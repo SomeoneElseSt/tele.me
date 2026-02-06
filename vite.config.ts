@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'robots.txt', 'sitemap.xml'],
       manifest: {
-        name: 'tele.me - Free Online Teleprompter',
-        short_name: 'tele.me',
+        name: 'teleme.me - Free Online Teleprompter',
+        short_name: 'teleme.me',
         description: 'Professional-grade online teleprompter with no login required.',
         theme_color: '#000000',
         background_color: '#000000',

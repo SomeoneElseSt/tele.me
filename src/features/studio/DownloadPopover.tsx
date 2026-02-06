@@ -297,7 +297,7 @@ export function DownloadPopover(props: Props) {
                   ) : (
                     takes.map((take) => {
                       const extension = getFileExtension(take.mimeType)
-                      const filename = `teleme-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
+                      const filename = `teleme.me-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
 
                       const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault()

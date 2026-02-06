@@ -33,15 +33,15 @@ type TextAlign = 'left' | 'center' | 'right'
 const DEFAULT_TEXT_ALIGN: TextAlign = 'left'
 const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }
 
-const LOCALE_STORAGE_KEY = 'teleme:locale'
-const TAKE_NUMBER_STORAGE_KEY = 'teleme:next_take_number'
-const SPEED_STORAGE_KEY = 'teleme:prompter_speed'
-const FONT_SIZE_STORAGE_KEY = 'teleme:prompter_font_size'
-const OPACITY_STORAGE_KEY = 'teleme:prompter_opacity'
-const TEXT_ALIGN_STORAGE_KEY = 'teleme:prompter_text_align'
-const FRAME_STORAGE_KEY = 'teleme:prompter_frame'
-const FIXED_TO_TOP_STORAGE_KEY = 'teleme:prompter_fixed_to_top'
-const PERSIST_VIDEOS_STORAGE_KEY = 'teleme:persist_videos'
+const LOCALE_STORAGE_KEY = 'teleme.me:locale'
+const TAKE_NUMBER_STORAGE_KEY = 'teleme.me:next_take_number'
+const SPEED_STORAGE_KEY = 'teleme.me:prompter_speed'
+const FONT_SIZE_STORAGE_KEY = 'teleme.me:prompter_font_size'
+const OPACITY_STORAGE_KEY = 'teleme.me:prompter_opacity'
+const TEXT_ALIGN_STORAGE_KEY = 'teleme.me:prompter_text_align'
+const FRAME_STORAGE_KEY = 'teleme.me:prompter_frame'
+const FIXED_TO_TOP_STORAGE_KEY = 'teleme.me:prompter_fixed_to_top'
+const PERSIST_VIDEOS_STORAGE_KEY = 'teleme.me:persist_videos'
 const MAX_PERSISTENT_VIDEOS = 10
 
 function getCenteredFrame(frame: PrompterFrame) {
@@ -647,7 +647,7 @@ export function Studio() {
                         return (
                           <a
                             key={index}
-                            href="https://github.com/SomeoneElseSt/tele.me"
+                            href="https://github.com/SomeoneElseSt/teleme.me"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="underline hover:text-white"
@@ -684,7 +684,7 @@ export function Studio() {
             <div className="pointer-events-auto p-4 -m-4 rounded-3xl">
               <div className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">
                 <Film className="h-4 w-4 text-white/75" />
-                <span className="tracking-[-0.02em]">tele.me</span>
+                <span className="tracking-[-0.02em]">teleme.me</span>
               </div>
             </div>
           </Tooltip>

@@ -1,9 +1,9 @@
 {
     "version": "1.0",
     "site_info": {
-        "name": "tele.me",
+        "name": "teleme.me",
         "description": "Free browser-based teleprompter with professional features. No login required, fully client-side, and works offline (PWA).",
-        "home_url": "https://tele.me"
+        "home_url": "https://teleme.me"
     },
     "authentication": {
         "required": false
@@ -20,7 +20,7 @@
                         "methods": [
                             "GET"
                         ],
-                        "documentation_url": "https://tele.me"
+                        "documentation_url": "https://teleme.me"
                     }
                 ]
             },
