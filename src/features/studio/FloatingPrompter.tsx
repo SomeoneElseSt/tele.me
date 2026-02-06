@@ -35,6 +35,7 @@ type Props = {
   onControlsOpenChange?: (open: boolean) => void
   onPipChange?: (isPip: boolean) => void
   onMarkdownEnabledChange?: (enabled: boolean) => void
+  onScriptChange: (value: string) => void
   forceCloseControls?: boolean
 }
 
@@ -695,6 +696,7 @@ export function FloatingPrompter(props: Props) {
     frame,
     opacity,
     script,
+    onScriptChange,
     markdownEnabled,
     speed,
     fontSize,
@@ -818,6 +820,12 @@ export function FloatingPrompter(props: Props) {
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
   const savedScrollTopRef = useRef<number>(0)
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Exit edit mode when playing starts
+  useEffect(() => {
+    if (playing) setIsEditing(false)
+  }, [playing])
 
   const displayScript = useMemo(() => {
     if (isPip) {
@@ -1102,6 +1110,8 @@ export function FloatingPrompter(props: Props) {
             </div>
           )}
 
+
+
           <div className="relative flex-1">
             <div
               ref={scrollerRef}
@@ -1109,26 +1119,70 @@ export function FloatingPrompter(props: Props) {
               style={{ bottom: isPip ? 0 : (fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX) }}
             >
               <div
-                className="px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
+                className="grid px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
                 style={{
                   textAlign,
                   paddingTop: fixedToTop ? 8 : 24,
-                  paddingBottom: playing ? frame.height * 0.7 : 24
+                  // Maintain consistent padding to prevent scroll jumps when toggling play/edit
+                  paddingBottom: frame.height * 0.7,
+                  minHeight: '100%'
+                }}
+                onClick={() => {
+                  if (!playing) setIsEditing(true)
                 }}
               >
-                {markdownEnabled ? (
+                {!playing && isEditing ? (
+                  <>
+                    <div
+                      aria-hidden="true"
+                      className="col-start-1 row-start-1 invisible whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] pointer-events-none"
+                      style={{ fontSize }}
+                    >
+                      {script + '\n\n\n'}
+                    </div>
+                    <textarea
+                      autoFocus
+                      className="col-start-1 row-start-1 h-full w-full resize-none overflow-hidden bg-transparent outline-none placeholder:text-white/30"
+                      style={{
+                        fontSize,
+                        textAlign,
+                        color: 'inherit',
+                        fontFamily: 'inherit',
+                        lineHeight: '1.35',
+                        letterSpacing: '-0.02em',
+                        fontWeight: 500
+                      }}
+                      value={script}
+                      onChange={(e) => onScriptChange(e.target.value)}
+                      onBlur={() => setIsEditing(false)}
+                      placeholder={strings.defaultScript}
+                      spellCheck={false}
+                      onKeyDown={(e) => {
+                        // Prevent space from triggering play/pause while editing, unless modifier key is held
+                        if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
+                          e.stopPropagation()
+                        }
+                        // Allow Esc to blur (which might trigger close of something else, but good to release focus)
+                        if (e.key === 'Escape') {
+                          e.currentTarget.blur()
+                        }
+                      }}
+                    />
+                  </>
+                ) : markdownEnabled ? (
                   <div
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
                     {renderMarkdownBlocks(displayScript)}
+                    <div className="whitespace-pre-wrap leading-[1.35] text-transparent select-none pointer-events-none" style={{ fontSize }}>{'\n\n\n'}</div>
                   </div>
                 ) : (
                   <pre
-                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
-                    style={{ fontSize }}
+                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] font-sans"
+                    style={{ fontSize, fontFamily: 'inherit' }}
                   >
-                    {displayScript}
+                    {displayScript + '\n\n\n'}
                   </pre>
                 )}
               </div>

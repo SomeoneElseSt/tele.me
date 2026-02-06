@@ -769,6 +769,7 @@ export function Studio() {
           frame={frame}
           opacity={opacity}
           script={script}
+          onScriptChange={setScript}
           markdownEnabled={markdownEnabled}
           speed={speed}
           fontSize={fontSize}
