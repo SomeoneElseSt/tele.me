@@ -730,11 +730,7 @@ export function FloatingPrompter(props: Props) {
 
   const togglePip = useCallback(async () => {
     if (isPip) {
-      if (pipWindowRef.current) {
-        pipWindowRef.current.close()
-      }
-      setIsPip(false)
-      props.onPipChange?.(false)
+      pipWindowRef.current?.close()
       return
     }
 
@@ -784,7 +780,7 @@ export function FloatingPrompter(props: Props) {
       console.error('Failed to enter PiP:', e)
       alert('Picture-in-Picture failed. Make sure you are using a supported browser (Chrome 116+).')
     }
-  }, [isPip, frame.width, frame.height])
+  }, [isPip, frame.width, frame.height, props.onPipChange])
 
   // Sync hotkeys to PiP window
   useEffect(() => {
@@ -946,6 +942,7 @@ export function FloatingPrompter(props: Props) {
     <AnimatePresence>
       {open && (
         <motion.div
+          key={isPip ? 'pip' : 'normal'}
           className={cn(
             'fixed z-[65] overflow-hidden border border-white/10 shadow-glow flex flex-col pointer-events-auto',
             fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl'
