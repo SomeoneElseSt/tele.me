@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Film, X } from 'lucide-react'
+import { Camera, Film, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
@@ -202,10 +202,13 @@ export function Studio() {
     return current
   }, [getNextTakeNumber])
 
+  const strings = getStrings(locale)
+
   const { stream, error: streamError, ready } = useMediaStream({
     audioDeviceId,
     videoDeviceId,
-    facingMode: 'user'
+    facingMode: 'user',
+    braveBlockedMessage: strings.braveBlockedMessage
   })
 
   const recordingStream = useMirroredStream(stream, mirrorVideo)
@@ -234,7 +237,6 @@ export function Studio() {
     }
   }, [LOCALES])
 
-  const strings = getStrings(locale)
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -747,14 +749,6 @@ export function Studio() {
           </div>
         )}
 
-        {error && (
-          <div className="fixed left-1/2 top-6 z-40 -translate-x-1/2">
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-2 text-xs text-red-100 backdrop-blur">
-              {error}
-            </div>
-          </div>
-        )}
-
         <FloatingPrompter
           open={prompterOpen}
           frame={frame}
@@ -814,6 +808,7 @@ export function Studio() {
           onPersistVideosChange={onPersistVideosChange}
           isLoadingVideos={isLoadingVideos}
           recordDisabledReason={recordDisabledReason}
+          error={error}
         />
 
         <SettingsDrawer

@@ -40,6 +40,7 @@ type Props = {
   onPersistVideosChange: (enabled: boolean) => void
   isLoadingVideos?: boolean
   recordDisabledReason?: string
+  error?: string
 }
 
 type DockButtonProps = {
@@ -106,7 +107,8 @@ export function Dock({
   persistVideos,
   onPersistVideosChange,
   isLoadingVideos,
-  recordDisabledReason
+  recordDisabledReason,
+  error
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -238,6 +240,22 @@ export function Dock({
     // Fixed container centered with flex to avoid transform scaling trap on fixed children
     <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none">
       <div className="pointer-events-auto relative">
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              key="dock-error"
+              className="absolute bottom-full left-0 right-0 mb-3"
+              initial={{ opacity: 0, y: 12, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 520, damping: 42, mass: 0.7 }}
+            >
+              <div className="rounded-3xl border border-white/10 bg-black/60 px-4 py-2 text-xs text-white/70 backdrop-blur text-center leading-relaxed shadow-glow">
+                {error}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Background Pill - Clipped for blur */}
         <div className="absolute inset-0 rounded-3xl overflow-hidden">
           <div className="absolute inset-0 bg-black/40 shadow-glow backdrop-blur" />

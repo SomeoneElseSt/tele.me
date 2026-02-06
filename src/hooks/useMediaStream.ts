@@ -4,12 +4,20 @@ type UseMediaStreamArgs = {
   audioDeviceId?: string
   videoDeviceId?: string
   facingMode?: 'user' | 'environment'
+  braveBlockedMessage?: string
 }
 
-export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: UseMediaStreamArgs) {
+export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, braveBlockedMessage }: UseMediaStreamArgs) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<string | undefined>(undefined)
+  const [isBraveBlocked, setIsBraveBlocked] = useState(false)
   const [ready, setReady] = useState(false)
+
+  const displayError = useMemo(() => {
+    if (!error) return undefined
+    if (isBraveBlocked) return braveBlockedMessage || error
+    return error
+  }, [error, isBraveBlocked, braveBlockedMessage])
 
   const mountedRef = useRef(true)
   useEffect(() => {
@@ -32,11 +40,16 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
     if (!supported) {
       setReady(true)
       setError('Camera capture is not supported in this browser.')
+      setIsBraveBlocked(false)
       return
     }
     setReady(false)
     setError(undefined)
+    setIsBraveBlocked(false)
     stop()
+
+    // Add a tiny delay to prevent UI jitter if getUserMedia fails instantly
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     const constraints: MediaStreamConstraints = {
       audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
@@ -59,16 +72,15 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
     }
 
     const next = await navigator.mediaDevices.getUserMedia(constraints).catch((err: unknown) => {
-      let message = err instanceof Error ? err.message : 'Failed to start camera.'
+      const message = err instanceof Error ? err.message : 'Failed to start camera.'
 
       // Specifically handle Brave browser permissions issues
       // @ts-ignore - Navigator.brave is Brave-specific
       const isBrave = Boolean(navigator.brave && typeof navigator.brave.isBrave === 'function')
-      if (isBrave && (message.includes('denied') || (typeof message === 'string' && message.toLowerCase().includes('allowed')))) {
-        message = 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site.'
-      }
+      const isBlocked = isBrave && (message.includes('denied') || (typeof message === 'string' && message.toLowerCase().includes('allowed')))
 
       setError(message)
+      setIsBraveBlocked(isBlocked)
       setReady(true)
       return null
     })
@@ -89,5 +101,5 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode }: Use
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioDeviceId, videoDeviceId, facingMode])
 
-  return { stream, supported, ready, error, start, stop }
+  return { stream, supported, ready, error: displayError, start, stop }
 }
