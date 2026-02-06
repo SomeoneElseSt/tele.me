@@ -828,19 +828,8 @@ export function FloatingPrompter(props: Props) {
   }, [playing])
 
   const displayScript = useMemo(() => {
-    if (isPip) {
-      if (!script.trim()) return strings.pipEditHint
-
-      const isDefault = Object.values(STRINGS).some((s) => s.defaultScript === script)
-      if (isDefault) {
-        const lines = script.split('\n')
-        const firstLine = lines[0] || ''
-        const rest = lines.slice(1).join('\n').trim()
-        return `${firstLine}\n\n${strings.pipEditHint}\n\n${rest}`
-      }
-    }
     return script
-  }, [isPip, script, strings.pipEditHint])
+  }, [script])
 
   useRafLoop(
     (deltaMs) => {
@@ -1173,13 +1162,24 @@ export function FloatingPrompter(props: Props) {
                     />
                   </>
                 ) : !displayScript ? (
-                  <div className="font-medium leading-[1.35] tracking-[-0.02em]" style={{ fontSize }}>
-                    <motion.div
+                  <div
+                    className={cn(
+                      'whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]',
+                      !markdownEnabled && 'font-mono'
+                    )}
+                    style={{
+                      fontSize,
+                      textAlign,
+                      fontFamily: markdownEnabled ? 'inherit' : 'monospace'
+                    }}
+                  >
+                    <motion.span
                       animate={{ opacity: [1, 1, 0, 0] }}
                       transition={{ duration: 1, repeat: Infinity, times: [0, 0.5, 0.5, 1], ease: 'linear' }}
-                      // Cursor hyperparameters: w-[1.5px] (thickness), h-[1.2em] (height)
-                      className="h-[1.2em] w-[0.8px] bg-white translate-y-[0.075em]"
-                    />
+                      // Cursor hyperparameters: 1px width (border-l), height auto (matches font metrics via zero-width space)
+                      className="border-l border-current"
+                    >&#8203;</motion.span>
+                    {'\n\n\n'}
                   </div>
                 ) : markdownEnabled ? (
                   <div
