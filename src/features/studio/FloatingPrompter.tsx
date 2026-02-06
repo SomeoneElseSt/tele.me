@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
-import { Tooltip } from '../../components/Tooltip'
+import { Tooltip, TooltipProvider } from '../../components/Tooltip'
 import { useTooltipController } from '../../components/useTooltipController'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
@@ -958,76 +958,46 @@ export function FloatingPrompter(props: Props) {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
-          key={isPip ? 'pip' : 'normal'}
-          className={cn(
-            'fixed z-[65] overflow-hidden border border-white/10 shadow-glow flex flex-col pointer-events-auto',
-            fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl'
-          )}
-          style={{
-            width: isPip ? '100vw' : frame.width,
-            height: isPip ? '100vh' : frame.height,
-            x: isPip ? 0 : frame.x,
-            y: isPip ? 0 : (fixedToTop ? 0 : frame.y),
-            backgroundColor: `rgba(0,0,0,${opacity})`
-          }}
-          initial={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 40, mass: 0.8 }}
-        >
-          {fixedToTop && !isPip && (
-            <div className="h-px w-full bg-white/10" />
-          )}
+        <TooltipProvider enabled={!isPip}>
+          <motion.div
+            key={isPip ? 'pip' : 'normal'}
+            className={cn(
+              'fixed z-[65] overflow-hidden flex flex-col pointer-events-auto',
+              isPip
+                ? 'rounded-none border-none shadow-none'
+                : cn('border border-white/10 shadow-glow', fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl')
+            )}
+            style={{
+              width: isPip ? '100vw' : frame.width,
+              height: isPip ? '100vh' : frame.height,
+              x: isPip ? 0 : frame.x,
+              y: isPip ? 0 : (fixedToTop ? 0 : frame.y),
+              backgroundColor: `rgba(0,0,0,${opacity})`
+            }}
+            initial={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: isPip ? 1 : 0.98 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 40, mass: 0.8 }}
+          >
+            {fixedToTop && !isPip && (
+              <div className="h-px w-full bg-white/10" />
+            )}
 
-          {(!fixedToTop || isPip) && (
-            <div
-              className={cn(
-                'flex items-center justify-between gap-2 border-b border-white/10 px-4 text-white/85',
-                'cursor-grab active:cursor-grabbing select-none touch-none'
-              )}
-              style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
-              onPointerDown={drag.onPointerDown}
-            >
-              <Tooltip label={strings.hidePrompter} shortcut="H">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label={strings.hidePrompter}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className={cn(
-                    'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                    'hover:bg-white/10 hover:text-white',
-                    isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
-                  )}
-                  disabled={isPip}
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-              </Tooltip>
-              <div className="flex items-center gap-1">
-                {isPip && (
-                  <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
-                    <button
-                      type="button"
-                      onClick={onTogglePlaying}
-                      aria-label={playing ? strings.pausePrompter : strings.playPrompter}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                        'hover:bg-white/10 hover:text-white',
-                        playing && 'border-white/18 bg-white/10 text-white'
-                      )}
-                    >
-                      {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </button>
-                  </Tooltip>
+            {(!fixedToTop || isPip) && (
+              <div
+                className={cn(
+                  'flex items-center justify-between gap-2 px-4 text-white/85',
+                  !isPip && 'border-b border-white/10',
+                  'cursor-grab active:cursor-grabbing select-none touch-none'
                 )}
-                <Tooltip label={strings.fixToTop} shortcut="Y">
+                style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+                onPointerDown={drag.onPointerDown}
+              >
+                <Tooltip label={strings.hidePrompter} shortcut="H">
                   <button
                     type="button"
-                    onClick={onFixToTop}
-                    aria-label={strings.fixToTop}
+                    onClick={onClose}
+                    aria-label={strings.hidePrompter}
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
@@ -1036,270 +1006,304 @@ export function FloatingPrompter(props: Props) {
                     )}
                     disabled={isPip}
                   >
-                    <ArrowUp className="h-4 w-4" />
+                    <Eye className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <Tooltip label={strings.controls} shortcut="C">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuickOpen((v) => {
-                        const next = !v
-                        onControlsOpenChange?.(next)
-                        return next
-                      })
-                    }}
-                    aria-label="Prompter controls"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white',
-                      quickOpen && 'border-white/18 bg-white/10 text-white'
-                    )}
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                  </button>
-                </Tooltip>
-                {(() => {
-                  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-                  const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
-
-                  return (
-                    <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
+                <div className="flex items-center gap-1">
+                  {isPip && (
+                    <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
                       <button
                         type="button"
-                        onClick={isSafari ? undefined : togglePip}
-                        aria-label={label}
+                        onClick={onTogglePlaying}
+                        aria-label={playing ? strings.pausePrompter : strings.playPrompter}
                         onPointerDown={(e) => e.stopPropagation()}
                         className={cn(
                           'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
                           'hover:bg-white/10 hover:text-white',
-                          isPip && 'border-white/18 bg-white/10 text-white',
-                          isSafari && 'opacity-40 cursor-not-allowed'
+                          playing && 'border-white/18 bg-white/10 text-white'
                         )}
-                        disabled={isSafari}
                       >
-                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                        {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                       </button>
                     </Tooltip>
-                  )
-                })()}
-                <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
-                  <span
+                  )}
+                  <Tooltip label={strings.fixToTop} shortcut="Y">
+                    <button
+                      type="button"
+                      onClick={onFixToTop}
+                      aria-label={strings.fixToTop}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                      )}
+                      disabled={isPip}
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip label={strings.controls} shortcut="C">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickOpen((v) => {
+                          const next = !v
+                          onControlsOpenChange?.(next)
+                          return next
+                        })
+                      }}
+                      aria-label="Prompter controls"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        quickOpen && 'border-white/18 bg-white/10 text-white'
+                      )}
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  {(() => {
+                    const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                    const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
+
+                    return (
+                      <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
+                        <button
+                          type="button"
+                          onClick={isSafari ? undefined : togglePip}
+                          aria-label={label}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className={cn(
+                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                            'hover:bg-white/10 hover:text-white',
+                            isPip && 'border-white/18 bg-white/10 text-white',
+                            isSafari && 'opacity-40 cursor-not-allowed'
+                          )}
+                          disabled={isSafari}
+                        >
+                          {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                        </button>
+                      </Tooltip>
+                    )
+                  })()}
+                  <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                    <span
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
+                        isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                      )}
+                      onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
+                    >
+                      <Move className="h-4 w-4 text-white/60" />
+                    </span>
+                  </Tooltip>
+                </div>
+              </div>
+            )}
+
+            <div className="relative flex-1">
+              <div
+                ref={scrollerRef}
+                className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
+                style={{ bottom: isPip ? 0 : (fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX) }}
+              >
+                <div
+                  className="px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
+                  style={{
+                    textAlign,
+                    paddingTop: fixedToTop ? 8 : 24,
+                    paddingBottom: playing ? frame.height * 0.7 : 24
+                  }}
+                >
+                  {markdownEnabled ? (
+                    <div
+                      className="font-medium leading-[1.35] tracking-[-0.02em]"
+                      style={{ fontSize }}
+                    >
+                      {renderMarkdownBlocks(displayScript)}
+                    </div>
+                  ) : (
+                    <pre
+                      className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
+                      style={{ fontSize }}
+                    >
+                      {displayScript}
+                    </pre>
+                  )}
+                </div>
+              </div>
+
+              {!fixedToTop && (
+                <div
+                  aria-hidden="true"
+                  className={cn(
+                    'grip-visual absolute z-0',
+                    isPip ? 'hidden' : (resizing && 'is-active')
+                  )}
+                  style={{
+                    right: GRIP_INSET_PX,
+                    bottom: GRIP_INSET_PX,
+                    width: GRIP_VISUAL_SIZE_PX,
+                    height: GRIP_VISUAL_SIZE_PX
+                  }}
+                />
+              )}
+            </div>
+
+            {fixedToTop && !isPip && (
+              <div
+                className={cn(
+                  'flex items-center justify-between gap-2 border-t border-white/10 px-4 text-white/85',
+                  'cursor-grab active:cursor-grabbing select-none touch-none relative'
+                )}
+                style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
+                onPointerDown={drag.onPointerDown}
+              >
+                <Tooltip label={strings.hidePrompter} shortcut="H">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    aria-label={strings.hidePrompter}
+                    onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                      'hover:bg-white/10 hover:text-white',
                       isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
                     )}
-                    onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
+                    disabled={isPip}
                   >
-                    <Move className="h-4 w-4 text-white/60" />
-                  </span>
+                    <Eye className="h-4 w-4" />
+                  </button>
                 </Tooltip>
-              </div>
-            </div>
-          )}
+                <div className="flex items-center gap-1">
+                  {isPip && (
+                    <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
+                      <button
+                        type="button"
+                        onClick={onTogglePlaying}
+                        aria-label={playing ? strings.pausePrompter : strings.playPrompter}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        className={cn(
+                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                          'hover:bg-white/10 hover:text-white',
+                          playing && 'border-white/18 bg-white/10 text-white'
+                        )}
+                      >
+                        {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </button>
+                    </Tooltip>
+                  )}
+                  <Tooltip label={strings.unfixFromTop} shortcut="Y">
+                    <button
+                      type="button"
+                      onClick={onUnfixFromTop}
+                      aria-label={strings.unfixFromTop}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                      )}
+                      disabled={isPip}
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  <Tooltip label={strings.controls} shortcut="C">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickOpen((v) => {
+                          const next = !v
+                          onControlsOpenChange?.(next)
+                          return next
+                        })
+                      }}
+                      aria-label="Prompter controls"
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        quickOpen && 'border-white/18 bg-white/10 text-white'
+                      )}
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                    </button>
+                  </Tooltip>
+                  {(() => {
+                    const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+                    const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
 
-          <div className="relative flex-1">
-            <div
-              ref={scrollerRef}
-              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
-              style={{ bottom: fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX }}
-            >
-              <div
-                className="px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
-                style={{
-                  textAlign,
-                  paddingTop: fixedToTop ? 8 : 24,
-                  paddingBottom: playing ? frame.height * 0.7 : 24
-                }}
-              >
-                {markdownEnabled ? (
-                  <div
-                    className="font-medium leading-[1.35] tracking-[-0.02em]"
-                    style={{ fontSize }}
-                  >
-                    {renderMarkdownBlocks(displayScript)}
-                  </div>
-                ) : (
-                  <pre
-                    className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
-                    style={{ fontSize }}
-                  >
-                    {displayScript}
-                  </pre>
-                )}
+                    return (
+                      <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
+                        <button
+                          type="button"
+                          onClick={isSafari ? undefined : togglePip}
+                          aria-label={label}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          className={cn(
+                            'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                            'hover:bg-white/10 hover:text-white',
+                            isPip && 'border-white/18 bg-white/10 text-white',
+                            isSafari && 'opacity-40 cursor-not-allowed'
+                          )}
+                          disabled={isSafari}
+                        >
+                          {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                        </button>
+                      </Tooltip>
+                    )
+                  })()}
+                  <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                    <span
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
+                        isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
+                      )}
+                      onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
+                    >
+                      <Move className="h-4 w-4 text-white/60" />
+                    </span>
+                  </Tooltip>
+                </div>
               </div>
-            </div>
+            )}
 
             {!fixedToTop && (
               <div
-                aria-hidden="true"
                 className={cn(
-                  'grip-visual absolute z-0',
-                  resizing && 'is-active',
-                  isPip && 'opacity-20 grayscale brightness-50'
+                  'grip-hit absolute z-20 touch-none',
+                  !isPip && 'cursor-nwse-resize'
                 )}
                 style={{
                   right: GRIP_INSET_PX,
                   bottom: GRIP_INSET_PX,
-                  width: GRIP_VISUAL_SIZE_PX,
-                  height: GRIP_VISUAL_SIZE_PX
+                  width: GRIP_HIT_SIZE_PX,
+                  height: GRIP_HIT_SIZE_PX
                 }}
+                onPointerDown={onResizePointerDown}
               />
             )}
-          </div>
 
-          {fixedToTop && !isPip && (
-            <div
-              className={cn(
-                'flex items-center justify-between gap-2 border-t border-white/10 px-4 text-white/85',
-                'cursor-grab active:cursor-grabbing select-none touch-none relative'
-              )}
-              style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
-              onPointerDown={drag.onPointerDown}
-            >
-              <Tooltip label={strings.hidePrompter} shortcut="H">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label={strings.hidePrompter}
-                  onPointerDown={(e) => e.stopPropagation()}
-                  className={cn(
-                    'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                    'hover:bg-white/10 hover:text-white',
-                    isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
-                  )}
-                  disabled={isPip}
-                >
-                  <Eye className="h-4 w-4" />
-                </button>
-              </Tooltip>
-              <div className="flex items-center gap-1">
-                {isPip && (
-                  <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
-                    <button
-                      type="button"
-                      onClick={onTogglePlaying}
-                      aria-label={playing ? strings.pausePrompter : strings.playPrompter}
-                      onPointerDown={(e) => e.stopPropagation()}
-                      className={cn(
-                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                        'hover:bg-white/10 hover:text-white',
-                        playing && 'border-white/18 bg-white/10 text-white'
-                      )}
-                    >
-                      {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </button>
-                  </Tooltip>
-                )}
-                <Tooltip label={strings.unfixFromTop} shortcut="Y">
-                  <button
-                    type="button"
-                    onClick={onUnfixFromTop}
-                    aria-label={strings.unfixFromTop}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white',
-                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
-                    )}
-                    disabled={isPip}
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </button>
-                </Tooltip>
-                <Tooltip label={strings.controls} shortcut="C">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuickOpen((v) => {
-                        const next = !v
-                        onControlsOpenChange?.(next)
-                        return next
-                      })
-                    }}
-                    aria-label="Prompter controls"
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                      'hover:bg-white/10 hover:text-white',
-                      quickOpen && 'border-white/18 bg-white/10 text-white'
-                    )}
-                  >
-                    <SlidersHorizontal className="h-4 w-4" />
-                  </button>
-                </Tooltip>
-                {(() => {
-                  const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-                  const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
-
-                  return (
-                    <Tooltip label={label} shortcut={isSafari ? undefined : "P"}>
-                      <button
-                        type="button"
-                        onClick={isSafari ? undefined : togglePip}
-                        aria-label={label}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        className={cn(
-                          'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
-                          'hover:bg-white/10 hover:text-white',
-                          isPip && 'border-white/18 bg-white/10 text-white',
-                          isSafari && 'opacity-40 cursor-not-allowed'
-                        )}
-                        disabled={isSafari}
-                      >
-                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
-                      </button>
-                    </Tooltip>
-                  )
-                })()}
-                <Tooltip label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
-                  <span
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',
-                      isPip && 'opacity-40 cursor-not-allowed pointer-events-none'
-                    )}
-                    onPointerDown={() => !isPip && tooltip.lock(DRAG_TOOLTIP_ID)}
-                  >
-                    <Move className="h-4 w-4 text-white/60" />
-                  </span>
-                </Tooltip>
-              </div>
-            </div>
-          )}
-
-          {!fixedToTop && (
-            <div
-              className={cn(
-                'grip-hit absolute z-20 touch-none',
-                !isPip && 'cursor-nwse-resize'
-              )}
-              style={{
-                right: GRIP_INSET_PX,
-                bottom: GRIP_INSET_PX,
-                width: GRIP_HIT_SIZE_PX,
-                height: GRIP_HIT_SIZE_PX
-              }}
-              onPointerDown={onResizePointerDown}
+            <ControlsBarPortal
+              open={quickOpen}
+              frame={frame}
+              opacity={opacity}
+              speed={speed}
+              fontSize={fontSize}
+              textAlign={textAlign}
+              fixedToTop={fixedToTop}
+              onOpacityChange={onOpacityChange}
+              onSpeedChange={onSpeedChange}
+              onFontSizeChange={onFontSizeChange}
+              onTextAlignChange={onTextAlignChange}
+              isPip={isPip}
+              pipWindow={pipWindowRef.current}
             />
-          )}
-
-          <ControlsBarPortal
-            open={quickOpen}
-            frame={frame}
-            opacity={opacity}
-            speed={speed}
-            fontSize={fontSize}
-            textAlign={textAlign}
-            fixedToTop={fixedToTop}
-            onOpacityChange={onOpacityChange}
-            onSpeedChange={onSpeedChange}
-            onFontSizeChange={onFontSizeChange}
-            onTextAlignChange={onTextAlignChange}
-            isPip={isPip}
-            pipWindow={pipWindowRef.current}
-          />
-        </motion.div>
+          </motion.div>
+        </TooltipProvider>
       )}
     </AnimatePresence>,
     isPip && pipWindowRef.current ? pipWindowRef.current.document.body : (document.getElementById('studio-portal') || document.body)
