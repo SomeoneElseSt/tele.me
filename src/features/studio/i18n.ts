@@ -153,7 +153,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: 'To edit text, go back to the website and open the text editor panel.'
+    pipEditHint: 'To edit text, go back to the website and open the text editor panel (T).'
   },
   es: {
     defaultScript:
@@ -225,7 +225,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Sacar',
     popInPrompter: 'Integrar',
-    pipEditHint: 'Para editar el texto, regresa al sitio web y abre el panel del editor de texto.'
+    pipEditHint: 'Para editar el texto, regresa al sitio web y abre el panel del editor de texto (T).'
   },
   ja: {
     defaultScript:
@@ -297,7 +297,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: 'テキストを編集するには、ウェブサイトに戻ってテキストエディタパネルを開いてください。'
+    pipEditHint: 'テキストを編集するには、ウェブサイトに戻ってテキストエディタパネル (T) を開いてください。'
   },
   hi: {
     defaultScript:
@@ -369,7 +369,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: 'टेक्स्ट को एडिट करने के लिए, वेबसाइट पर वापस जाएं और टेक्स्ट एडिटर पैनल खोलें।'
+    pipEditHint: 'टेक्स्ट को एडिट करने के लिए, वेबसाइट पर वापस जाएं और टेक्स्ट एडिटर पैनल (T) खोलें।'
   },
   fr: {
     defaultScript:
@@ -442,7 +442,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Détacher',
     popInPrompter: 'Attacher',
-    pipEditHint: "Pour modifier le texte, retournez sur le site web et ouvrez le panneau de l'éditeur de texte."
+    pipEditHint: "Pour modifier le texte, retournez sur le site web et ouvrez le panneau de l'éditeur de texte (T)."
   },
   de: {
     defaultScript:
@@ -514,7 +514,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Auslagern',
     popInPrompter: 'Einlagern',
-    pipEditHint: 'Um den Text zu bearbeiten, gehen Sie zurück zur Website und öffnen Sie das Texteditor-Panel.'
+    pipEditHint: 'Um den Text zu bearbeiten, gehen Sie zurück zur Website und öffnen Sie das Texteditor-Panel (T).'
   },
   zh: {
     defaultScript:
@@ -586,7 +586,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: '要编辑文本，请返回网站并打开文本编辑器面板。'
+    pipEditHint: '要编辑文本，请返回网站并打开文本编辑器面板 (T)。'
   },
   ar: {
     defaultScript:
@@ -658,7 +658,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: 'لتعديل النص، ارجع إلى الموقع وافتح لوحة محرر النصوص.'
+    pipEditHint: 'لتعديل النص، ارجع إلى الموقع وافتح لوحة محرر النصوص (T).'
   },
   pt: {
     defaultScript:
@@ -730,7 +730,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Destacar',
     popInPrompter: 'Anexar',
-    pipEditHint: 'Para editar o texto, volte ao site e abra o painel do editor de texto.'
+    pipEditHint: 'Para editar o texto, volte ao site e abra o painel do editor de texto (T).'
   },
   ru: {
     defaultScript:
@@ -802,7 +802,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Открепить',
     popInPrompter: 'Прикрепить',
-    pipEditHint: 'Для редактирования текста вернитесь на сайт и откройте панель текстового редактора.'
+    pipEditHint: 'Для редактирования текста вернитесь на сайт и откройте панель текстового редактора (T).'
   },
   pl: {
     defaultScript:
@@ -874,7 +874,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Odepnij',
     popInPrompter: 'Przypnij',
-    pipEditHint: 'Aby edytować tekst, wróć do witryny i otwórz panel edytora tekstu.'
+    pipEditHint: 'Aby edytować tekst, wróć do witryny i otwórz panel edytora tekstu (T).'
   },
 }
 

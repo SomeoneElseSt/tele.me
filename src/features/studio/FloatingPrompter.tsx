@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -1006,6 +1006,23 @@ export function FloatingPrompter(props: Props) {
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">
+                {isPip && (
+                  <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
+                    <button
+                      type="button"
+                      onClick={onTogglePlaying}
+                      aria-label={playing ? strings.pausePrompter : strings.playPrompter}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        playing && 'border-white/18 bg-white/10 text-white'
+                      )}
+                    >
+                      {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </button>
+                  </Tooltip>
+                )}
                 <Tooltip label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
@@ -1149,6 +1166,23 @@ export function FloatingPrompter(props: Props) {
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">
+                {isPip && (
+                  <Tooltip label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
+                    <button
+                      type="button"
+                      onClick={onTogglePlaying}
+                      aria-label={playing ? strings.pausePrompter : strings.playPrompter}
+                      onPointerDown={(e) => e.stopPropagation()}
+                      className={cn(
+                        'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70',
+                        'hover:bg-white/10 hover:text-white',
+                        playing && 'border-white/18 bg-white/10 text-white'
+                      )}
+                    >
+                      {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </button>
+                  </Tooltip>
+                )}
                 <Tooltip label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"
