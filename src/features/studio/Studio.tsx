@@ -182,6 +182,7 @@ export function Studio() {
 
   const [locale, setLocale] = useState<LocaleCode>('en')
   const localeRef = useRef<LocaleCode>(locale)
+  const localeHoverTimeoutRef = useRef<any>(null)
 
   const getNextTakeNumber = useCallback(() => {
     if (typeof window === 'undefined') return 1
@@ -676,11 +677,22 @@ export function Studio() {
         </div>
         {!drawerOpen && (
           <div className="pointer-events-none fixed right-6 top-6 z-[60] flex items-center gap-2 text-white/80">
-            <div className="pointer-events-auto relative">
+            <div
+              className="pointer-events-auto relative p-4 -m-4"
+              onMouseEnter={(e) => {
+                if (e.buttons !== 0) return
+                if (localeHoverTimeoutRef.current) clearTimeout(localeHoverTimeoutRef.current)
+                setLocaleOpen(true)
+              }}
+              onMouseLeave={() => {
+                localeHoverTimeoutRef.current = setTimeout(() => {
+                  setLocaleOpen(false)
+                }, 150)
+              }}
+            >
               <button
                 ref={localeAnchorRef}
                 type="button"
-                onClick={() => setLocaleOpen((prev) => !prev)}
                 className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur"
                 aria-label={strings.language}
               >
@@ -692,8 +704,8 @@ export function Studio() {
                 {localeOpen && (
                   <motion.div
                     ref={localePanelRef}
-                    className="absolute right-0 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
-                    style={{ top: '100%' }}
+                    className="absolute right-4 mt-2 w-44 rounded-2xl border border-white/10 bg-black/80 p-2 text-xs text-white/80 shadow-glow backdrop-blur"
+                    style={{ top: '56px' }}
                     initial={{ opacity: 0, y: -6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -6, scale: 0.98 }}
