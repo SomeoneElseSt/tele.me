@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, MonitorUp, Move, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
@@ -34,6 +34,7 @@ type Props = {
   onClose: () => void
   onControlsOpenChange?: (open: boolean) => void
   onPipChange?: (isPip: boolean) => void
+  onMarkdownEnabledChange?: (enabled: boolean) => void
   forceCloseControls?: boolean
 }
 
@@ -494,20 +495,28 @@ function ControlsBarPortal({
   const upperThreshold = CONTROLS_BAR_MIN_MARGIN_PX + hysteresis
   const lowerThreshold = CONTROLS_BAR_MIN_MARGIN_PX - hysteresis
   const [side, setSide] = useState<'top' | 'bottom'>(() =>
-    fixedToTop ? 'bottom' : spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
+    isPip ? 'top' : fixedToTop ? 'bottom' : spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
   )
 
   useEffect(() => {
     if (!open) return
+    if (isPip) {
+      setSide('top')
+      return
+    }
     if (fixedToTop) {
       setSide('bottom')
       return
     }
     const next = spaceAbove >= CONTROLS_BAR_MIN_MARGIN_PX ? 'top' : 'bottom'
     setSide(next)
-  }, [open, spaceAbove, fixedToTop])
+  }, [open, spaceAbove, fixedToTop, isPip])
 
   useEffect(() => {
+    if (isPip) {
+      setSide('top')
+      return
+    }
     if (fixedToTop) {
       setSide('bottom')
       return
@@ -519,7 +528,7 @@ function ControlsBarPortal({
     if (side === 'bottom' && spaceAbove > upperThreshold) {
       setSide('top')
     }
-  }, [fixedToTop, lowerThreshold, side, spaceAbove, upperThreshold])
+  }, [fixedToTop, lowerThreshold, side, spaceAbove, upperThreshold, isPip])
 
   const isTop = fixedToTop ? false : side === 'top'
   const top = isTop
@@ -791,12 +800,20 @@ export function FloatingPrompter(props: Props) {
           onTogglePlaying()
         } else if (e.code === 'KeyP') {
           togglePip()
+        } else if (e.code === 'KeyM') {
+          props.onMarkdownEnabledChange?.(!markdownEnabled)
+        } else if (e.code === 'KeyC') {
+          setQuickOpen((prev) => {
+            const next = !prev
+            props.onControlsOpenChange?.(next)
+            return next
+          })
         }
       }
       pipWindowRef.current.addEventListener('keydown', handleKeyDown)
       return () => pipWindowRef.current?.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isPip, onTogglePlaying, onClose, togglePip])
+  }, [isPip, onTogglePlaying, onClose, togglePip, markdownEnabled, props.onMarkdownEnabledChange])
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
@@ -985,7 +1002,7 @@ export function FloatingPrompter(props: Props) {
                   )}
                   disabled={isPip}
                 >
-                  <X className="h-4 w-4" />
+                  <Eye className="h-4 w-4" />
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">
@@ -1128,7 +1145,7 @@ export function FloatingPrompter(props: Props) {
                   )}
                   disabled={isPip}
                 >
-                  <X className="h-4 w-4" />
+                  <Eye className="h-4 w-4" />
                 </button>
               </Tooltip>
               <div className="flex items-center gap-1">

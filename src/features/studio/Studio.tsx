@@ -765,6 +765,7 @@ export function Studio() {
           onFrameChange={onFrameChange}
           onControlsOpenChange={setPrompterControlsOpen}
           onPipChange={setPrompterIsPip}
+          onMarkdownEnabledChange={setMarkdownEnabled}
           forceCloseControls={forceCloseControls}
         />
 
