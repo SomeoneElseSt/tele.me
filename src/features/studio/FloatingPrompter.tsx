@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
@@ -821,6 +821,64 @@ export function FloatingPrompter(props: Props) {
   const wasOpenRef = useRef(open)
   const savedScrollTopRef = useRef<number>(0)
   const [isEditing, setIsEditing] = useState(false)
+  const cursorPositionRef = useRef<number | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useLayoutEffect(() => {
+    if (isEditing && textareaRef.current) {
+      const textarea = textareaRef.current
+      // Ensure focus when entering edit mode
+      textarea.focus()
+
+      if (cursorPositionRef.current !== null) {
+        const cursor = cursorPositionRef.current
+        textarea.setSelectionRange(cursor, cursor)
+
+        // Calculate cursor position and center view
+        const scrollParent = scrollerRef.current
+        if (scrollParent) {
+          const style = window.getComputedStyle(textarea)
+          const mirrorDiv = document.createElement('div')
+
+          const props = [
+            'boxSizing', 'width', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+            'borderTopWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderRightWidth',
+            'fontFamily', 'fontSize', 'fontStyle', 'fontWeight', 'letterSpacing', 'lineHeight',
+            'textAlign', 'textIndent', 'textTransform', 'whiteSpace', 'wordBreak', 'wordSpacing', 'overflowWrap'
+          ]
+
+          props.forEach((p: any) => {
+            // @ts-ignore
+            mirrorDiv.style[p] = style[p]
+          })
+
+          mirrorDiv.style.position = 'absolute'
+          mirrorDiv.style.visibility = 'hidden'
+          mirrorDiv.style.height = 'auto'
+          mirrorDiv.style.top = '-9999px'
+          mirrorDiv.style.left = '-9999px'
+
+          mirrorDiv.textContent = textarea.value.substring(0, cursor)
+          const span = document.createElement('span')
+          span.textContent = '|'
+          mirrorDiv.appendChild(span)
+
+          document.body.appendChild(mirrorDiv)
+          const cursorTop = span.offsetTop
+          document.body.removeChild(mirrorDiv)
+
+          // Adjust scroll to center the cursor
+          const parent = textarea.parentElement
+          const parentPaddingTop = parent ? parseFloat(window.getComputedStyle(parent).paddingTop) : 0
+          const viewportHeight = scrollParent.clientHeight
+          const lineHeight = parseFloat(style.lineHeight) || 20
+
+          const targetScrollTop = (cursorTop + parentPaddingTop) - (viewportHeight / 2) + (lineHeight / 2)
+          scrollParent.scrollTo({ top: targetScrollTop })
+        }
+      }
+    }
+  }, [isEditing])
 
   // Exit edit mode when playing starts
   useEffect(() => {
@@ -1146,9 +1204,13 @@ export function FloatingPrompter(props: Props) {
                       }}
                       value={script}
                       onChange={(e) => onScriptChange(e.target.value)}
-                      onBlur={() => setIsEditing(false)}
+                      onBlur={(e) => {
+                        cursorPositionRef.current = e.target.selectionStart
+                        setIsEditing(false)
+                      }}
                       placeholder=""
                       spellCheck={false}
+                      ref={textareaRef}
                       onKeyDown={(e) => {
                         // Prevent space from triggering play/pause while editing, unless modifier key is held
                         if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
