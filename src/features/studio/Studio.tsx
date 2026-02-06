@@ -561,6 +561,20 @@ export function Studio() {
     }
   }, [])
 
+  const handleClosePrompter = useCallback(() => {
+    if (prompterControlsOpen) {
+      setForceCloseControls(true)
+      window.setTimeout(() => {
+        setForceCloseControls(false)
+        setPrompterOpen(false)
+        setPlaying(false)
+      }, 150)
+      return
+    }
+    setPrompterOpen(false)
+    setPlaying(false)
+  }, [prompterControlsOpen])
+
   useHotkeys(
     useMemo(
       () => {
@@ -577,17 +591,7 @@ export function Studio() {
             tooltip.clear()
             if (prompterIsPip) return
             if (prompterOpen) {
-              if (prompterControlsOpen) {
-                setForceCloseControls(true)
-                window.setTimeout(() => {
-                  setForceCloseControls(false)
-                  setPrompterOpen(false)
-                  setPlaying(false)
-                }, 150)
-                return
-              }
-              setPrompterOpen(false)
-              setPlaying(false)
+              handleClosePrompter()
               return
             }
             setPrompterOpen(true)
@@ -605,7 +609,7 @@ export function Studio() {
 
         return hotkeys
       },
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, prompterControlsOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip, handleClosePrompter]
     ),
     true
   )
@@ -777,10 +781,7 @@ export function Studio() {
           onTextAlignChange={setTextAlign}
           onFixedToTopChange={setFixedToTop}
           onTogglePlaying={onTogglePrompter}
-          onClose={() => {
-            setPrompterOpen(false)
-            setPlaying(false)
-          }}
+          onClose={handleClosePrompter}
           onFrameChange={onFrameChange}
           onControlsOpenChange={setPrompterControlsOpen}
           onPipChange={setPrompterIsPip}
