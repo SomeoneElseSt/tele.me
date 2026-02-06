@@ -551,7 +551,7 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <motion.div
-          className="pointer-events-auto fixed z-[75]"
+          className="pointer-events-auto fixed z-30"
           style={isPip ? {
             left: 20,
             right: 20,
@@ -961,7 +961,7 @@ export function FloatingPrompter(props: Props) {
         <motion.div
           key={isPip ? 'pip' : 'normal'}
           className={cn(
-            'fixed z-[65] overflow-hidden flex flex-col pointer-events-auto',
+            'fixed z-30 overflow-hidden flex flex-col pointer-events-auto',
             isPip
               ? 'rounded-none border-none shadow-none'
               : cn('border border-white/10 shadow-glow', fixedToTop ? 'rounded-b-2xl' : 'rounded-2xl')
