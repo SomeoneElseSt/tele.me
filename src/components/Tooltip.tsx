@@ -23,6 +23,7 @@ type TooltipProps = {
   tooltipId?: string
   side?: SideOrAuto
   preferSide?: Side
+  align?: 'start' | 'center' | 'end'
   sideOffset?: number
   defaultOpen?: boolean
   onDefaultOpenDismiss?: () => void
@@ -88,6 +89,7 @@ export function Tooltip({
   tooltipId,
   side = 'top',
   preferSide,
+  align = 'center',
   sideOffset = 14,
   defaultOpen,
   onDefaultOpenDismiss,
@@ -211,18 +213,21 @@ export function Tooltip({
     const desired = (s: Side) => {
       let left = 0
       let top = 0
-      if (s === 'top') {
-        left = anchor.cx - tipSize.width / 2
-        top = anchor.top - sideOffset - tipSize.height
-      } else if (s === 'bottom') {
-        left = anchor.cx - tipSize.width / 2
-        top = anchor.bottom + sideOffset
-      } else if (s === 'left') {
-        left = anchor.left - sideOffset - tipSize.width
-        top = anchor.cy - tipSize.height / 2
+
+      if (s === 'top' || s === 'bottom') {
+        if (align === 'center') left = anchor.cx - tipSize.width / 2
+        else if (align === 'start') left = anchor.left
+        else left = anchor.right - tipSize.width
+
+        if (s === 'top') top = anchor.top - sideOffset - tipSize.height
+        else top = anchor.bottom + sideOffset
       } else {
-        left = anchor.right + sideOffset
-        top = anchor.cy - tipSize.height / 2
+        if (align === 'center') top = anchor.cy - tipSize.height / 2
+        else if (align === 'start') top = anchor.top
+        else top = anchor.bottom - tipSize.height
+
+        if (s === 'left') left = anchor.left - sideOffset - tipSize.width
+        else left = anchor.right + sideOffset
       }
       return { left, top }
     }
@@ -260,7 +265,7 @@ export function Tooltip({
     const topClamped = clamp(final.top, margin, vh - margin - tipSize.height)
 
     return { side: final.side, left: leftClamped, top: topClamped }
-  }, [anchor, margin, preferSide, side, sideOffset, tipSize])
+  }, [anchor, margin, preferSide, side, sideOffset, tipSize, align])
 
   const onOpen = useCallback(() => {
     if (closeTimerRef.current !== null) {

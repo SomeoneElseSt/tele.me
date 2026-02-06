@@ -86,7 +86,21 @@ export function SettingsDrawer(props: Props) {
             transition={{ duration: 0.2 }}
           >
             <header className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-white/90">{strings.script}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm font-semibold text-white/90">{strings.script}</div>
+                {(() => {
+                  const words = script.trim().split(/\s+/).length
+                  const minutes = words / 150
+                  const m = Math.floor(minutes)
+                  const s = Math.round((minutes - m) * 60)
+                  if (m === 0 && s === 0) return null
+                  return (
+                    <div className="text-xs font-medium text-white/50">
+                      {strings.speakingTime} ~ {m > 0 ? `${m}m ` : ''}{s}s
+                    </div>
+                  )
+                })()}
+              </div>
               <div className="flex items-center gap-2">
                 <Tooltip label={strings.enableMarkdown}>
                   <button

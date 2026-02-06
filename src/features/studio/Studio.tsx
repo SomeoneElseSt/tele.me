@@ -638,41 +638,48 @@ export function Studio() {
         <div className="pointer-events-none fixed left-6 top-6 z-30 flex items-center gap-2 text-white/80">
           <Tooltip
             label={
-              <div className="flex flex-col gap-3 text-center">
-                <span>
-                  {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
-                    const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
-                    if (isOpenSource) {
-                      return (
-                        <a
-                          key={index}
-                          href="https://github.com/SomeoneElseSt/tele.me"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline hover:text-white"
-                        >
-                          {part}
-                        </a>
-                      );
-                    }
-                    return part;
-                  })}
-                  <a
-                    href="https://stiven.me"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline hover:text-white"
-                  >
-                    stiven.me
-                  </a>
-                </span>
-                <span>{strings.browserWarningMessage}</span>
+              <div className="flex flex-col gap-2">
+                <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-[11px] font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
+                  <span className="block mb-2">
+                    {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
+                      const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
+                      if (isOpenSource) {
+                        return (
+                          <a
+                            key={index}
+                            href="https://github.com/SomeoneElseSt/tele.me"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline hover:text-white"
+                          >
+                            {part}
+                          </a>
+                        );
+                      }
+                      return part;
+                    })}
+                    <a
+                      href="https://stiven.me"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-white"
+                    >
+                      stiven.me
+                    </a>
+                  </span>
+                  <span>{strings.browserWarningMessage}</span>
+                </div>
+                <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-[11px] font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
+                  <div className="mb-2">{strings.shortcutsTitle}:</div>
+                  <div className="whitespace-pre-line">{strings.shortcutsMenu}</div>
+                </div>
               </div>
             }
-            side="bottom"
+            side="right"
+            align="start"
             sideOffset={6}
             interactive
-            className="max-w-xs whitespace-normal text-center leading-relaxed"
+            className="!bg-transparent !border-0 !p-0 !shadow-none !backdrop-blur-none"
           >
             <div className="pointer-events-auto p-4 -m-4 rounded-3xl">
               <div className="inline-flex h-10 items-center gap-2 rounded-2xl border border-white/10 bg-black/40 px-3 py-2 text-sm backdrop-blur">

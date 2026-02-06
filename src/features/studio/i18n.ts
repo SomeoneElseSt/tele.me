@@ -83,6 +83,9 @@ type Strings = {
   popOutOnlyChrome: string
   allowCameraAccess: string
   braveBlockedMessage: string
+  shortcutsMenu: string
+  shortcutsTitle: string
+  speakingTime: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
@@ -95,7 +98,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: teleprompter controls\n' +
       'H: hide/show prompter\n' +
       'I: control inputs\n\n' +
-      'To use markdown rendering and font, open the edit text pane (T) and enable it (M)',
+      'To use markdown rendering and font, open the edit text pane (T) and enable it (M)\n\n' +
+      'F: fullscreen\n' +
+      'Y: fix/unfix from top\n' +
+      'P: pop teleprompter out/in',
     language: 'Language',
     script: 'Script',
     enableMarkdown: 'Enable Markdown',
@@ -159,7 +165,21 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     pipEditHint: 'To edit text, go back to the website and open the text editor panel (T).',
     popOutOnlyChrome: 'Pop out mode is not possible on Safari. Use Chrome for better compatibility.',
     allowCameraAccess: 'Allow camera access',
-    braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.'
+    braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.',
+    shortcutsMenu:
+      'Space: play/pause\n' +
+      'R: record/stop recording\n' +
+      'D: show and download videos\n' +
+      'C: teleprompter controls\n' +
+      'H: hide/show prompter\n' +
+      'I: control inputs\n' +
+      'T: edit text\n' +
+      'M: enable markdown text\n' +
+      'F: fullscreen\n' +
+      'Y: fix/unfix from top\n' +
+      'P: pop teleprompter out/in',
+    shortcutsTitle: 'Shortcuts',
+    speakingTime: 'Speaking time',
   },
   es: {
     defaultScript:
@@ -170,7 +190,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: controles del teleprompter\n' +
       'H: ocultar/mostrar teleprompter\n' +
       'I: controlar entradas\n\n' +
-      'Para usar el renderizado y la tipografía de markdown, abre el panel de edición de texto (T) y actívalo (M)',
+      'Para usar el renderizado y la tipografía de markdown, abre el panel de edición de texto (T) y actívalo (M)\n\n' +
+      'F: pantalla completa\n' +
+      'Y: fijar/desfijar arriba\n' +
+      'P: abrir/cerrar teleprompter en ventana',
     language: 'Idioma',
     script: 'Guion',
     enableMarkdown: 'Habilitar Markdown',
@@ -235,6 +258,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'El modo de ventana emergente no es posible en Safari. Usa Chrome para una mejor compatibilidad.',
     allowCameraAccess: 'Permitir acceso a la cámara',
     braveBlockedMessage: 'Brave bloqueó el acceso a la cámara. Haz clic en el icono de Shields o en el icono del candado en la barra de direcciones para restablecer los permisos y desactivar la protección contra huellas digitales para este sitio. Usa Chrome para una mejor compatibilidad.',
+    shortcutsMenu:
+      'Espacio: reproducir/pausar\n' +
+      'R: grabar/detener grabación\n' +
+      'D: mostrar y descargar videos\n' +
+      'C: controles del teleprompter\n' +
+      'H: ocultar/mostrar teleprompter\n' +
+      'I: controlar entradas\n' +
+      'T: editar texto\n' +
+      'M: habilitar markdown\n' +
+      'F: pantalla completa\n' +
+      'Y: fijar/desfijar arriba\n' +
+      'P: abrir/cerrar teleprompter en ventana',
+    shortcutsTitle: 'Atajos',
+    speakingTime: 'Tiempo de habla',
   },
   ja: {
     defaultScript:
@@ -245,7 +282,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: プロンプター操作\n' +
       'H: プロンプター表示/非表示\n' +
       'I: 入力設定\n\n' +
-      'Markdown 表示と書式を使うには、テキスト編集パネル (T) を開いて有効化 (M) してください',
+      'Markdown 表示と書式を使うには、テキスト編集パネル (T) を開いて有効化 (M) してください\n\n' +
+      'F: 全画面表示\n' +
+      'Y: 上部に固定/解除\n' +
+      'P: テレプロンプターをポップアウト/イン',
     language: '言語',
     script: 'スクリプト',
     enableMarkdown: 'Markdown を有効化',
@@ -310,6 +350,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safariではポップアウトモードは利用できません。互換性を高めるためにChromeを使用してください。',
     allowCameraAccess: 'カメラへのアクセスを許可',
     braveBlockedMessage: 'Braveがカメラへのアクセスをブロックしました。アドレスバーのShieldsアイコンまたは鍵アイコンをクリックして権限をリセットし、このサイトのフィンガープリント保護を無効にしてください。互換性を高めるためにChromeを使用してください。',
+    shortcutsMenu:
+      'スペース: 再生/一時停止\n' +
+      'R: 録画/録画停止\n' +
+      'D: 動画を表示してダウンロード\n' +
+      'C: プロンプター操作\n' +
+      'H: プロンプター表示/非表示\n' +
+      'I: 入力設定\n' +
+      'T: テキストを編集\n' +
+      'M: Markdown を有効化\n' +
+      'F: 全画面表示\n' +
+      'Y: 上部に固定/解除\n' +
+      'P: テレプロンプターをポップアウト/イン',
+    shortcutsTitle: 'ショートカット',
+    speakingTime: '発話時間',
   },
   hi: {
     defaultScript:
@@ -320,7 +374,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: टेलीप्रॉम्प्टर नियंत्रण\n' +
       'H: टेलीप्रॉम्प्टर दिखाएँ/छिपाएँ\n' +
       'I: इनपुट नियंत्रित करें\n\n' +
-      'Markdown रेंडरिंग और फ़ॉन्ट के लिए, टेक्स्ट संपादन पैन (T) खोलें और इसे सक्षम करें (M)',
+      'Markdown रेंडरिंग और फ़ॉन्ट के लिए, टेक्स्ट संपादन पैन (T) खोलें और इसे सक्षम करें (M)\n\n' +
+      'F: फ़ुलस्क्रीन\n' +
+      'Y: ऊपर से फिक्स/अनफिक्स करें\n' +
+      'P: टेलीप्रॉम्प्टर पॉप आउट/इन',
     language: 'भाषा',
     script: 'स्क्रिप्ट',
     enableMarkdown: 'Markdown सक्षम करें',
@@ -385,6 +442,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari पर पॉप आउट मोड संभव नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     allowCameraAccess: 'कैमरा एक्सेस की अनुमति दें',
     braveBlockedMessage: 'Brave ने कैमरा एक्सेस को ब्लॉक कर दिया है। अनुमतियों को रीसेट करने और इस साइट के लिए फ़िंगरप्रिंटिंग सुरक्षा को अक्षम करने के लिए एड्रेस बार में शील्ड्स आइकन या लॉक आइकन पर क्लिक करें। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
+    shortcutsMenu:
+      'स्पेस: चलाएँ/रोकें\n' +
+      'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
+      'D: वीडियो दिखाएँ और डाउनलोड करें\n' +
+      'C: टेलीप्रॉम्प्टर नियंत्रण\n' +
+      'H: टेलीप्रॉम्प्टर दिखाएँ/छिपाएँ\n' +
+      'I: इनपुट नियंत्रित करें\n' +
+      'T: टेक्स्ट संपादित करें\n' +
+      'M: Markdown सक्षम करें\n' +
+      'F: फ़ुलस्क्रीन\n' +
+      'Y: ऊपर से फिक्स/अनफिक्स करें\n' +
+      'P: टेलीप्रॉम्प्टर पॉप आउट/इन',
+    shortcutsTitle: 'शॉर्टकट',
+    speakingTime: 'बोलने का समय',
   },
   fr: {
     defaultScript:
@@ -393,15 +464,18 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'R : enregistrer/arrêter l\'enregistrement\n' +
       'T : éditer le texte du prompteur\n' +
       'C : contrôles du prompteur\n' +
-      'H : afficher/masquer le prompteur\n' +
+      'H : afficher/masquer le prompter\n' +
       'I : contrôler les entrées\n\n' +
-      'Pour utiliser le rendu et la police Markdown, ouvrez le panneau d’édition (T) et activez-le (M)',
+      'Pour utiliser le rendu et la police Markdown, ouvrez le panneau d’édition (T) et activez-le (M)\n\n' +
+      'F : plein écran\n' +
+      'Y : fixer/détacher du haut\n' +
+      'P : sortir/rentrer le prompteur',
     language: 'Langue',
     script: 'Script',
     enableMarkdown: 'Activer Markdown',
     close: 'Fermer',
-    hidePrompter: 'Masquer le prompteur',
-    showPrompter: 'Afficher le prompteur',
+    hidePrompter: 'Masquer le prompter',
+    showPrompter: 'Afficher le prompter',
     controls: 'Contrôles',
     drag: 'Glisser',
     mirrorText: 'Miroir du texte',
@@ -421,7 +495,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     record: 'Enregistrer',
     stopRecording: 'Arrêter l’enregistrement',
     startRecording: 'Démarrer l’enregistrement',
-    playPrompter: 'Lire le prompteur',
+    playPrompter: 'Lire le prompter',
     pausePrompter: 'Mettre en pause',
     playVideo: 'Lire la vidéo',
     pauseVideo: 'Mettre en pause',
@@ -460,6 +534,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Le mode fenêtre surgissante n’est pas possible sur Safari. Utilisez Chrome pour une meilleure compatibilité.',
     allowCameraAccess: "Autoriser l'accès à la caméra",
     braveBlockedMessage: "Brave a bloqué l'accès à la caméra. Cliquez sur l'icône Shields ou sur l'icône du cadenas dans la barre d'adresse pour réinitialiser les permissions et désactiver la protection contre le fingerprinting pour ce site. Utilisez Chrome pour une meilleure compatibilité.",
+    shortcutsMenu:
+      'Espace : lecture/pause\n' +
+      'R : enregistrer/arrêter l\'enregistrement\n' +
+      'D : afficher et télécharger les vidéos\n' +
+      'C : contrôles du prompteur\n' +
+      'H : afficher/masquer le prompter\n' +
+      'I : contrôler les entrées\n' +
+      'T : éditer le texte du prompteur\n' +
+      'M : activer Markdown\n' +
+      'F : plein écran\n' +
+      'Y : fixer/détacher du haut\n' +
+      'P : sortir/rentrer le prompteur',
+    shortcutsTitle: 'Raccourcis',
+    speakingTime: 'Temps de parole',
   },
   de: {
     defaultScript:
@@ -470,7 +558,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: Teleprompter-Steuerung\n' +
       'H: Teleprompter ein-/ausblenden\n' +
       'I: Eingänge steuern\n\n' +
-      'Für Markdown-Rendering und Schrift öffnen Sie das Text-Panel (T) und aktivieren es (M)',
+      'Für Markdown-Rendering und Schrift öffnen Sie das Text-Panel (T) und aktivieren es (M)\n\n' +
+      'F: Vollbild\n' +
+      'Y: Fixierung oben ein/aus\n' +
+      'P: Teleprompter ausklappen/einklappen',
     language: 'Sprache',
     script: 'Skript',
     enableMarkdown: 'Markdown aktivieren',
@@ -535,6 +626,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Der Pop-out-Modus ist in Safari nicht möglich. Verwenden Sie Chrome für eine bessere Kompatibilität.',
     allowCameraAccess: 'Kamerazugriff erlauben',
     braveBlockedMessage: 'Brave hat den Kamerazugriff blockiert. Klicken Sie auf das Shields-Symbol oder das Schloss-Symbol in der Adressleiste, um die Berechtigungen zurückzusetzen und den Fingerprinting-Schutz für diese Website zu deaktivieren. Verwenden Sie Chrome für eine bessere Kompatibilität.',
+    shortcutsMenu:
+      'Leertaste: abspielen/pausieren\n' +
+      'R: aufnehmen/Aufnahme stoppen\n' +
+      'D: Videos anzeigen und herunterladen\n' +
+      'C: Teleprompter-Steuerung\n' +
+      'H: Teleprompter ein-/ausblenden\n' +
+      'I: Eingänge steuern\n' +
+      'T: Text bearbeiten\n' +
+      'M: Markdown aktivieren\n' +
+      'F: Vollbild\n' +
+      'Y: Fixierung oben ein/aus\n' +
+      'P: Teleprompter ausklappen/einklappen',
+    shortcutsTitle: 'Tastenkombinationen',
+    speakingTime: 'Sprechzeit',
   },
   zh: {
     defaultScript:
@@ -545,7 +650,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C：提示器控制\n' +
       'H：隐藏/显示提示器\n' +
       'I：控制输入\n\n' +
-      '要使用 Markdown 渲染和字体，请打开文本编辑面板 (T) 并启用它 (M)',
+      '要使用 Markdown 渲染和字体，请打开文本编辑面板 (T) 并启用它 (M)\n\n' +
+      'F：全屏\n' +
+      'Y：固定/取消固定至顶部\n' +
+      'P：弹出/弹入提词器',
     language: '语言',
     script: '脚本',
     enableMarkdown: '启用 Markdown',
@@ -610,6 +718,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari 上不支持弹出模式。为了获得更好的兼容性，请使用 Chrome。',
     allowCameraAccess: '允许访问摄像头',
     braveBlockedMessage: 'Brave 已阻止访问摄像头。点击地址栏中的 Shields 图标或锁形图标以重置权限，并禁用此网站的指纹识别保护。为了获得更好的兼容性，请使用 Chrome。',
+    shortcutsMenu:
+      '空格：播放/暂停\n' +
+      'R：录制/停止录制\n' +
+      'D：显示并下载视频\n' +
+      'C：提示器控制\n' +
+      'H：隐藏/显示提示器\n' +
+      'I：控制输入\n' +
+      'T：编辑文本\n' +
+      'M：启用 Markdown\n' +
+      'F：全屏\n' +
+      'Y：固定/取消固定至顶部\n' +
+      'P：弹出/弹入提词器',
+    shortcutsTitle: '快捷键',
+    speakingTime: '演讲时间',
   },
   ar: {
     defaultScript:
@@ -620,7 +742,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: عناصر التحكم بالتلقين\n' +
       'H: إظهار/إخفاء التلقين\n' +
       'I: التحكم بالمدخلات\n\n' +
-      'لاستخدام عرض Markdown والخط، افتح لوحة تحرير النص (T) وفعّلها (M)',
+      'لاستخدام عرض Markdown والخط، افتح لوحة تحرير النص (T) وفعّلها (M)\n\n' +
+      'F: ملء الشاشة\n' +
+      'Y: تثبيت/إلغاء التثبيت بالأعلى\n' +
+      'P: نافذة تلقين منبثقة/مضمنة',
     language: 'اللغة',
     script: 'النص',
     enableMarkdown: 'تمكين Markdown',
@@ -685,6 +810,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'وضع النافذة المنبثقة غير ممكن على Safari. استخدم Chrome لتوافق أفضل.',
     allowCameraAccess: 'السماح بالوصول إلى الكاميرا',
     braveBlockedMessage: 'حظر Brave الوصول إلى الكاميرا. انقر فوق أيقونة Shields أو أيقونة القفل في شريط العناوين لإعادة تعيين الأذونات وتعطيل حماية البصمة الرقمية لهذا الموقع. استخدم Chrome لتوافق أفضل.',
+    shortcutsMenu:
+      'مسافة: تشغيل/إيقاف\n' +
+      'R: تسجيل/إيقاف التسجيل\n' +
+      'D: عرض وتنزيل الفيديوهات\n' +
+      'C: عناصر التحكم بالتلقين\n' +
+      'H: إظهار/إخفاء التلقين\n' +
+      'I: التحكم بالمدخلات\n' +
+      'T: تعديل النص\n' +
+      'M: تمكين Markdown\n' +
+      'F: ملء الشاشة\n' +
+      'Y: تثبيت/إلغاء التثبيت بالأعلى\n' +
+      'P: نافذة تلقين منبثقة/مضمنة',
+    shortcutsTitle: 'الاختصارات',
+    speakingTime: 'وقت التحدث',
   },
   pt: {
     defaultScript:
@@ -695,7 +834,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: controles do teleprompter\n' +
       'H: mostrar/ocultar teleprompter\n' +
       'I: controlar entradas\n\n' +
-      'Para usar a renderização e fonte Markdown, abra o painel de edição (T) e ative (M)',
+      'Para usar a renderização e fonte Markdown, abra o painel de edição (T) e ative (M)\n\n' +
+      'F: tela cheia\n' +
+      'Y: fixar/desafixar do topo\n' +
+      'P: destacar/embutir teleprompter',
     language: 'Idioma',
     script: 'Script',
     enableMarkdown: 'Ativar Markdown',
@@ -760,6 +902,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'O modo pop-out não é possível no Safari. Use o Chrome para melhor compatibilidade.',
     allowCameraAccess: 'Permitir acesso à câmera',
     braveBlockedMessage: 'O Brave bloqueou o acesso à câmera. Clique no ícone Shields ou no ícone de cadeado na barra de endereços para redefinir as permissões e desativar a proteção contra impressão digital para este site. Use o Chrome para melhor compatibilidade.',
+    shortcutsMenu:
+      'Espaço: reproduzir/pausar\n' +
+      'R: gravar/parar gravação\n' +
+      'D: mostrar e baixar vídeos\n' +
+      'C: controles do teleprompter\n' +
+      'H: mostrar/ocultar teleprompter\n' +
+      'I: controlar entradas\n' +
+      'T: Editar texto\n' +
+      'M: Ativar Markdown\n' +
+      'F: tela cheia\n' +
+      'Y: fixar/desafixar do topo\n' +
+      'P: destacar/embutir teleprompter',
+    shortcutsTitle: 'Atalhos',
+    speakingTime: 'Tempo de fala',
   },
   ru: {
     defaultScript:
@@ -770,7 +926,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: управление телесуфлёром\n' +
       'H: скрыть/показать телесуфлёр\n' +
       'I: управление входами\n\n' +
-      'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)',
+      'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)\n\n' +
+      'F: полный экран\n' +
+      'Y: закрепить/открепить сверху\n' +
+      'P: отдельное окно телесуфлёра',
     language: 'Язык',
     script: 'Скрипт',
     enableMarkdown: 'Включить Markdown',
@@ -835,6 +994,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Вынос окна невозможен в Safari. Используйте Chrome для лучшей совместимости.',
     allowCameraAccess: 'Разрешить доступ к камере',
     braveBlockedMessage: 'Brave заблокировал доступ к камере. Нажмите на значок Shields или значок замка в адресной строке, чтобы сбросить разрешения и отключить защиту от цифровых отпечатков для этого сайта. Используйте Chrome для лучшей совместимости.',
+    shortcutsMenu:
+      'Пробел: воспроизвести/пауза\n' +
+      'R: запись/остановить запись\n' +
+      'D: показать и скачать видео\n' +
+      'C: управление телесуфлёром\n' +
+      'H: скрыть/показать телесуфлёр\n' +
+      'I: управление входами\n' +
+      'T: Редактировать текст\n' +
+      'M: Включить Markdown\n' +
+      'F: полный экран\n' +
+      'Y: закрепить/открепить сверху\n' +
+      'P: отдельное окно телесуфлёра',
+    shortcutsTitle: 'Горячие клавиши',
+    speakingTime: 'Время речи',
   },
   pl: {
     defaultScript:
@@ -845,7 +1018,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'C: sterowanie teleprompterem\n' +
       'H: ukryj/pokaż teleprompter\n' +
       'I: sterowanie wejściami\n\n' +
-      'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (T) i włącz go (M)',
+      'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (T) i włącz go (M)\n\n' +
+      'F: pełny ekran\n' +
+      'Y: przypnij/odepnij od góry\n' +
+      'P: teleprompter w wyskakującym okienku',
     language: 'Język',
     script: 'Tekst',
     enableMarkdown: 'Włącz Markdown',
@@ -910,6 +1086,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Tryb wyskakującego okna nie jest możliwy w Safari. Używaj Chrome dla lepszej kompatybilności.',
     allowCameraAccess: 'Zezwól na dostęp do kamery',
     braveBlockedMessage: 'Brave zablokował dostęp do kamery. Kliknij ikonę Shields lub ikonę kłódki w pasku adresu, aby zresetować uprawnienia i wyłączyć ochronę przed pobieraniem odcisków palców dla tej witryny. Używaj Chrome dla lepszej kompatybilności.',
+    shortcutsMenu:
+      'Spacja: odtwarzaj/wstrzymaj\n' +
+      'R: nagrywaj/zatrzymaj nagrywanie\n' +
+      'D: pokaż i pobierz wideo\n' +
+      'C: sterowanie teleprompterem\n' +
+      'H: ukryj/pokaż teleprompter\n' +
+      'I: sterowanie wejściami\n' +
+      'T: Edytuj tekst\n' +
+      'M: Włącz Markdown\n' +
+      'F: pełny ekran\n' +
+      'Y: przypnij/odepnij od góry\n' +
+      'P: teleprompter w wyskakującym okienku',
+    shortcutsTitle: 'Skróty',
+    speakingTime: 'Czas mówienia',
   },
 }
 
