@@ -14,8 +14,10 @@ const ELAPSED_TICK_MS = 100
 
 function pickMimeType() {
   const candidates = [
-    'video/mp4;codecs=avc1,mp4a',        // MP4 H.264 + AAC (Chrome 120+)
-    'video/mp4',                          // MP4 fallback
+    'video/mp4;codecs=avc3.42E01E,mp4a.40.2', // MP4 H.264 (AVC3) - High profile
+    'video/mp4;codecs=avc3,mp4a',            // MP4 H.264 (AVC3) generic
+    'video/mp4;codecs=avc1,mp4a',            // MP4 H.264 (AVC1)
+    'video/mp4',                              // MP4 fallback
     'video/webm;codecs=vp9,opus',        // WebM VP9 (fallback)
     'video/webm;codecs=vp8,opus',        // WebM VP8 (fallback)
     'video/webm'                          // WebM generic
@@ -28,6 +30,7 @@ function pickMimeType() {
 
 function createRecorder(stream: MediaStream) {
   const mimeType = pickMimeType()
+  console.log('[Recorder] Initializing with MIME type:', mimeType || 'browser default')
   try {
     const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined)
     return { ok: true as const, recorder }
