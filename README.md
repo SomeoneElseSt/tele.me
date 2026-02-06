@@ -78,7 +78,6 @@ Utilizes `localStorage` for ephemeral settings (speed, alignment) and browser-ba
 
 - **Voice-Sync Scrolling**: Automated scrolling that follows your voice in real-time using the Web Speech API. 
 - **Remote Control**: Scan a QR code with your smartphone to turn it into a wireless remote for the prompter via P2P WebRTC.
-- **Offline Power (PWA)**: Full Progressive Web App support for recording in environments with zero internet connectivity.
 
 ---
 

@@ -10,6 +10,7 @@
 - **Picture-in-Picture Mode**: Read your script in a floating window while using other applications.
 - **Pro Recording**: Integrated video capture using AVC3 for robust MP4 exports with **no watermarks**.
 - **Multilingual Support**: Available in 11 languages, including English, Spanish, Japanese, Hindi, French, German, Chinese, Arabic, Portuguese, Russian, and Polish.
+- **Offline Power (PWA)**: Installable app that works perfectly without internet connection after initial load.
 - **Privacy First**: Your camera data and recordings never leave your device.
 - **Free Forever**: No premium tiers, subscriptions, watermarks, or hidden costs.
 
@@ -19,8 +20,8 @@ Perfect for video creators, presenters, journalists, educators, public speakers,
 
 ## Technical Details
 
-- Pure React implementation with Vite.
-- Works offline after initial load using browser caching.
+- Pure React implementation with Vite and `vite-plugin-pwa`.
+- **Full PWA Support**: Installable on desktop/mobile with a dedicated app icon and offline capabilities.
 - Supports keyboard shortcuts: Space (Play/Pause), M (Markdown), P (PiP), C (Controls).
 - Responsive design optimized for desktop and mobile.
 - Zero cookies or tracking scripts.
