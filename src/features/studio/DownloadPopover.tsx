@@ -180,11 +180,11 @@ export function DownloadPopover(props: Props) {
                         <Save className="h-4 w-4" />
                         <div
                           className={cn(
-                            'absolute -bottom-0.5 -right-1 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
+                            'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
                             persistVideos ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
                           )}
-                        >
-                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                            >
+                              <Check className="h-1.5 w-1.5" strokeWidth={3} />
                         </div>
                       </div>
                     </button>
