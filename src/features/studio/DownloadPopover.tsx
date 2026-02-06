@@ -183,8 +183,8 @@ export function DownloadPopover(props: Props) {
                             'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
                             persistVideos ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
                           )}
-                            >
-                              <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                        >
+                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
                         </div>
                       </div>
                     </button>
@@ -203,7 +203,7 @@ export function DownloadPopover(props: Props) {
                         type="button"
                         aria-label={strings.clearAll}
                         onClick={() => setConfirmingClearAll(!confirmingClearAll)}
-                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white outline-none"
+                        className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/70 hover:bg-white/10 hover:text-white outline-none whitespace-nowrap"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {strings.clearAll}
