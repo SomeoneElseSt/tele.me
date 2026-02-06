@@ -1158,7 +1158,7 @@ export function FloatingPrompter(props: Props) {
                       value={script}
                       onChange={(e) => onScriptChange(e.target.value)}
                       onBlur={() => setIsEditing(false)}
-                      placeholder={strings.defaultScript}
+                      placeholder=""
                       spellCheck={false}
                       onKeyDown={(e) => {
                         // Prevent space from triggering play/pause while editing, unless modifier key is held
@@ -1172,6 +1172,15 @@ export function FloatingPrompter(props: Props) {
                       }}
                     />
                   </>
+                ) : !displayScript ? (
+                  <div className="font-medium leading-[1.35] tracking-[-0.02em]" style={{ fontSize }}>
+                    <motion.div
+                      animate={{ opacity: [1, 1, 0, 0] }}
+                      transition={{ duration: 1, repeat: Infinity, times: [0, 0.5, 0.5, 1], ease: 'linear' }}
+                      // Cursor hyperparameters: w-[1.5px] (thickness), h-[1.2em] (height)
+                      className="h-[1.2em] w-[0.8px] bg-white translate-y-[0.075em]"
+                    />
+                  </div>
                 ) : markdownEnabled ? (
                   <div
                     className="font-medium leading-[1.35] tracking-[-0.02em]"

@@ -43,6 +43,8 @@ const FRAME_STORAGE_KEY = 'teleme.me:prompter_frame'
 const FIXED_TO_TOP_STORAGE_KEY = 'teleme.me:prompter_fixed_to_top'
 const PERSIST_VIDEOS_STORAGE_KEY = 'teleme.me:persist_videos'
 const MAX_PERSISTENT_VIDEOS = 10
+const SCRIPT_STORAGE_KEY = 'teleme.me:script'
+const MARKDOWN_ENABLED_STORAGE_KEY = 'teleme.me:markdown_enabled'
 
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
@@ -90,8 +92,16 @@ export function Studio() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [mirrorVideo, setMirrorVideo] = useState(DEFAULT_MIRROR_VIDEO)
 
-  const [script, setScript] = useState(() => getStrings('en').defaultScript)
-  const [markdownEnabled, setMarkdownEnabled] = useState(false)
+  const [script, setScript] = useState(() => {
+    if (typeof window === 'undefined') return getStrings('en').defaultScript
+    const saved = window.localStorage.getItem(SCRIPT_STORAGE_KEY)
+    return saved !== null ? saved : getStrings('en').defaultScript
+  })
+  const [markdownEnabled, setMarkdownEnabled] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const saved = window.localStorage.getItem(MARKDOWN_ENABLED_STORAGE_KEY)
+    return saved === 'true'
+  })
   const [playing, setPlaying] = useState(false)
   const [speed, setSpeed] = useState(() => {
     if (typeof window === 'undefined') return DEFAULT_SPEED
@@ -249,6 +259,16 @@ export function Studio() {
     if (typeof window === 'undefined') return
     window.localStorage.setItem(SPEED_STORAGE_KEY, speed.toString())
   }, [speed])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(SCRIPT_STORAGE_KEY, script)
+  }, [script])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(MARKDOWN_ENABLED_STORAGE_KEY, String(markdownEnabled))
+  }, [markdownEnabled])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
