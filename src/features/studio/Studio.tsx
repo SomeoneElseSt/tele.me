@@ -30,8 +30,8 @@ const DEFAULT_FONT_SIZE = 44
 const DEFAULT_OPACITY = 0.45
 const DEFAULT_MIRROR_VIDEO = true
 type TextAlign = 'left' | 'center' | 'right'
-const DEFAULT_TEXT_ALIGN: TextAlign = 'left'
-const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 960, height: 480 }
+const DEFAULT_TEXT_ALIGN: TextAlign = 'center'
+const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 440, height: 820 }
 
 const LOCALE_STORAGE_KEY = 'teleme.me:locale'
 const TAKE_NUMBER_STORAGE_KEY = 'teleme.me:next_take_number'

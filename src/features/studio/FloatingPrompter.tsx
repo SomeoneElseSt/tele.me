@@ -626,7 +626,7 @@ function ControlsBarPortal({
     <AnimatePresence initial={false}>
       {open && (
         <motion.div
-          className="pointer-events-auto fixed z-30"
+          className="pointer-events-auto fixed z-50"
           style={isPip ? {
             left: 20,
             right: 20,
