@@ -302,7 +302,9 @@ function ControlCell({
   step,
   onChange,
   formatValue,
-  disabled
+  disabled,
+  inputMultiplier = 1,
+  suffix
 }: {
   Thumb: ComponentType<{ t: MotionValue<number> }>
   title: string
@@ -313,10 +315,15 @@ function ControlCell({
   onChange: (value: number) => void
   formatValue?: (value: number) => string
   disabled?: boolean
+  inputMultiplier?: number
+  suffix?: string
 }) {
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const rangeInputRef = useRef<HTMLInputElement | null>(null)
+  const textInputRef = useRef<HTMLInputElement | null>(null)
   const activePointerIdRef = useRef<number | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState('')
 
   const decimals = useMemo(() => {
     const text = `${step}`
@@ -337,6 +344,36 @@ function ControlCell({
   useEffect(() => {
     tTarget.set(t)
   }, [t, tTarget])
+
+  useEffect(() => {
+    if (isEditing) {
+      textInputRef.current?.focus()
+      textInputRef.current?.select()
+    }
+  }, [isEditing])
+
+  const startEditing = useCallback(() => {
+    if (disabled) return
+    setIsEditing(true)
+    setEditValue(Math.round(value * inputMultiplier).toString())
+  }, [disabled, value, inputMultiplier])
+
+  const commitEditing = useCallback(() => {
+    setIsEditing(false)
+    const nextText = editValue.trim().replace(/[^0-9.]/g, '')
+    if (!nextText) return
+
+    const nextRaw = parseFloat(nextText)
+    if (isNaN(nextRaw)) return
+
+    const nextScaled = nextRaw / inputMultiplier
+    // Validation & clamping
+    const clamped = Math.min(max, Math.max(min, nextScaled))
+    // Step rounding
+    const stepped = Math.round((clamped - min) / step) * step + min
+    const fixed = Number(stepped.toFixed(decimals))
+    onChange(fixed)
+  }, [editValue, inputMultiplier, max, min, step, decimals, onChange])
 
   const setValueFromClientX = useCallback(
     (clientX: number, el: HTMLElement) => {
@@ -390,9 +427,40 @@ function ControlCell({
     <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-4 pb-2">
       <div className={cn("flex items-end justify-between gap-3", disabled && "opacity-40")}>
         <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
-        <div className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55">
-          {formatValue ? formatValue(value) : `${value}`}
-        </div>
+        {isEditing ? (
+          <div className="flex items-center justify-end">
+            <input
+              ref={textInputRef}
+              autoFocus
+              onFocus={(e) => e.target.select()}
+              type="text"
+              inputMode="decimal"
+              // text-white/55 to match baseline, caret-white to keep cursor visible
+              className="w-[3ch] min-w-0 h-[13px] appearance-none bg-transparent p-0 m-0 text-right text-[13px] font-medium leading-none tabular-nums text-white/55 caret-white outline-none placeholder:text-white/30"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onBlur={commitEditing}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') commitEditing()
+                if (e.key === 'Escape') setIsEditing(false)
+              }}
+            />
+            {suffix && (
+              <span className="text-[13px] font-medium leading-none text-white/55 tabular-nums">
+                {suffix}
+              </span>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={startEditing}
+            disabled={disabled}
+            className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55 hover:text-white/80 transition-colors outline-none cursor-text disabled:cursor-default"
+          >
+            {formatValue ? formatValue(value) : `${value}`}
+          </button>
+        )}
       </div>
 
       <div className={cn("relative mt-2.5 h-9", disabled && "pointer-events-none")}>
@@ -438,7 +506,7 @@ function ControlCell({
           </motion.div>
 
           <input
-            ref={inputRef}
+            ref={rangeInputRef}
             aria-label={title}
             title={title}
             type="range"
@@ -620,6 +688,7 @@ function ControlsBarPortal({
                   step={1}
                   formatValue={(v) => `${Math.round(v)}px`}
                   onChange={onFontSizeChange}
+                  suffix="px"
                 />
                 <ControlCell
                   Thumb={OpacityThumb}
@@ -631,6 +700,8 @@ function ControlsBarPortal({
                   formatValue={(v) => `${Math.round(v * 100)}%`}
                   onChange={onOpacityChange}
                   disabled={isPip}
+                  inputMultiplier={100}
+                  suffix="%"
                 />
 
                 <div className="flex items-center justify-center gap-1.5 px-3">
