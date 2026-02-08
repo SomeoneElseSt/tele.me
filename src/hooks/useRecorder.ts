@@ -98,7 +98,7 @@ export function useRecorder(stream: MediaStream | null) {
       stopTimer()
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType })
       const url = URL.createObjectURL(blob)
-      setState((prev) => ({ ...prev, status: 'stopped', blob, url, mimeType: recorder.mimeType }))
+      setState((prev) => ({ ...prev, status: 'stopped', elapsedMs: 0, blob, url, mimeType: recorder.mimeType }))
     }
 
     recorder.start(DATA_TIMESLICE_MS)
