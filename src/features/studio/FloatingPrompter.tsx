@@ -436,9 +436,15 @@ function ControlCell({
               type="text"
               inputMode="decimal"
               // text-white/55 to match baseline, caret-white to keep cursor visible
-              className="w-[3ch] min-w-0 h-[13px] appearance-none bg-transparent p-0 m-0 text-right text-[13px] font-medium leading-none tabular-nums text-white/55 caret-white outline-none placeholder:text-white/30"
+              className="w-9 min-w-0 h-[13px] appearance-none bg-transparent p-0 m-0 text-right text-[13px] font-medium leading-none tabular-nums text-white/55 caret-white outline-none placeholder:text-white/30"
               value={editValue}
-              onChange={(e) => setEditValue(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value
+                // Allow only digits and at most one decimal point
+                if (/^\d*\.?\d*$/.test(val)) {
+                  setEditValue(val)
+                }
+              }}
               onBlur={commitEditing}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') commitEditing()
