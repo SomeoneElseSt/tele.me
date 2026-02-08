@@ -8,6 +8,7 @@ import { InputsPopover, type InputDevice } from './InputsPopover'
 import { DownloadPopover, type DownloadTake } from './DownloadPopover'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useI18n } from './i18n'
+import { formatFilename } from '../recording/format'
 
 type Props = {
   canRecord: boolean
@@ -170,7 +171,7 @@ export function Dock({
       const a = document.createElement('a')
       a.href = url
       const ext = playingTake.mimeType?.includes('mp4') ? 'mp4' : 'webm'
-      a.download = `teleme.me-${new Date(playingTake.createdAt).toISOString().replaceAll(':', '')}.${ext}`
+      a.download = formatFilename(playingTake.createdAt, ext)
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)

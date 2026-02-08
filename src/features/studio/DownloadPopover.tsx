@@ -8,6 +8,7 @@ import { useI18n } from './i18n'
 import { Tooltip } from '../../components/Tooltip'
 import { useHotkeys } from '../../hooks/useHotkeys'
 import { useTooltipController } from '../../components/useTooltipController'
+import { formatFilename } from '../recording/format'
 
 /**
  * DownloadPopover Architecture Notes:
@@ -297,7 +298,7 @@ export function DownloadPopover(props: Props) {
                   ) : (
                     takes.map((take) => {
                       const extension = getFileExtension(take.mimeType)
-                      const filename = `teleme.me-${new Date(take.createdAt).toISOString().replaceAll(':', '')}.${extension}`
+                      const filename = formatFilename(take.createdAt, extension)
 
                       const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault()
