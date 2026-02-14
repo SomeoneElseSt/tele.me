@@ -51,6 +51,7 @@ export function useSpeechRecognition({
   const mountedRef = useRef(true)
   const retryCountRef = useRef(0)
   const retryTimeoutRef = useRef<number | null>(null)
+  const hasReceivedSpeechRef = useRef(false)
 
   // Check browser support
   useEffect(() => {
@@ -97,8 +98,10 @@ export function useSpeechRecognition({
 
     recognition.onstart = () => {
       if (!mountedRef.current) return
+      console.log('[ASR] Speech recognition started, locale:', SPEECH_RECOGNITION_LANGS[locale])
       setActive(true)
       setError(undefined)
+      hasReceivedSpeechRef.current = false
       retryCountRef.current = 0
     }
 
@@ -113,6 +116,8 @@ export function useSpeechRecognition({
         if (!transcript) continue
 
         const isFinal = result.isFinal
+        console.log('[ASR] Transcript:', transcript, 'isFinal:', isFinal, 'confidence:', result[0]?.confidence)
+        hasReceivedSpeechRef.current = true
         onTranscript(transcript, isFinal)
       }
     }
@@ -121,6 +126,7 @@ export function useSpeechRecognition({
       if (!mountedRef.current) return
 
       const errorMsg = `Speech recognition error: ${event.error}`
+      console.log('[ASR] Error event:', event.error)
 
       // Don't set error for 'no-speech' - it's expected during pauses
       if (event.error === 'no-speech') {
@@ -132,6 +138,7 @@ export function useSpeechRecognition({
         return
       }
 
+      console.log('[ASR] Setting error state:', errorMsg)
       setError(errorMsg)
       onError?.(errorMsg)
 
@@ -156,17 +163,19 @@ export function useSpeechRecognition({
     recognition.onend = () => {
       if (!mountedRef.current) return
 
-      setActive(false)
-
-      // Auto-restart if still enabled (browser times out after ~60s)
-      if (enabled && retryCountRef.current < MAX_RETRIES) {
-        const delay = 100 // Quick restart for normal timeout
+      // Only auto-restart if we received speech (normal ~60s timeout)
+      // Don't restart if it ended immediately (permission/device issues)
+      if (enabled && hasReceivedSpeechRef.current && retryCountRef.current < MAX_RETRIES) {
+        const delay = 100
+        console.log('[ASR] Recognition timed out after speech, auto-restarting...')
         retryTimeoutRef.current = window.setTimeout(() => {
           if (!mountedRef.current) return
           if (!enabled) return
-
           start()
         }, delay)
+      } else {
+        console.log('[ASR] Recognition ended, no auto-restart (hasSpoken:', hasReceivedSpeechRef.current, 'enabled:', enabled, ')')
+        setActive(false)
       }
     }
 

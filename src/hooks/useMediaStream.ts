@@ -72,7 +72,12 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, brave
     }
 
     const next = await navigator.mediaDevices.getUserMedia(constraints).catch((err: unknown) => {
-      const message = err instanceof Error ? err.message : 'Failed to start camera.'
+      let message = err instanceof Error ? err.message : 'Failed to start camera.'
+
+      // Device in use by another tab (NotFoundError)
+      if (message.includes('NotFoundError') || message.toLowerCase().includes('requested device not found')) {
+        message = 'Close other tabs using the microphone or camera'
+      }
 
       // Specifically handle Brave browser permissions issues
       // @ts-ignore - Navigator.brave is Brave-specific
