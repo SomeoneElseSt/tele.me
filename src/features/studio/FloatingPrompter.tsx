@@ -1100,8 +1100,10 @@ export function FloatingPrompter(props: Props) {
   }, [spokenWordIndices, fontSize])
 
   // Speech recognition integration
+  const { locale } = useI18n()
   const speechRecognition = useSpeechRecognition({
     enabled: open && playing && followVoice,
+    locale,
     onTranscript: (transcript, isFinal) => {
       // Only process final results
       if (!isFinal) return
