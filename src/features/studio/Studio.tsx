@@ -49,6 +49,7 @@ const MARKDOWN_ENABLED_STORAGE_KEY = 'teleme.me:markdown_enabled'
 const AUDIO_DEVICE_ID_STORAGE_KEY = 'teleme.me:audio_device_id'
 const VIDEO_DEVICE_ID_STORAGE_KEY = 'teleme.me:video_device_id'
 const MIRROR_VIDEO_STORAGE_KEY = 'teleme.me:mirror_video'
+const FOLLOW_VOICE_STORAGE_KEY = 'teleme.me:follow_voice'
 
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
@@ -94,6 +95,7 @@ export function Studio() {
   const [audioDeviceId, setAudioDeviceId] = useLocalStorage<string | undefined>(AUDIO_DEVICE_ID_STORAGE_KEY, undefined)
   const [videoDeviceId, setVideoDeviceId] = useLocalStorage<string | undefined>(VIDEO_DEVICE_ID_STORAGE_KEY, undefined)
   const [mirrorVideo, setMirrorVideo] = useLocalStorage(MIRROR_VIDEO_STORAGE_KEY, DEFAULT_MIRROR_VIDEO)
+  const [followVoice, setFollowVoice] = useLocalStorage(FOLLOW_VOICE_STORAGE_KEY, true)
 
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -541,6 +543,9 @@ export function Studio() {
           hotkeys.m = () => {
             setMarkdownEnabled((prev) => !prev)
           }
+          hotkeys.v = () => {
+            setFollowVoice((prev) => !prev)
+          }
           hotkeys.f = () => onToggleFullscreen()
           hotkeys.escape = () => {
             tooltip.clear()
@@ -551,7 +556,7 @@ export function Studio() {
 
         return hotkeys
       },
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip, handleClosePrompter]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip, handleClosePrompter, setFollowVoice]
     ),
     true
   )
@@ -729,6 +734,8 @@ export function Studio() {
           onControlsOpenChange={setPrompterControlsOpen}
           onPipChange={setPrompterIsPip}
           onMarkdownEnabledChange={setMarkdownEnabled}
+          followVoice={followVoice}
+          onFollowVoiceChange={setFollowVoice}
           forceCloseControls={forceCloseControls}
         />
 

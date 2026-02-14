@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, Mic, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip, TooltipProvider } from '../../components/Tooltip'
@@ -36,6 +36,8 @@ type Props = {
   onPipChange?: (isPip: boolean) => void
   onMarkdownEnabledChange?: (enabled: boolean) => void
   onScriptChange: (value: string) => void
+  followVoice: boolean
+  onFollowVoiceChange: (value: boolean) => void
   forceCloseControls?: boolean
 }
 
@@ -541,6 +543,8 @@ function ControlsBarPortal({
   fontSize,
   textAlign,
   fixedToTop,
+  followVoice,
+  onFollowVoiceChange,
   onOpacityChange,
   onSpeedChange,
   onFontSizeChange,
@@ -555,6 +559,8 @@ function ControlsBarPortal({
   fontSize: number
   textAlign: 'left' | 'center' | 'right'
   fixedToTop: boolean
+  followVoice: boolean
+  onFollowVoiceChange: (value: boolean) => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
   onFontSizeChange: (value: number) => void
@@ -684,6 +690,7 @@ function ControlsBarPortal({
                   step={1}
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
+                  disabled={followVoice}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
@@ -790,6 +797,9 @@ export function FloatingPrompter(props: Props) {
     onClose,
     onControlsOpenChange,
     onPipChange,
+    onMarkdownEnabledChange,
+    followVoice,
+    onFollowVoiceChange,
     forceCloseControls
   } = props
 
@@ -1158,6 +1168,21 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <Tooltip enabled={!isPip} label={followVoice ? strings.followVoiceEnabled : strings.followVoice} shortcut="V">
+                  <button
+                    type="button"
+                    onClick={() => onFollowVoiceChange(!followVoice)}
+                    aria-label={strings.followVoice}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
+                      'hover:bg-white/10 hover:text-white',
+                      followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
+                    )}
+                  >
+                    <Mic className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                  </button>
+                </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
@@ -1399,6 +1424,21 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <Tooltip enabled={!isPip} label={followVoice ? strings.followVoiceEnabled : strings.followVoice} shortcut="V">
+                  <button
+                    type="button"
+                    onClick={() => onFollowVoiceChange(!followVoice)}
+                    aria-label={strings.followVoice}
+                    onPointerDown={(e) => e.stopPropagation()}
+                    className={cn(
+                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
+                      'hover:bg-white/10 hover:text-white',
+                      followVoice && 'border-white/18 bg-white/10 text-white'
+                    )}
+                  >
+                    <Mic className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                  </button>
+                </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"
@@ -1499,6 +1539,8 @@ export function FloatingPrompter(props: Props) {
             fontSize={fontSize}
             textAlign={textAlign}
             fixedToTop={fixedToTop}
+            followVoice={followVoice}
+            onFollowVoiceChange={onFollowVoiceChange}
             onOpacityChange={onOpacityChange}
             onSpeedChange={onSpeedChange}
             onFontSizeChange={onFontSizeChange}
