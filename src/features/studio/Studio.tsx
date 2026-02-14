@@ -8,6 +8,7 @@ import { useMediaDevices } from '../../hooks/useMediaDevices'
 import { useMediaStream } from '../../hooks/useMediaStream'
 import { useRecorder } from '../../hooks/useRecorder'
 import { useMirroredStream } from '../../hooks/useMirroredStream'
+import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { clamp } from '../../hooks/geometry'
 import { formatMs } from '../recording/format'
 import { Dock } from './Dock'
@@ -45,6 +46,9 @@ const PERSIST_VIDEOS_STORAGE_KEY = 'teleme.me:persist_videos'
 const MAX_PERSISTENT_VIDEOS = 10
 const SCRIPT_STORAGE_KEY = 'teleme.me:script'
 const MARKDOWN_ENABLED_STORAGE_KEY = 'teleme.me:markdown_enabled'
+const AUDIO_DEVICE_ID_STORAGE_KEY = 'teleme.me:audio_device_id'
+const VIDEO_DEVICE_ID_STORAGE_KEY = 'teleme.me:video_device_id'
+const MIRROR_VIDEO_STORAGE_KEY = 'teleme.me:mirror_video'
 
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
@@ -86,89 +90,60 @@ function mapDevices(prefix: string, devices: MediaDeviceInfo[]) {
 
 export function Studio() {
   const { audioInputs, videoInputs, error: devicesError } = useMediaDevices()
-  const [audioDeviceId, setAudioDeviceId] = useState<string | undefined>(undefined)
-  const [videoDeviceId, setVideoDeviceId] = useState<string | undefined>(undefined)
+
+  const [audioDeviceId, setAudioDeviceId] = useLocalStorage<string | undefined>(AUDIO_DEVICE_ID_STORAGE_KEY, undefined)
+  const [videoDeviceId, setVideoDeviceId] = useLocalStorage<string | undefined>(VIDEO_DEVICE_ID_STORAGE_KEY, undefined)
+  const [mirrorVideo, setMirrorVideo] = useLocalStorage(MIRROR_VIDEO_STORAGE_KEY, DEFAULT_MIRROR_VIDEO)
 
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [mirrorVideo, setMirrorVideo] = useState(DEFAULT_MIRROR_VIDEO)
 
-  const [script, setScript] = useState(() => {
-    if (typeof window === 'undefined') return getStrings('en').defaultScript
-    const saved = window.localStorage.getItem(SCRIPT_STORAGE_KEY)
-    return saved !== null ? saved : getStrings('en').defaultScript
-  })
-  const [markdownEnabled, setMarkdownEnabled] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const saved = window.localStorage.getItem(MARKDOWN_ENABLED_STORAGE_KEY)
-    return saved === 'true'
-  })
+  const [script, setScript] = useLocalStorage(SCRIPT_STORAGE_KEY, getStrings('en').defaultScript)
+  const [markdownEnabled, setMarkdownEnabled] = useLocalStorage(MARKDOWN_ENABLED_STORAGE_KEY, false)
+
   const [playing, setPlaying] = useState(false)
-  const [speed, setSpeed] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_SPEED
-    const saved = window.localStorage.getItem(SPEED_STORAGE_KEY)
-    if (!saved) return DEFAULT_SPEED
-    const parsed = Number(saved)
+
+  const [speed, setSpeed] = useLocalStorage(SPEED_STORAGE_KEY, DEFAULT_SPEED, (v) => {
+    const parsed = Number(v)
     if (isNaN(parsed) || parsed < 10 || parsed > 180) return DEFAULT_SPEED
     return parsed
   })
-  const [fontSize, setFontSize] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_FONT_SIZE
-    const saved = window.localStorage.getItem(FONT_SIZE_STORAGE_KEY)
-    if (!saved) return DEFAULT_FONT_SIZE
-    const parsed = Number(saved)
+
+  const [fontSize, setFontSize] = useLocalStorage(FONT_SIZE_STORAGE_KEY, DEFAULT_FONT_SIZE, (v) => {
+    const parsed = Number(v)
     if (isNaN(parsed) || parsed < 22 || parsed > 72) return DEFAULT_FONT_SIZE
     return parsed
   })
-  const [opacity, setOpacity] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_OPACITY
-    const saved = window.localStorage.getItem(OPACITY_STORAGE_KEY)
-    if (!saved) return DEFAULT_OPACITY
-    const parsed = Number(saved)
+
+  const [opacity, setOpacity] = useLocalStorage(OPACITY_STORAGE_KEY, DEFAULT_OPACITY, (v) => {
+    const parsed = Number(v)
     if (isNaN(parsed) || parsed < 0.15 || parsed > 0.95) return DEFAULT_OPACITY
     return parsed
   })
-  const [textAlign, setTextAlign] = useState<TextAlign>(() => {
-    if (typeof window === 'undefined') return DEFAULT_TEXT_ALIGN
-    const saved = window.localStorage.getItem(TEXT_ALIGN_STORAGE_KEY)
-    if (!saved) return DEFAULT_TEXT_ALIGN
-    if (saved === 'left' || saved === 'center' || saved === 'right') {
-      return saved
-    }
+
+  const [textAlign, setTextAlign] = useLocalStorage<TextAlign>(TEXT_ALIGN_STORAGE_KEY, DEFAULT_TEXT_ALIGN, (v) => {
+    if (v === 'left' || v === 'center' || v === 'right') return v
     return DEFAULT_TEXT_ALIGN
   })
+
   const [prompterOpen, setPrompterOpen] = useState(true)
   const [prompterControlsOpen, setPrompterControlsOpen] = useState(false)
   const [prompterIsPip, setPrompterIsPip] = useState(false)
   const [forceCloseControls, setForceCloseControls] = useState(false)
-  const [fixedToTop, setFixedToTop] = useState(() => {
-    if (typeof window === 'undefined') return false
-    const saved = window.localStorage.getItem(FIXED_TO_TOP_STORAGE_KEY)
-    if (!saved) return false
-    return saved === 'true'
-  })
-  const [frame, setFrame] = useState<PrompterFrame>(() => {
-    if (typeof window === 'undefined') {
-      return clampFrame(getCenteredFrame(DEFAULT_FRAME))
-    }
-    const saved = window.localStorage.getItem(FRAME_STORAGE_KEY)
-    if (!saved) {
-      return clampFrame(getCenteredFrame(DEFAULT_FRAME))
-    }
-    try {
-      const parsed = JSON.parse(saved) as PrompterFrame
-      if (
-        typeof parsed.x === 'number' &&
-        typeof parsed.y === 'number' &&
-        typeof parsed.width === 'number' &&
-        typeof parsed.height === 'number'
-      ) {
-        return clampFrame(parsed)
-      }
-    } catch {
-      // Invalid JSON, fall back to default
+
+  const [fixedToTop, setFixedToTop] = useLocalStorage(FIXED_TO_TOP_STORAGE_KEY, false)
+
+  const [frame, setFrame] = useLocalStorage<PrompterFrame>(FRAME_STORAGE_KEY, clampFrame(getCenteredFrame(DEFAULT_FRAME)), (v) => {
+    if (
+      typeof v?.x === 'number' &&
+      typeof v?.y === 'number' &&
+      typeof v?.width === 'number' &&
+      typeof v?.height === 'number'
+    ) {
+      return clampFrame(v)
     }
     return clampFrame(getCenteredFrame(DEFAULT_FRAME))
   })
+
   const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number }[]>([])
   const takesRef = useRef(takes)
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
@@ -180,12 +155,7 @@ export function Studio() {
     takesRef.current = takes
   }, [takes])
 
-  const [persistVideos, setPersistVideos] = useState(() => {
-    if (typeof window === 'undefined') return true
-    const saved = window.localStorage.getItem(PERSIST_VIDEOS_STORAGE_KEY)
-    if (saved === null) return true // Default to true if never set
-    return saved === 'true'
-  })
+  const [persistVideos, setPersistVideos] = useLocalStorage(PERSIST_VIDEOS_STORAGE_KEY, true)
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
 
   const [localeOpen, setLocaleOpen] = useState(false)
@@ -193,7 +163,10 @@ export function Studio() {
   const localeAnchorRef = useRef<HTMLButtonElement | null>(null)
   const localePanelRef = useRef<HTMLDivElement | null>(null)
 
-  const [locale, setLocale] = useState<LocaleCode>('en')
+  const [locale, setLocale] = useLocalStorage<LocaleCode>(LOCALE_STORAGE_KEY, 'en', (v) => {
+    if (LOCALES.some((item) => item.code === v)) return v as LocaleCode
+    return 'en'
+  })
   const localeRef = useRef<LocaleCode>(locale)
   const localeHoverTimeoutRef = useRef<any>(null)
 
@@ -227,73 +200,22 @@ export function Studio() {
   const recorder = useRecorder(recordingStream)
 
   useEffect(() => {
-    if (audioDeviceId) return
-    const id = audioInputs[0]?.deviceId
-    if (!id) return
-    setAudioDeviceId(id)
-  }, [audioDeviceId, audioInputs])
+    const isMissing = audioDeviceId && audioInputs.length > 0 && !audioInputs.some((d) => d.deviceId === audioDeviceId)
+    const shouldDefault = !audioDeviceId && audioInputs.length > 0
+
+    if (!isMissing && !shouldDefault) return
+
+    setAudioDeviceId(audioInputs[0]?.deviceId)
+  }, [audioDeviceId, audioInputs, setAudioDeviceId])
 
   useEffect(() => {
-    if (videoDeviceId) return
-    const id = videoInputs[0]?.deviceId
-    if (!id) return
-    setVideoDeviceId(id)
-  }, [videoDeviceId, videoInputs])
+    const isMissing = videoDeviceId && videoInputs.length > 0 && !videoInputs.some((d) => d.deviceId === videoDeviceId)
+    const shouldDefault = !videoDeviceId && videoInputs.length > 0
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY)
-    if (!saved) return
-    if (LOCALES.some((item) => item.code === saved)) {
-      setLocale(saved as LocaleCode)
-    }
-  }, [LOCALES])
+    if (!isMissing && !shouldDefault) return
 
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
-  }, [locale])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(SPEED_STORAGE_KEY, speed.toString())
-  }, [speed])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(SCRIPT_STORAGE_KEY, script)
-  }, [script])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(MARKDOWN_ENABLED_STORAGE_KEY, String(markdownEnabled))
-  }, [markdownEnabled])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(FONT_SIZE_STORAGE_KEY, fontSize.toString())
-  }, [fontSize])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(OPACITY_STORAGE_KEY, opacity.toString())
-  }, [opacity])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(TEXT_ALIGN_STORAGE_KEY, textAlign)
-  }, [textAlign])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(FRAME_STORAGE_KEY, JSON.stringify(frame))
-  }, [frame])
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    window.localStorage.setItem(FIXED_TO_TOP_STORAGE_KEY, fixedToTop.toString())
-  }, [fixedToTop])
+    setVideoDeviceId(videoInputs[0]?.deviceId)
+  }, [videoDeviceId, videoInputs, setVideoDeviceId])
 
   useEffect(() => {
     if (!fixedToTop) return
