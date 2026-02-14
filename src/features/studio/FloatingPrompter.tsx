@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, Speech, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, Check, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, Speech, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip, TooltipProvider } from '../../components/Tooltip'
@@ -1180,7 +1180,17 @@ export function FloatingPrompter(props: Props) {
                       followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                     )}
                   >
-                    <Speech className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                    <div className="relative">
+                      <Speech className="h-4 w-4" />
+                      <div
+                        className={cn(
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
+                          followVoice ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                        )}
+                      >
+                        <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                      </div>
+                    </div>
                   </button>
                 </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
@@ -1436,7 +1446,17 @@ export function FloatingPrompter(props: Props) {
                       followVoice && 'border-white/18 bg-white/10 text-white'
                     )}
                   >
-                    <Speech className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                    <div className="relative">
+                      <Speech className="h-4 w-4" />
+                      <div
+                        className={cn(
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
+                          followVoice ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                        )}
+                      >
+                        <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                      </div>
+                    </div>
                   </button>
                 </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
