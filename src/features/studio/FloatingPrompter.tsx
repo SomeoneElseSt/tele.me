@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, Mic, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, Speech, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip, TooltipProvider } from '../../components/Tooltip'
@@ -1180,7 +1180,7 @@ export function FloatingPrompter(props: Props) {
                       followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                     )}
                   >
-                    <Mic className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                    <Speech className={cn('h-4 w-4', followVoice && 'text-red-400')} />
                   </button>
                 </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
@@ -1436,7 +1436,7 @@ export function FloatingPrompter(props: Props) {
                       followVoice && 'border-white/18 bg-white/10 text-white'
                     )}
                   >
-                    <Mic className={cn('h-4 w-4', followVoice && 'text-red-400')} />
+                    <Speech className={cn('h-4 w-4', followVoice && 'text-red-400')} />
                   </button>
                 </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
