@@ -1150,6 +1150,12 @@ export function FloatingPrompter(props: Props) {
   // Detect lines after rendering (when script, fontSize, or frame size changes)
   // Use multiple strategies to ensure detection happens after DOM is ready
   useLayoutEffect(() => {
+    // Skip detection while editing (textarea is shown instead of word spans)
+    if (isEditing) {
+      console.log('[FloatingPrompter] Skipping line detection during edit mode')
+      return
+    }
+
     // Strategy 1: Immediate detection (works when DOM is already ready)
     detectLines()
 
@@ -1164,7 +1170,7 @@ export function FloatingPrompter(props: Props) {
     }, 100)
 
     return () => clearTimeout(timeoutId)
-  }, [detectLines, script, fontSize, frame.width, frame.height, isPip])
+  }, [detectLines, script, fontSize, frame.width, frame.height, isPip, isEditing])
 
   // Get first visible line index
   const getFirstVisibleLineIndex = useCallback((): number => {
