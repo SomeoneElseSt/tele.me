@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect, Fragment } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, Check, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, Speech, X } from 'lucide-react'
@@ -12,6 +12,8 @@ import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
+import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
+import { extractWords, findMatchingWords, type WordInfo } from '../../lib/textMatching'
 
 type Props = {
   open: boolean
@@ -132,42 +134,102 @@ function toNumber(value: string) {
   return parsed
 }
 
-function renderInlineMarkdown(text: string): ReactNode[] {
+function renderInlineMarkdown(
+  text: string,
+  startWordIdx: number,
+  spokenIndices: Set<number>,
+  isPip: boolean
+): { nodes: ReactNode[]; endWordIdx: number } {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g)
-  return parts.map((part, idx) => {
-    if (!part) return null
+  let wordIdx = startWordIdx
+  const nodes: ReactNode[] = []
+
+  const getWordClass = (idx: number) => {
+    if (!spokenIndices.has(idx)) return isPip ? 'text-white/92' : ''
+    return isPip ? 'text-[#666]' : 'opacity-40'
+  }
+
+  for (let idx = 0; idx < parts.length; idx++) {
+    const part = parts[idx]
+    if (!part) continue
+
     if (part.startsWith('`') && part.endsWith('`')) {
-      return (
+      const innerText = part.slice(1, -1)
+      const words = innerText.split(/(\s+)/)
+      const innerNodes = words.map((word, i) => {
+        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        const currentIdx = wordIdx++
+        return (
+          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+            {word}
+          </span>
+        )
+      })
+      nodes.push(
         <code
           key={`code-${idx}`}
           className="rounded-md bg-white/10 px-1.5 py-0.5 text-[0.9em] text-white/90"
         >
-          {part.slice(1, -1)}
+          {innerNodes}
         </code>
       )
-    }
-    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
-      return (
+    } else if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
+      const innerText = part.slice(2, -2)
+      const words = innerText.split(/(\s+)/)
+      const innerNodes = words.map((word, i) => {
+        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        const currentIdx = wordIdx++
+        return (
+          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+            {word}
+          </span>
+        )
+      })
+      nodes.push(
         <strong key={`bold-${idx}`} className="font-semibold text-white/95">
-          {part.slice(2, -2)}
+          {innerNodes}
         </strong>
       )
-    }
-    if ((part.startsWith('*') && part.endsWith('*')) || (part.startsWith('_') && part.endsWith('_'))) {
-      return (
+    } else if ((part.startsWith('*') && part.endsWith('*')) || (part.startsWith('_') && part.endsWith('_'))) {
+      const innerText = part.slice(1, -1)
+      const words = innerText.split(/(\s+)/)
+      const innerNodes = words.map((word, i) => {
+        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        const currentIdx = wordIdx++
+        return (
+          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+            {word}
+          </span>
+        )
+      })
+      nodes.push(
         <em key={`em-${idx}`} className="text-white/90">
-          {part.slice(1, -1)}
+          {innerNodes}
         </em>
       )
+    } else {
+      const words = part.split(/(\s+)/)
+      const innerNodes = words.map((word, i) => {
+        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        const currentIdx = wordIdx++
+        return (
+          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+            {word}
+          </span>
+        )
+      })
+      nodes.push(<span key={`text-${idx}`}>{innerNodes}</span>)
     }
-    return <span key={`text-${idx}`}>{part}</span>
-  })
+  }
+
+  return { nodes, endWordIdx: wordIdx }
 }
 
-function renderMarkdownBlocks(text: string): ReactNode[] {
+function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: boolean): ReactNode[] {
   const lines = text.replace(/\r\n/g, '\n').split('\n')
   const blocks: ReactNode[] = []
   let i = 0
+  let wordIdx = 0
 
   while (i < lines.length) {
     const line = lines[i] ?? ''
@@ -188,40 +250,43 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
         level === 3 && 'text-[1.1em] leading-[1.3]',
         level > 3 && 'text-[1em] leading-[1.35]'
       )
+      const result = renderInlineMarkdown(textContent, wordIdx, spokenIndices, isPip)
+      wordIdx = result.endWordIdx
+
       if (level === 1) {
         blocks.push(
           <h1 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h1>
         )
       } else if (level === 2) {
         blocks.push(
           <h2 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h2>
         )
       } else if (level === 3) {
         blocks.push(
           <h3 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h3>
         )
       } else if (level === 4) {
         blocks.push(
           <h4 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h4>
         )
       } else if (level === 5) {
         blocks.push(
           <h5 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h5>
         )
       } else {
         blocks.push(
           <h6 key={`h-${i}`} className={headingClass}>
-            {renderInlineMarkdown(textContent)}
+            {result.nodes}
           </h6>
         )
       }
@@ -234,9 +299,11 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       const items: ReactNode[] = []
       while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*[-*+]\s+/, '')
+        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip)
+        wordIdx = result.endWordIdx
         items.push(
           <li key={`ul-${i}`}>
-            {renderInlineMarkdown(itemText)}
+            {result.nodes}
           </li>
         )
         i += 1
@@ -254,9 +321,11 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
       const items: ReactNode[] = []
       while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*\d+\.\s+/, '')
+        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip)
+        wordIdx = result.endWordIdx
         items.push(
           <li key={`ol-${i}`}>
-            {renderInlineMarkdown(itemText)}
+            {result.nodes}
           </li>
         )
         i += 1
@@ -282,12 +351,16 @@ function renderMarkdownBlocks(text: string): ReactNode[] {
     const paragraphParts = paragraphText.split('\n')
     blocks.push(
       <p key={`p-${i}`} className="text-white/92">
-        {paragraphParts.map((segment, idx) => (
-          <span key={`p-${i}-${idx}`}>
-            {renderInlineMarkdown(segment)}
-            {idx < paragraphParts.length - 1 && <br />}
-          </span>
-        ))}
+        {paragraphParts.map((segment, idx) => {
+          const result = renderInlineMarkdown(segment, wordIdx, spokenIndices, isPip)
+          wordIdx = result.endWordIdx
+          return (
+            <span key={`p-${i}-${idx}`}>
+              {result.nodes}
+              {idx < paragraphParts.length - 1 && <br />}
+            </span>
+          )
+        })}
       </p>
     )
   }
@@ -810,6 +883,18 @@ export function FloatingPrompter(props: Props) {
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
+  // Speech recognition state
+  const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
+  const lastMatchedIndexRef = useRef(-1)
+  const scriptWordsRef = useRef<WordInfo[]>([])
+
+  // Initialize script words when script changes
+  useEffect(() => {
+    scriptWordsRef.current = extractWords(script)
+    setSpokenWordIndices(new Set())
+    lastMatchedIndexRef.current = -1
+  }, [script])
+
   useEffect(() => {
     if (forceCloseControls && quickOpen) {
       setQuickOpen(false)
@@ -976,12 +1061,87 @@ export function FloatingPrompter(props: Props) {
     return script
   }, [script])
 
+  // Auto-scroll callback for speech recognition
+  const scrollToNextLineIfComplete = useCallback((latestWordIdx: number) => {
+    const el = scrollerRef.current
+    if (!el) return
+
+    const currentWordSpan = el.querySelector(`[data-word-idx="${latestWordIdx}"]`)
+    if (!currentWordSpan) return
+
+    const currentRect = currentWordSpan.getBoundingClientRect()
+
+    // Find next unspoken word
+    let nextWordIdx = latestWordIdx + 1
+    while (spokenWordIndices.has(nextWordIdx) && nextWordIdx < scriptWordsRef.current.length) {
+      nextWordIdx++
+    }
+
+    const nextWordSpan = el.querySelector(`[data-word-idx="${nextWordIdx}"]`)
+    if (!nextWordSpan) {
+      // Reached end of script
+      return
+    }
+
+    const nextRect = nextWordSpan.getBoundingClientRect()
+
+    // Check if next word is on a different line (vertical position changed)
+    const LINE_THRESHOLD_PX = fontSize * 0.5
+    const isNewLine = Math.abs(nextRect.top - currentRect.top) > LINE_THRESHOLD_PX
+
+    if (!isNewLine) return
+
+    // Line complete! Scroll to center the next line
+    const containerRect = el.getBoundingClientRect()
+    const lineHeight = fontSize * 1.35
+    const targetScrollTop = el.scrollTop + (nextRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+
+    el.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
+  }, [spokenWordIndices, fontSize])
+
+  // Speech recognition integration
+  const speechRecognition = useSpeechRecognition({
+    enabled: open && playing && followVoice,
+    onTranscript: (transcript, isFinal) => {
+      // Only process final results
+      if (!isFinal) return
+
+      const newMatches = findMatchingWords(
+        scriptWordsRef.current,
+        transcript,
+        lastMatchedIndexRef.current
+      )
+
+      if (newMatches.length === 0) return
+
+      // Update spoken indices
+      setSpokenWordIndices(prev => {
+        const next = new Set(prev)
+        newMatches.forEach(idx => next.add(idx))
+        return next
+      })
+
+      lastMatchedIndexRef.current = newMatches[newMatches.length - 1] ?? -1
+
+      // Check if line is complete and scroll
+      const latestIdx = newMatches[newMatches.length - 1]
+      if (latestIdx !== undefined) {
+        scrollToNextLineIfComplete(latestIdx)
+      }
+    },
+    onError: (error) => {
+      console.warn('Speech recognition error:', error)
+    }
+  })
+
+  // Disable RAF auto-scroll when followVoice is active
   useRafLoop(
     (deltaMs) => {
       const el = scrollerRef.current
       if (!open) return
       if (!playing) return
       if (!el) return
+      if (followVoice) return
 
       const deltaPx = (speed * deltaMs) / 1000
       el.scrollTop = el.scrollTop + deltaPx
@@ -1168,20 +1328,25 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={followVoice ? strings.followVoiceEnabled : strings.followVoice} shortcut="V">
+                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? strings.followVoiceEnabled : strings.followVoice)} shortcut="V">
                   <button
                     type="button"
                     onClick={() => onFollowVoiceChange(!followVoice)}
                     aria-label={strings.followVoice}
                     onPointerDown={(e) => e.stopPropagation()}
+                    disabled={!speechRecognition.supported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
+                      followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white'),
+                      !speechRecognition.supported && 'opacity-40 cursor-not-allowed'
                     )}
                   >
                     <div className="relative">
                       <Speech className="h-4 w-4" />
+                      {speechRecognition.error && (
+                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                      )}
                       <div
                         className={cn(
                           'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
@@ -1360,7 +1525,7 @@ export function FloatingPrompter(props: Props) {
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {renderMarkdownBlocks(displayScript)}
+                    {renderMarkdownBlocks(displayScript, spokenWordIndices, isPip)}
                     <div className="whitespace-pre-wrap leading-[1.35] text-transparent select-none pointer-events-none" style={{ fontSize }}>{'\n\n\n'}</div>
                   </div>
                 ) : (
@@ -1368,7 +1533,23 @@ export function FloatingPrompter(props: Props) {
                     className="whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {displayScript + '\n\n\n'}
+                    {(() => {
+                      const words = displayScript.split(/(\s+)/)
+                      let wordIdx = 0
+                      return words.map((word, i) => {
+                        if (/\s+/.test(word)) return <Fragment key={i}>{word}</Fragment>
+                        const idx = wordIdx++
+                        const className = !spokenWordIndices.has(idx)
+                          ? (isPip ? 'text-white/92' : '')
+                          : (isPip ? 'text-[#666]' : 'opacity-40')
+                        return (
+                          <span key={i} data-word-idx={idx} className={className}>
+                            {word}
+                          </span>
+                        )
+                      })
+                    })()}
+                    {'\n\n\n'}
                   </pre>
                 )}
               </div>
@@ -1434,20 +1615,25 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={followVoice ? strings.followVoiceEnabled : strings.followVoice} shortcut="V">
+                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? strings.followVoiceEnabled : strings.followVoice)} shortcut="V">
                   <button
                     type="button"
                     onClick={() => onFollowVoiceChange(!followVoice)}
                     aria-label={strings.followVoice}
                     onPointerDown={(e) => e.stopPropagation()}
+                    disabled={!speechRecognition.supported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && 'border-white/18 bg-white/10 text-white'
+                      followVoice && 'border-white/18 bg-white/10 text-white',
+                      !speechRecognition.supported && 'opacity-40 cursor-not-allowed'
                     )}
                   >
                     <div className="relative">
                       <Speech className="h-4 w-4" />
+                      {speechRecognition.error && (
+                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                      )}
                       <div
                         className={cn(
                           'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',

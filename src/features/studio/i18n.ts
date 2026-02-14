@@ -85,6 +85,8 @@ type Strings = {
   braveBlockedMessage: string
   followVoice: string
   followVoiceEnabled: string
+  speechRecognitionNotSupported: string
+  speedDisabledTooltip: string
   shortcutsMenu: string
   shortcutsTitle: string
   speakingTime: string
@@ -172,6 +174,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.',
     followVoice: 'Follow Voice',
     followVoiceEnabled: 'Following Voice (speed disabled)',
+    speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
+    speedDisabledTooltip: 'Speed control is disabled when Follow Voice is active',
     shortcutsMenu:
       'T: edit text\n' +
       'R: record/stop recording\n' +
@@ -269,6 +273,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave bloqueó el acceso a la cámara. Haz clic en el icono de Shields o en el icono del candado en la barra de direcciones para restablecer los permisos y desactivar la protección contra huellas digitales para este sitio. Usa Chrome para una mejor compatibilidad.',
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Siguiendo Voz (velocidad desactivada)',
+    speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
+    speedDisabledTooltip: 'El control de velocidad está deshabilitado cuando Seguir Voz está activo',
     shortcutsMenu:
       'T: editar texto\n' +
       'R: grabar/detener grabación\n' +
@@ -366,6 +372,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Braveがカメラへのアクセスをブロックしました。アドレスバーのShieldsアイコンまたは鍵アイコンをクリックして権限をリセットし、このサイトのフィンガープリント保護を無効にしてください。互換性を高めるためにChromeを使用してください。',
     followVoice: '音声を追従',
     followVoiceEnabled: '音声追従中（速度無効）',
+    speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
+    speedDisabledTooltip: '音声追従がアクティブのとき、速度コントロールは無効です',
     shortcutsMenu:
       'T: テキストを編集\n' +
       'R: 録画/録画停止\n' +
@@ -463,6 +471,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave ने कैमरा एक्सेस को ब्लॉक कर दिया है। अनुमतियों को रीसेट करने और इस साइट के लिए फ़िंगरप्रिंटिंग सुरक्षा को अक्षम करने के लिए एड्रेस बार में शील्ड्स आइकन या लॉक आइकन पर क्लिक करें। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     followVoice: 'आवाज़ का पालन करें',
     followVoiceEnabled: 'आवाज़ का पालन (गति अक्षम)',
+    speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
+    speedDisabledTooltip: 'जब आवाज़ का पालन करें सक्रिय है तो गति नियंत्रण अक्षम है',
     shortcutsMenu:
       'T: टेक्स्ट संपादित करें\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
@@ -560,6 +570,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: "Brave a bloqué l'accès à la caméra. Cliquez sur l'icône Shields ou sur l'icône du cadenas dans la barre d'adresse pour réinitialiser les permissions et désactiver la protection contre le fingerprinting pour ce site. Utilisez Chrome pour une meilleure compatibilité.",
     followVoice: 'Suivre la Voix',
     followVoiceEnabled: 'Suivi de la Voix (vitesse désactivée)',
+    speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
+    speedDisabledTooltip: 'Le contrôle de vitesse est désactivé lorsque Suivre la Voix est actif',
     shortcutsMenu:
       'T : éditer le texte du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
@@ -657,6 +669,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave hat den Kamerazugriff blockiert. Klicken Sie auf das Shields-Symbol oder das Schloss-Symbol in der Adressleiste, um die Berechtigungen zurückzusetzen und den Fingerprinting-Schutz für diese Website zu deaktivieren. Verwenden Sie Chrome für eine bessere Kompatibilität.',
     followVoice: 'Stimme Folgen',
     followVoiceEnabled: 'Stimmverfolgung (Geschwindigkeit deaktiviert)',
+    speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
+    speedDisabledTooltip: 'Geschwindigkeitsregelung ist deaktiviert, wenn Stimme Folgen aktiv ist',
     shortcutsMenu:
       'T: Text bearbeiten\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
@@ -754,6 +768,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave 已阻止访问摄像头。点击地址栏中的 Shields 图标或锁形图标以重置权限，并禁用此网站的指纹识别保护。为了获得更好的兼容性，请使用 Chrome。',
     followVoice: '语音跟随',
     followVoiceEnabled: '语音跟随中（速度已禁用）',
+    speechRecognitionNotSupported: '此浏览器不支持语音识别',
+    speedDisabledTooltip: '启用语音跟随时速度控制被禁用',
     shortcutsMenu:
       'T：编辑文本\n' +
       'R：录制/停止录制\n' +
@@ -851,6 +867,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'حظر Brave الوصول إلى الكاميرا. انقر فوق أيقونة Shields أو أيقونة القفل في شريط العناوين لإعادة تعيين الأذونات وتعطيل حماية البصمة الرقمية لهذا الموقع. استخدم Chrome لتوافق أفضل.',
     followVoice: 'متابعة الصوت',
     followVoiceEnabled: 'متابعة الصوت (السرعة معطلة)',
+    speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
+    speedDisabledTooltip: 'التحكم في السرعة معطل عند تفعيل متابعة الصوت',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
@@ -946,6 +964,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'O Brave bloqueou o acesso à câmera. Clique no ícone Shields ou no ícone de cadeado na barra de endereços para redefinir as permissões e desativar a proteção contra impressão digital para este site. Use o Chrome para melhor compatibilidade.',
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Seguindo Voz (velocidade desativada)',
+    speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
+    speedDisabledTooltip: 'O controle de velocidade está desativado quando Seguir Voz está ativo',
     shortcutsMenu:
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
@@ -1042,6 +1062,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave заблокировал доступ к камере. Нажмите на значок Shields или значок замка в адресной строке, чтобы сбросить разрешения и отключить защиту от цифровых отпечатков для этого сайта. Используйте Chrome для лучшей совместимости.',
     followVoice: 'Следовать за Голосом',
     followVoiceEnabled: 'Следование за Голосом (скорость откл.)',
+    speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
+    speedDisabledTooltip: 'Управление скоростью отключено, когда активно Следование за Голосом',
     shortcutsMenu:
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
@@ -1138,6 +1160,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     braveBlockedMessage: 'Brave zablokował dostęp do kamery. Kliknij ikonę Shields lub ikonę kłódki w pasku adresu, aby zresetować uprawnienia i wyłączyć ochronę przed pobieraniem odcisków palców dla tej witryny. Używaj Chrome dla lepszej kompatybilności.',
     followVoice: 'Podążaj za Głosem',
     followVoiceEnabled: 'Śledzenie Głosu (prędkość wyłączona)',
+    speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
+    speedDisabledTooltip: 'Kontrola prędkości jest wyłączona, gdy Podążaj za Głosem jest aktywne',
     shortcutsMenu:
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +
