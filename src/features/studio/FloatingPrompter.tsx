@@ -13,7 +13,7 @@ import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
-import { extractWords, findMatchingWords, type WordInfo } from '../../lib/textMatching'
+import { extractWords, findMatchingWordsInLine, type WordInfo } from '../../lib/textMatching'
 
 type Props = {
   open: boolean
@@ -885,14 +885,18 @@ export function FloatingPrompter(props: Props) {
 
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
-  const lastMatchedIndexRef = useRef(-1)
+  const currentLineIndexRef = useRef(0)
   const scriptWordsRef = useRef<WordInfo[]>([])
+  const scriptLinesRef = useRef<number[][]>([]) // Each sub-array contains word indices for that line
 
   // Initialize script words when script changes
   useEffect(() => {
     scriptWordsRef.current = extractWords(script)
+    console.log('[FloatingPrompter] Script initialized with words count:', scriptWordsRef.current.length)
+    console.log('[FloatingPrompter] First few words:', scriptWordsRef.current.slice(0, 10).map(w => w.word))
     setSpokenWordIndices(new Set())
-    lastMatchedIndexRef.current = -1
+    currentLineIndexRef.current = 0
+    scriptLinesRef.current = []
   }, [script])
 
   useEffect(() => {
@@ -1061,79 +1065,249 @@ export function FloatingPrompter(props: Props) {
     return script
   }, [script])
 
-  // Auto-scroll callback for speech recognition
-  const scrollToNextLineIfComplete = useCallback((latestWordIdx: number) => {
+  // Scroll to show a specific line (by first word index)
+  const scrollToLine = useCallback((firstWordIdx: number) => {
     const el = scrollerRef.current
-    if (!el) return
-
-    const currentWordSpan = el.querySelector(`[data-word-idx="${latestWordIdx}"]`)
-    if (!currentWordSpan) return
-
-    const currentRect = currentWordSpan.getBoundingClientRect()
-
-    // Find next unspoken word
-    let nextWordIdx = latestWordIdx + 1
-    while (spokenWordIndices.has(nextWordIdx) && nextWordIdx < scriptWordsRef.current.length) {
-      nextWordIdx++
-    }
-
-    const nextWordSpan = el.querySelector(`[data-word-idx="${nextWordIdx}"]`)
-    if (!nextWordSpan) {
-      // Reached end of script
+    console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
+    if (!el) {
+      console.log('[Scroll] No scroller element')
       return
     }
 
-    const nextRect = nextWordSpan.getBoundingClientRect()
+    const doc = el.ownerDocument
+    const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
+    if (!wordSpan) {
+      console.log('[Scroll] Word span not found for index:', firstWordIdx)
+      return
+    }
 
-    // Check if next word is on a different line (vertical position changed)
-    const LINE_THRESHOLD_PX = fontSize * 0.5
-    const isNewLine = Math.abs(nextRect.top - currentRect.top) > LINE_THRESHOLD_PX
-
-    if (!isNewLine) return
-
-    // Line complete! Scroll to center the next line
+    const wordRect = wordSpan.getBoundingClientRect()
     const containerRect = el.getBoundingClientRect()
     const lineHeight = fontSize * 1.35
-    const targetScrollTop = el.scrollTop + (nextRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+    const targetScrollTop = el.scrollTop + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
 
+    console.log('[Scroll] Scrolling to:', targetScrollTop)
     el.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
-  }, [spokenWordIndices, fontSize])
+  }, [fontSize])
+
+  // Detect lines from rendered DOM
+  const detectLines = useCallback(() => {
+    const el = scrollerRef.current
+    if (!el) {
+      console.log('[FloatingPrompter] No scroller element for line detection')
+      return
+    }
+
+    console.log('[FloatingPrompter] Detecting lines from DOM...')
+
+    // Get the actual document (might be PiP window)
+    const doc = el.ownerDocument
+
+    // Get all word spans
+    const wordSpans = doc.querySelectorAll('[data-word-idx]')
+    if (wordSpans.length === 0) {
+      console.log('[FloatingPrompter] No word spans found, will retry...')
+      return
+    }
+
+    const lines: number[][] = []
+    let currentLine: number[] = []
+    let lastTop: number | null = null
+    const LINE_THRESHOLD_PX = fontSize * 0.5
+
+    wordSpans.forEach((span) => {
+      const idx = parseInt(span.getAttribute('data-word-idx') ?? '-1', 10)
+      if (idx === -1) return
+
+      const rect = span.getBoundingClientRect()
+      const top = rect.top
+
+      // Check if this word is on a new line
+      if (lastTop !== null && Math.abs(top - lastTop) > LINE_THRESHOLD_PX) {
+        // New line detected
+        if (currentLine.length > 0) {
+          lines.push(currentLine)
+        }
+        currentLine = [idx]
+      } else {
+        // Same line
+        currentLine.push(idx)
+      }
+
+      lastTop = top
+    })
+
+    // Add the last line
+    if (currentLine.length > 0) {
+      lines.push(currentLine)
+    }
+
+    scriptLinesRef.current = lines
+    console.log('[FloatingPrompter] Detected lines:', lines.length)
+    console.log('[FloatingPrompter] First 3 lines:', lines.slice(0, 3))
+  }, [fontSize])
+
+  // Detect lines after rendering (when script, fontSize, or frame size changes)
+  // Use multiple strategies to ensure detection happens after DOM is ready
+  useLayoutEffect(() => {
+    // Strategy 1: Immediate detection (works when DOM is already ready)
+    detectLines()
+
+    // Strategy 2: After browser paint (catches resize cases)
+    requestAnimationFrame(() => {
+      detectLines()
+    })
+
+    // Strategy 3: Small delay fallback (catches async rendering)
+    const timeoutId = setTimeout(() => {
+      detectLines()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [detectLines, script, fontSize, frame.width, frame.height, isPip])
+
+  // Get first visible line index
+  const getFirstVisibleLineIndex = useCallback((): number => {
+    const el = scrollerRef.current
+    if (!el || scriptLinesRef.current.length === 0) return 0
+
+    const doc = el.ownerDocument
+    const containerRect = el.getBoundingClientRect()
+    const containerTop = containerRect.top
+
+    // Find first line where any word is visible
+    for (let lineIdx = 0; lineIdx < scriptLinesRef.current.length; lineIdx++) {
+      const line = scriptLinesRef.current[lineIdx]
+      if (!line || line.length === 0) continue
+
+      const firstWordIdx = line[0]
+      if (firstWordIdx === undefined) continue
+
+      const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
+      if (!wordSpan) continue
+
+      const wordRect = wordSpan.getBoundingClientRect()
+      if (wordRect.bottom > containerTop) {
+        console.log('[FloatingPrompter] First visible line index:', lineIdx)
+        return lineIdx
+      }
+    }
+
+    return 0
+  }, [])
+
+  // Initialize current line to first visible line when playing starts
+  useEffect(() => {
+    if (open && playing && followVoice) {
+      const firstVisibleLine = getFirstVisibleLineIndex()
+      currentLineIndexRef.current = firstVisibleLine
+      console.log('[FloatingPrompter] Initialized current line to:', firstVisibleLine)
+
+      // Gray out all previous lines
+      setSpokenWordIndices(prev => {
+        const next = new Set(prev)
+        for (let i = 0; i < firstVisibleLine; i++) {
+          const line = scriptLinesRef.current[i]
+          if (line) {
+            line.forEach(idx => next.add(idx))
+          }
+        }
+        return next
+      })
+    }
+  }, [open, playing, followVoice, getFirstVisibleLineIndex])
 
   // Speech recognition integration
   const { locale } = useI18n()
+
+  const handleTranscript = useCallback((transcript: string, isFinal: boolean) => {
+    console.log(`[FloatingPrompter] ========== ${isFinal ? 'FINAL' : 'INTERIM'} ==========`)
+    console.log('[FloatingPrompter] Transcript:', transcript)
+    console.log('[FloatingPrompter] Current line index:', currentLineIndexRef.current)
+
+    const currentLineIdx = currentLineIndexRef.current
+    const currentLine = scriptLinesRef.current[currentLineIdx]
+
+    if (!currentLine || currentLine.length === 0) {
+      console.log('[FloatingPrompter] No current line or empty line')
+      console.log('[FloatingPrompter] =========================')
+      return
+    }
+
+    console.log('[FloatingPrompter] Current line word indices:', currentLine)
+    console.log('[FloatingPrompter] Current line words:', currentLine.map(idx => scriptWordsRef.current[idx]?.word))
+
+    // Match within current line only
+    const { matches, lineComplete } = findMatchingWordsInLine(
+      scriptWordsRef.current,
+      currentLine,
+      transcript
+    )
+
+    console.log('[FloatingPrompter] Matched word indices:', matches)
+    console.log('[FloatingPrompter] Line complete:', lineComplete)
+
+    if (matches.length === 0) {
+      console.log('[FloatingPrompter] No matches found')
+      console.log('[FloatingPrompter] =========================')
+      return
+    }
+
+    // Update spoken indices for visual feedback (both interim and final)
+    setSpokenWordIndices(prev => {
+      const next = new Set(prev)
+
+      // Gray out all previous lines
+      for (let i = 0; i < currentLineIdx; i++) {
+        const line = scriptLinesRef.current[i]
+        if (line) {
+          line.forEach(idx => next.add(idx))
+        }
+      }
+
+      // Add matched words from current line
+      matches.forEach(idx => next.add(idx))
+
+      console.log('[FloatingPrompter] Updated spokenWordIndices, size:', next.size)
+      return next
+    })
+
+    // ONLY advance to next line on FINAL results
+    if (isFinal && lineComplete) {
+      console.log('[FloatingPrompter] Line complete! Advancing to next line')
+      const nextLineIdx = currentLineIdx + 1
+
+      if (nextLineIdx < scriptLinesRef.current.length) {
+        currentLineIndexRef.current = nextLineIdx
+        console.log('[FloatingPrompter] Advanced to line:', nextLineIdx)
+
+        // Scroll to next line
+        const nextLine = scriptLinesRef.current[nextLineIdx]
+        if (nextLine && nextLine.length > 0) {
+          const firstWordIdx = nextLine[0]
+          if (firstWordIdx !== undefined) {
+            scrollToLine(firstWordIdx)
+          }
+        }
+      } else {
+        console.log('[FloatingPrompter] Reached end of script')
+      }
+    } else {
+      console.log('[FloatingPrompter] NOT advancing line (isFinal:', isFinal, ', lineComplete:', lineComplete, ')')
+    }
+
+    console.log('[FloatingPrompter] =========================')
+  }, [scrollToLine])
+
+  const handleError = useCallback((error: string) => {
+    console.warn('Speech recognition error:', error)
+  }, [])
+
   const speechRecognition = useSpeechRecognition({
     enabled: open && playing && followVoice,
     locale,
-    onTranscript: (transcript, isFinal) => {
-      // Only process final results
-      if (!isFinal) return
-
-      const newMatches = findMatchingWords(
-        scriptWordsRef.current,
-        transcript,
-        lastMatchedIndexRef.current
-      )
-
-      if (newMatches.length === 0) return
-
-      // Update spoken indices
-      setSpokenWordIndices(prev => {
-        const next = new Set(prev)
-        newMatches.forEach(idx => next.add(idx))
-        return next
-      })
-
-      lastMatchedIndexRef.current = newMatches[newMatches.length - 1] ?? -1
-
-      // Check if line is complete and scroll
-      const latestIdx = newMatches[newMatches.length - 1]
-      if (latestIdx !== undefined) {
-        scrollToNextLineIfComplete(latestIdx)
-      }
-    },
-    onError: (error) => {
-      console.warn('Speech recognition error:', error)
-    }
+    onTranscript: handleTranscript,
+    onError: handleError
   })
 
   // Disable RAF auto-scroll when followVoice is active
