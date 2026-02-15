@@ -627,7 +627,7 @@ export function Studio() {
           <Tooltip
             label={
               <div className="flex flex-col gap-2">
-                <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-[11px] font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
+                <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-sm font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
                   <span className="block mb-2">
                     {strings.aboutMessage.split(/(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)/i).map((part, index) => {
                       const isOpenSource = /^(open-source|open source|código abierto|オープンソース|ओपन-सोर्स|Open-Source|开源|مفتوح المصدر|código aberto|открытым исходным кодом)$/i.test(part);
@@ -658,7 +658,7 @@ export function Studio() {
                   <span>{strings.browserWarningMessage}</span>
                 </div>
                 <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-[11px] font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
-                  <div className="mb-2">{strings.shortcutsTitle}:</div>
+                  <div className="mb-2 text-sm">{strings.shortcutsTitle}:</div>
                   <ShortcutsTable menu={strings.shortcutsMenu} />
                 </div>
               </div>
