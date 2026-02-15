@@ -51,6 +51,43 @@ const VIDEO_DEVICE_ID_STORAGE_KEY = 'teleme.me:video_device_id'
 const MIRROR_VIDEO_STORAGE_KEY = 'teleme.me:mirror_video'
 const FOLLOW_VOICE_STORAGE_KEY = 'teleme.me:follow_voice'
 
+type ShortcutRow = { key: string; description: string }
+
+function parseShortcutsMenu(menu: string): ShortcutRow[] {
+  const rows: ShortcutRow[] = []
+  for (const line of menu.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    const colonIndex = trimmed.search(/[:：]/)
+    if (colonIndex < 0) continue
+    const key = trimmed.slice(0, colonIndex).trim()
+    const description = trimmed.slice(colonIndex + 1).trim()
+    if (!key || !description) continue
+    rows.push({ key, description })
+  }
+  return rows
+}
+
+function ShortcutsTable({ menu }: { menu: string }) {
+  const rows = useMemo(() => parseShortcutsMenu(menu), [menu])
+  return (
+    <table className="w-full text-left text-sm">
+      <tbody>
+        {rows.map(({ key, description }, i) => (
+          <tr key={i} className="border-b border-white/10 last:border-0">
+            <td className="py-1 pr-3 align-baseline">
+              <kbd className="rounded border border-white/20 bg-white/10 px-1.5 py-0.5 font-mono text-xs font-medium text-white/95">
+                {key}
+              </kbd>
+            </td>
+            <td className="py-1 text-white/85">{description}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 function getCenteredFrame(frame: PrompterFrame) {
   if (typeof window === 'undefined') return frame
   const x = (window.innerWidth - frame.width) / 2
@@ -622,7 +659,7 @@ export function Studio() {
                 </div>
                 <div className="max-w-xs whitespace-normal rounded-lg border border-white/10 bg-black/85 px-4 py-3 text-center text-[11px] font-medium leading-relaxed text-white/90 shadow-glow backdrop-blur">
                   <div className="mb-2">{strings.shortcutsTitle}:</div>
-                  <div className="whitespace-pre-line">{strings.shortcutsMenu}</div>
+                  <ShortcutsTable menu={strings.shortcutsMenu} />
                 </div>
               </div>
             }
