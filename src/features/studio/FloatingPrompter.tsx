@@ -769,7 +769,7 @@ function ControlsBarPortal({
                   Thumb={SpeedThumb}
                   title={strings.speed}
                   value={speed}
-                  min={10}
+                  min={30}
                   max={180}
                   step={1}
                   formatValue={(v) => `${Math.round(v)}`}
@@ -1510,7 +1510,8 @@ export function FloatingPrompter(props: Props) {
       if (!el) return
       if (followVoice) return
 
-      const deltaPx = (speed * deltaMs) / 1000
+      const effectiveSpeed = Math.max(31, speed)
+      const deltaPx = (effectiveSpeed * deltaMs) / 1000
       el.scrollTop = el.scrollTop + deltaPx
     },
     open && playing
