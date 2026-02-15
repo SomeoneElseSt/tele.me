@@ -189,7 +189,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: hide/show prompter\n' +
       'I: control inputs\n' +
       'M: enable markdown\n' +
-      'V: Follow Voice\n' +
+      'V: follow voice\n' +
       'F: fullscreen',
     shortcutsTitle: 'Shortcuts',
     speakingTime: 'Speaking Time',
@@ -289,7 +289,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: ocultar/mostrar teleprompter\n' +
       'I: controlar entradas\n' +
       'M: habilitar markdown\n' +
-      'V: Seguir Voz\n' +
+      'V: seguir voz\n' +
       'F: pantalla completa',
     shortcutsTitle: 'Atajos',
     speakingTime: 'Tiempo de habla',
@@ -589,7 +589,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H : afficher/masquer le prompter\n' +
       'I : contrôler les entrées\n' +
       'M : activer Markdown\n' +
-      'V : Suivre la Voix\n' +
+      'V : suivre la voix\n' +
       'F : plein écran',
     shortcutsTitle: 'Raccourcis',
     speakingTime: 'Temps de parole',
@@ -689,7 +689,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: Teleprompter ein-/ausblenden\n' +
       'I: Eingänge steuern\n' +
       'M: Markdown aktivieren\n' +
-      'V: Stimme Folgen\n' +
+      'V: Stimme folgen\n' +
       'F: Vollbild',
     shortcutsTitle: 'Tastenkombinationen',
     speakingTime: 'Sprechzeit',
@@ -985,7 +985,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: controlar entradas\n' +
       'T: Editar texto\n' +
       'M: Ativar Markdown\n' +
-      'V: Seguir Voz\n' +
+      'V: seguir voz\n' +
       'F: tela cheia\n' +
       'Y: fixar/desafixar do topo\n' +
       'P: destacar/embutir teleprompter',
@@ -1084,7 +1084,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: управление входами\n' +
       'T: Редактировать текст\n' +
       'M: Включить Markdown\n' +
-      'V: Следовать за Голосом\n' +
+      'V: следовать за голосом\n' +
       'F: полный экран\n' +
       'Y: закрепить/открепить сверху\n' +
       'P: отдельное окно телесуфлёра',
@@ -1183,7 +1183,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: sterowanie wejściami\n' +
       'T: Edytuj tekst\n' +
       'M: Włącz Markdown\n' +
-      'V: Podążaj za Głosem\n' +
+      'V: podążaj za głosem\n' +
       'F: pełny ekran\n' +
       'Y: przypnij/odepnij od góry\n' +
       'P: teleprompter w wyskakującym okienku',
