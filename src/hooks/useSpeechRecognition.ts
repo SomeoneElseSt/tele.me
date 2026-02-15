@@ -48,6 +48,7 @@ export function useSpeechRecognition({
   const [error, setError] = useState<string | undefined>(undefined)
 
   const recognitionRef = useRef<any>(null)
+  const enabledRef = useRef(enabled)
   const mountedRef = useRef(true)
   const retryCountRef = useRef(0)
   const retryTimeoutRef = useRef<number | null>(null)
@@ -165,16 +166,16 @@ export function useSpeechRecognition({
 
       // Only auto-restart if we received speech (normal ~60s timeout)
       // Don't restart if it ended immediately (permission/device issues)
-      if (enabled && hasReceivedSpeechRef.current && retryCountRef.current < MAX_RETRIES) {
+      if (enabledRef.current && hasReceivedSpeechRef.current && retryCountRef.current < MAX_RETRIES) {
         const delay = 100
         console.log('[ASR] Recognition timed out after speech, auto-restarting...')
         retryTimeoutRef.current = window.setTimeout(() => {
           if (!mountedRef.current) return
-          if (!enabled) return
+          if (!enabledRef.current) return
           start()
         }, delay)
       } else {
-        console.log('[ASR] Recognition ended, no auto-restart (hasSpoken:', hasReceivedSpeechRef.current, 'enabled:', enabled, ')')
+        console.log('[ASR] Recognition ended, no auto-restart (hasSpoken:', hasReceivedSpeechRef.current, 'enabled:', enabledRef.current, ')')
         setActive(false)
       }
     }
@@ -192,6 +193,11 @@ export function useSpeechRecognition({
   const stop = useCallback(() => {
     cleanup()
   }, [cleanup])
+
+  // Keep enabledRef in sync for closure access
+  useEffect(() => {
+    enabledRef.current = enabled
+  }, [enabled])
 
   // Mount/unmount lifecycle
   useEffect(() => {

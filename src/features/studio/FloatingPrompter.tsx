@@ -52,6 +52,7 @@ const CONTROLS_BAR_MIN_MARGIN_PX = 12
 const CONTROLS_BAR_HEIGHT_PX = 76
 const PROMPTER_HEADER_HEIGHT_PX = 52
 const DRAG_TOOLTIP_ID = 'studio-prompter-drag'
+const VOICE_FOLLOW_INDICATOR_ICON_SIZE = 'h-2 w-2'
 
 function clamp01(value: number) {
   if (value <= 0) return 0
@@ -625,6 +626,7 @@ function ControlsBarPortal({
   textAlign,
   fixedToTop,
   followVoice,
+  playing,
   onFollowVoiceChange,
   onOpacityChange,
   onSpeedChange,
@@ -641,6 +643,7 @@ function ControlsBarPortal({
   textAlign: 'left' | 'center' | 'right'
   fixedToTop: boolean
   followVoice: boolean
+  playing: boolean
   onFollowVoiceChange: (value: boolean) => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
@@ -772,7 +775,7 @@ function ControlsBarPortal({
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
                   disabled={followVoice}
-                  disabledTooltip={!isPip ? strings.speedDisabledTooltip : undefined}
+                  disabledTooltip={!isPip ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : undefined}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
@@ -1722,7 +1725,7 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? strings.followVoiceEnabled : strings.followVoice)} shortcut="V">
+                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice)} shortcut="V">
                   <button
                     type="button"
                     onClick={() => onFollowVoiceChange(!followVoice)}
@@ -1743,11 +1746,23 @@ export function FloatingPrompter(props: Props) {
                       )}
                       <div
                         className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
-                          followVoice ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
+                          followVoice && speechRecognition.active
+                            ? 'bg-emerald-500 scale-100 opacity-100'
+                            : 'scale-0 opacity-0'
                         )}
                       >
-                        <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                        <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
+                      </div>
+                      <div
+                        className={cn(
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
+                          followVoice && !speechRecognition.active
+                            ? 'scale-100 opacity-100'
+                            : 'scale-0 opacity-0'
+                        )}
+                      >
+                        <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
                       </div>
                     </div>
                   </button>
@@ -2009,7 +2024,7 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? strings.followVoiceEnabled : strings.followVoice)} shortcut="V">
+                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice)} shortcut="V">
                   <button
                     type="button"
                     onClick={() => onFollowVoiceChange(!followVoice)}
@@ -2030,11 +2045,23 @@ export function FloatingPrompter(props: Props) {
                       )}
                       <div
                         className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
-                          followVoice ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
+                          followVoice && speechRecognition.active
+                            ? 'bg-emerald-500 scale-100 opacity-100'
+                            : 'scale-0 opacity-0'
                         )}
                       >
-                        <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                        <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
+                      </div>
+                      <div
+                        className={cn(
+                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
+                          followVoice && !speechRecognition.active
+                            ? 'scale-100 opacity-100'
+                            : 'scale-0 opacity-0'
+                        )}
+                      >
+                        <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
                       </div>
                     </div>
                   </button>
@@ -2140,6 +2167,7 @@ export function FloatingPrompter(props: Props) {
             textAlign={textAlign}
             fixedToTop={fixedToTop}
             followVoice={followVoice}
+            playing={playing}
             onFollowVoiceChange={onFollowVoiceChange}
             onOpacityChange={onOpacityChange}
             onSpeedChange={onSpeedChange}

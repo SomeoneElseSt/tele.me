@@ -86,7 +86,8 @@ type Strings = {
   followVoice: string
   followVoiceEnabled: string
   speechRecognitionNotSupported: string
-  speedDisabledTooltip: string
+  speedTooltipPlayToStart: string
+  speedTooltipPauseToStop: string
   shortcutsMenu: string
   shortcutsTitle: string
   speakingTime: string
@@ -175,7 +176,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Follow Voice',
     followVoiceEnabled: 'Following Voice (speed disabled)',
     speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
-    speedDisabledTooltip: 'Speed control is disabled while autoscrolling. Disable following voice for manual control.',
+    speedTooltipPlayToStart: 'Play prompter to start following voice (space)',
+    speedTooltipPauseToStop: 'Pause prompter to stop following voice (space)',
     shortcutsMenu:
       'T: edit text\n' +
       'R: record/stop recording\n' +
@@ -274,7 +276,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Siguiendo Voz (velocidad desactivada)',
     speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
-    speedDisabledTooltip: 'El control de velocidad está deshabilitado durante el desplazamiento automático. Desactiva seguir voz para control manual.',
+    speedTooltipPlayToStart: 'Reproduce el prompter para empezar a seguir la voz (espacio).',
+    speedTooltipPauseToStop: 'Pausa el prompter para dejar de seguir la voz (espacio).',
     shortcutsMenu:
       'T: editar texto\n' +
       'R: grabar/detener grabación\n' +
@@ -364,8 +367,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     persistVideosWillSave10: '最新の10本のビデオをローカルに保存します。有効にするとリロード後も保持されます。',
     maxVideosReached: 'ローカルに保存できるビデオは最大10本です。ビデオを削除するか、永続ストレージを無効にして録画を続けてください。',
     deleteKey: 'delete',
-    popOutPrompter: 'Pop Out',
-    popInPrompter: 'Pop In',
+    popOutPrompter: '別ウィンドウ',
+    popInPrompter: '元に戻す',
     pipEditHint: 'テキストを編集するには、ウェブサイトに戻ってテキストエディタパネル (T) を開いてください。',
     popOutOnlyChrome: 'Safariではポップアウトモードは利用できません。互換性を高めるためにChromeを使用してください。',
     allowCameraAccess: 'カメラへのアクセスを許可',
@@ -373,7 +376,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '音声を追従',
     followVoiceEnabled: '音声追従中（速度無効）',
     speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
-    speedDisabledTooltip: '自動スクロール中は速度コントロールは無効です。手動制御するには音声追従を無効にしてください。',
+    speedTooltipPlayToStart: 'プロンプターを再生すると音声追従が始まります（スペース）。',
+    speedTooltipPauseToStop: 'プロンプターを一時停止すると音声追従が止まります（スペース）。',
     shortcutsMenu:
       'T: テキストを編集\n' +
       'R: 録画/録画停止\n' +
@@ -463,8 +467,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     persistVideosWillSave10: 'नवीनतम 10 वीडियो स्थानीय रूप से सहेजे जाएंगे। रीलोड के बाद उन्हें रखने के लिए सक्षम करें।',
     maxVideosReached: 'अधिकतम 10 वीडियो स्थानीय रूप से सहेजे जा सकते हैं। कुछ वीडियो हटाएं या अधिक रिकॉर्ड करने के लिए स्थायी संग्रहण अक्षम करें।',
     deleteKey: 'delete',
-    popOutPrompter: 'Pop Out',
-    popInPrompter: 'Pop In',
+    popOutPrompter: 'बाहर निकालें',
+    popInPrompter: 'वापस लाएं',
     pipEditHint: 'टेक्स्ट को एडिट करने के लिए, वेबसाइट पर वापस जाएं और टेक्स्ट एडिटर पैनल (T) खोलें।',
     popOutOnlyChrome: 'Safari पर पॉप आउट मोड संभव नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     allowCameraAccess: 'कैमरा एक्सेस की अनुमति दें',
@@ -472,7 +476,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'आवाज़ का पालन करें',
     followVoiceEnabled: 'आवाज़ का पालन (गति अक्षम)',
     speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
-    speedDisabledTooltip: 'ऑटोस्क्रॉलिंग के दौरान गति नियंत्रण अक्षम है। मैनुअल नियंत्रण के लिए आवाज़ का पालन करें बंद करें।',
+    speedTooltipPlayToStart: 'आवाज़ का पालन शुरू करने के लिए प्रॉम्प्टर चलाएँ (स्पेस)।',
+    speedTooltipPauseToStop: 'आवाज़ का पालन रोकने के लिए प्रॉम्प्टर रोकें (स्पेस)।',
     shortcutsMenu:
       'T: टेक्स्ट संपादित करें\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
@@ -571,7 +576,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Suivre la Voix',
     followVoiceEnabled: 'Suivi de la Voix (vitesse désactivée)',
     speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
-    speedDisabledTooltip: 'Le contrôle de vitesse est désactivé pendant le défilement automatique. Désactivez le suivi vocal pour un contrôle manuel.',
+    speedTooltipPlayToStart: 'Lancez le prompter pour commencer à suivre la voix (Espace).',
+    speedTooltipPauseToStop: 'Mettez le prompter en pause pour arrêter de suivre la voix (Espace).',
     shortcutsMenu:
       'T : éditer le texte du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
@@ -670,7 +676,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Stimme Folgen',
     followVoiceEnabled: 'Stimmverfolgung (Geschwindigkeit deaktiviert)',
     speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
-    speedDisabledTooltip: 'Die Geschwindigkeitsregelung ist während des automatischen Scrollens deaktiviert. Deaktivieren Sie Stimme Folgen für manuelle Steuerung.',
+    speedTooltipPlayToStart: 'Teleprompter abspielen, um der Stimme zu folgen (Leertaste).',
+    speedTooltipPauseToStop: 'Teleprompter pausieren, um die Stimmverfolgung zu stoppen (Leertaste).',
     shortcutsMenu:
       'T: Text bearbeiten\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
@@ -760,8 +767,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     persistVideosWillSave10: '将在本地保存最近的10个视频。启用以在重新加载后保留它们。',
     maxVideosReached: '最多可以在本地保存10个视频。删除一些视频或禁用持久存储以录制更多。',
     deleteKey: 'delete',
-    popOutPrompter: 'Pop Out',
-    popInPrompter: 'Pop In',
+    popOutPrompter: '弹出',
+    popInPrompter: '收回',
     pipEditHint: '要编辑文本，请返回网站并打开文本编辑器面板 (T)。',
     popOutOnlyChrome: 'Safari 上不支持弹出模式。为了获得更好的兼容性，请使用 Chrome。',
     allowCameraAccess: '允许访问摄像头',
@@ -769,7 +776,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '语音跟随',
     followVoiceEnabled: '语音跟随中（速度已禁用）',
     speechRecognitionNotSupported: '此浏览器不支持语音识别',
-    speedDisabledTooltip: '自动滚动时速度控制已禁用。禁用语音跟随时可手动控制。',
+    speedTooltipPlayToStart: '播放提示器以开始语音跟随（空格）。',
+    speedTooltipPauseToStop: '暂停提示器以停止语音跟随（空格）。',
     shortcutsMenu:
       'T：编辑文本\n' +
       'R：录制/停止录制\n' +
@@ -859,8 +867,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     persistVideosWillSave10: 'سيحفظ أحدث 10 فيديوهات محلياً. قم بالتمكين للاحتفاظ بها عبر عمليات إعادة التحميل.',
     maxVideosReached: 'يمكن حفظ 10 فيديوهات كحد أقصى محلياً. احذف بعض الفيديوهات أو عطّل التخزين الدائم لتسجيل المزيد.',
     deleteKey: 'delete',
-    popOutPrompter: 'Pop Out',
-    popInPrompter: 'Pop In',
+    popOutPrompter: 'نافذة منفصلة',
+    popInPrompter: 'إعادة',
     pipEditHint: 'لتعديل النص، ارجع إلى الموقع وافتح لوحة محرر النصوص (T).',
     popOutOnlyChrome: 'وضع النافذة المنبثقة غير ممكن على Safari. استخدم Chrome لتوافق أفضل.',
     allowCameraAccess: 'السماح بالوصول إلى الكاميرا',
@@ -868,7 +876,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'متابعة الصوت',
     followVoiceEnabled: 'متابعة الصوت (السرعة معطلة)',
     speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
-    speedDisabledTooltip: 'التحكم في السرعة معطل أثناء التمرير التلقائي. عطّل متابعة الصوت للتحكم اليدوي.',
+    speedTooltipPlayToStart: 'شغّل الملقن لبدء متابعة الصوت (مسافة).',
+    speedTooltipPauseToStop: 'أوقف الملقن مؤقتاً لإيقاف متابعة الصوت (مسافة).',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
@@ -965,7 +974,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Seguindo Voz (velocidade desativada)',
     speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
-    speedDisabledTooltip: 'O controle de velocidade está desativado durante a rolagem automática. Desative seguir voz para controle manual.',
+    speedTooltipPlayToStart: 'Reproduza o teleprompter para começar a seguir a voz (Espaço).',
+    speedTooltipPauseToStop: 'Pause o teleprompter para parar de seguir a voz (Espaço).',
     shortcutsMenu:
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
@@ -1063,7 +1073,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Следовать за Голосом',
     followVoiceEnabled: 'Следование за Голосом (скорость откл.)',
     speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
-    speedDisabledTooltip: 'Управление скоростью отключено при автоскроллинге. Отключите следование за голосом для ручного управления.',
+    speedTooltipPlayToStart: 'Запустите телесуфлёр, чтобы начать следовать за голосом (Пробел).',
+    speedTooltipPauseToStop: 'Поставьте телесуфлёр на паузу, чтобы перестать следовать за голосом (Пробел).',
     shortcutsMenu:
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
@@ -1161,7 +1172,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Podążaj za Głosem',
     followVoiceEnabled: 'Śledzenie Głosu (prędkość wyłączona)',
     speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
-    speedDisabledTooltip: 'Kontrola prędkości jest wyłączona podczas automatycznego przewijania. Wyłącz Podążaj za Głosem, aby ręcznie sterować.',
+    speedTooltipPlayToStart: 'Odtwórz prompter, aby zacząć podążać za głosem (Spacja).',
+    speedTooltipPauseToStop: 'Wstrzymaj prompter, aby przestać podążać za głosem (Spacja).',
     shortcutsMenu:
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +
