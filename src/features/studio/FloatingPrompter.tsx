@@ -13,7 +13,7 @@ import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
-import { extractWords, findMatchingWordsInLine, type WordInfo } from '../../lib/textMatching'
+import { extractWords, matchAsrToLine, tokenizeLine, type WordInfo, type LineMatchState } from '../../lib/textMatching'
 
 type Props = {
   open: boolean
@@ -885,9 +885,18 @@ export function FloatingPrompter(props: Props) {
 
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
-  const currentLineIndexRef = useRef(0)
+  const currentLineIndexRef = useRef(0) // 0-indexed: first line is 0, second line is 1, etc.
   const scriptWordsRef = useRef<WordInfo[]>([])
-  const scriptLinesRef = useRef<number[][]>([]) // Each sub-array contains word indices for that line
+  const scriptLinesRef = useRef<number[][]>([]) // 0-indexed: Each sub-array contains word indices for that line
+
+  // Buffer-based matching state
+  const currentLineTokensRef = useRef<string[]>([]) // Normalized tokens for current line
+  const lineMatchStateRef = useRef<LineMatchState>({
+    gtIndex: 0,
+    processedAsrIndex: 0,
+    highlightIndices: []
+  })
+  const asrBufferRef = useRef<string>('') // Accumulating ASR text for current line
 
   // Initialize script words when script changes
   useEffect(() => {
@@ -1172,7 +1181,7 @@ export function FloatingPrompter(props: Props) {
     return () => clearTimeout(timeoutId)
   }, [detectLines, script, fontSize, frame.width, frame.height, isPip, isEditing])
 
-  // Get first visible line index
+  // Get first visible line index (0-indexed)
   const getFirstVisibleLineIndex = useCallback((): number => {
     const el = scrollerRef.current
     if (!el || scriptLinesRef.current.length === 0) return 0
@@ -1181,7 +1190,7 @@ export function FloatingPrompter(props: Props) {
     const containerRect = el.getBoundingClientRect()
     const containerTop = containerRect.top
 
-    // Find first line where any word is visible
+    // Find first line where any word is visible (lineIdx is 0-indexed)
     for (let lineIdx = 0; lineIdx < scriptLinesRef.current.length; lineIdx++) {
       const line = scriptLinesRef.current[lineIdx]
       if (!line || line.length === 0) continue
@@ -1202,12 +1211,40 @@ export function FloatingPrompter(props: Props) {
     return 0
   }, [])
 
+  // Initialize line matching state for a specific line (0-indexed)
+  const initializeLineState = useCallback((lineIndex: number) => {
+    const line = scriptLinesRef.current[lineIndex]
+    if (!line) {
+      console.log('[FloatingPrompter] Cannot initialize line state - line not found:', lineIndex)
+      return
+    }
+
+    // Tokenize the line once
+    const lineTokens = tokenizeLine(scriptWordsRef.current, line)
+    currentLineTokensRef.current = lineTokens
+
+    // Reset matching state
+    lineMatchStateRef.current = {
+      gtIndex: 0,
+      processedAsrIndex: 0,
+      highlightIndices: []
+    }
+
+    // Reset ASR buffer
+    asrBufferRef.current = ''
+
+    console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
+  }, [])
+
   // Initialize current line to first visible line when playing starts
   useEffect(() => {
     if (open && playing && followVoice) {
       const firstVisibleLine = getFirstVisibleLineIndex()
       currentLineIndexRef.current = firstVisibleLine
       console.log('[FloatingPrompter] Initialized current line to:', firstVisibleLine)
+
+      // Initialize line matching state
+      initializeLineState(firstVisibleLine)
 
       // Gray out all previous lines
       setSpokenWordIndices(prev => {
@@ -1221,7 +1258,7 @@ export function FloatingPrompter(props: Props) {
         return next
       })
     }
-  }, [open, playing, followVoice, getFirstVisibleLineIndex])
+  }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState])
 
   // Speech recognition integration
   const { locale } = useI18n()
@@ -1240,26 +1277,49 @@ export function FloatingPrompter(props: Props) {
       return
     }
 
-    console.log('[FloatingPrompter] Current line word indices:', currentLine)
-    console.log('[FloatingPrompter] Current line words:', currentLine.map(idx => scriptWordsRef.current[idx]?.word))
-
-    // Match within current line only
-    const { matches, lineComplete } = findMatchingWordsInLine(
-      scriptWordsRef.current,
-      currentLine,
-      transcript
-    )
-
-    console.log('[FloatingPrompter] Matched word indices:', matches)
-    console.log('[FloatingPrompter] Line complete:', lineComplete)
-
-    if (matches.length === 0) {
-      console.log('[FloatingPrompter] No matches found')
+    // ONLY process FINAL transcripts for buffer-based matching
+    if (!isFinal) {
+      console.log('[FloatingPrompter] Skipping interim result for buffer matching')
       console.log('[FloatingPrompter] =========================')
       return
     }
 
-    // Update spoken indices for visual feedback (both interim and final)
+    // Append transcript to ASR buffer
+    asrBufferRef.current += (asrBufferRef.current ? ' ' : '') + transcript
+    console.log('[FloatingPrompter] ASR buffer:', asrBufferRef.current)
+
+    // Get current line tokens
+    const lineTokens = currentLineTokensRef.current
+    if (lineTokens.length === 0) {
+      console.log('[FloatingPrompter] No line tokens - reinitializing line state')
+      initializeLineState(currentLineIdx)
+      console.log('[FloatingPrompter] =========================')
+      return
+    }
+
+    console.log('[FloatingPrompter] Line tokens:', lineTokens)
+    console.log('[FloatingPrompter] Current state - gtIndex:', lineMatchStateRef.current.gtIndex, 'processedAsrIndex:', lineMatchStateRef.current.processedAsrIndex)
+
+    // Match ASR buffer against line tokens
+    const { newState, lineComplete } = matchAsrToLine(
+      lineTokens,
+      asrBufferRef.current,
+      lineMatchStateRef.current
+    )
+
+    // Update state
+    lineMatchStateRef.current = newState
+    console.log('[FloatingPrompter] New state - gtIndex:', newState.gtIndex, 'highlightIndices:', newState.highlightIndices)
+    console.log('[FloatingPrompter] Line complete:', lineComplete)
+
+    // Convert line-relative highlight indices to global word indices
+    const globalHighlightIndices = newState.highlightIndices.map(lineRelativeIdx => {
+      return currentLine[lineRelativeIdx]
+    }).filter((idx): idx is number => idx !== undefined)
+
+    console.log('[FloatingPrompter] Global highlight indices:', globalHighlightIndices)
+
+    // Update spoken indices for visual feedback
     setSpokenWordIndices(prev => {
       const next = new Set(prev)
 
@@ -1271,21 +1331,24 @@ export function FloatingPrompter(props: Props) {
         }
       }
 
-      // Add matched words from current line
-      matches.forEach(idx => next.add(idx))
+      // Add highlighted words from current line
+      globalHighlightIndices.forEach(idx => next.add(idx))
 
       console.log('[FloatingPrompter] Updated spokenWordIndices, size:', next.size)
       return next
     })
 
-    // ONLY advance to next line on FINAL results
-    if (isFinal && lineComplete) {
+    // Advance to next line if current line is complete
+    if (lineComplete) {
       console.log('[FloatingPrompter] Line complete! Advancing to next line')
       const nextLineIdx = currentLineIdx + 1
 
       if (nextLineIdx < scriptLinesRef.current.length) {
         currentLineIndexRef.current = nextLineIdx
         console.log('[FloatingPrompter] Advanced to line:', nextLineIdx)
+
+        // Initialize next line state
+        initializeLineState(nextLineIdx)
 
         // Scroll to next line
         const nextLine = scriptLinesRef.current[nextLineIdx]
@@ -1298,12 +1361,10 @@ export function FloatingPrompter(props: Props) {
       } else {
         console.log('[FloatingPrompter] Reached end of script')
       }
-    } else {
-      console.log('[FloatingPrompter] NOT advancing line (isFinal:', isFinal, ', lineComplete:', lineComplete, ')')
     }
 
     console.log('[FloatingPrompter] =========================')
-  }, [scrollToLine])
+  }, [scrollToLine, initializeLineState])
 
   const handleError = useCallback((error: string) => {
     console.warn('Speech recognition error:', error)

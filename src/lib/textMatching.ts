@@ -1,7 +1,12 @@
 // Constants
-const FUZZY_MATCH_THRESHOLD = 0.7
+const FUZZY_MATCH_THRESHOLD = 0.6  // Lowered from 0.7 to handle transcription errors
+const MAX_GAP_SIZE = 2  // Max words we'll skip and infer as "probably spoken"
 const PUNCTUATION_REGEX = /[.,!?;:"""''()[\]{}]/g
 const WHITESPACE_REGEX = /\s+/g
+
+// Buffer-based matching constants
+const EDIT_DISTANCE_THRESHOLD = 0.2  // Normalized edit distance threshold for fuzzy match
+const LOOKAHEAD_WINDOW = 3  // Check current + next N tokens
 
 export type WordInfo = {
   word: string
@@ -112,11 +117,12 @@ function similarityRatio(str1: string, str2: string): number {
 
 /**
  * Find matching word indices using sliding window + Levenshtein distance
+ * Now with gap filling - matches sequentially from startIndex
  */
 export function findMatchingWords(
   scriptWords: WordInfo[],
   transcript: string,
-  lastMatchedIndex: number
+  startIndex: number
 ): number[] {
   if (scriptWords.length === 0) return []
 
@@ -125,12 +131,30 @@ export function findMatchingWords(
 
   if (transcriptWords.length === 0) return []
 
-  const matches: number[] = []
-  const startSearchIdx = Math.max(0, lastMatchedIndex + 1)
+  // Always start from the provided index (no skip-ahead)
+  const searchStart = Math.max(0, Math.min(startIndex, scriptWords.length - 1))
 
-  // Try to match transcript words to script words sequentially
-  let scriptIdx = startSearchIdx
+  // Match sequence sequentially
+  const { matches } = matchSequence(scriptWords, transcriptWords, searchStart)
+
+  // Fill gaps: if we matched words at positions [i, i+3], fill in [i+1, i+2]
+  const filledMatches = fillGaps(matches)
+
+  return filledMatches
+}
+
+/**
+ * Match a sequence of transcript words starting from a position in the script
+ */
+function matchSequence(
+  scriptWords: WordInfo[],
+  transcriptWords: string[],
+  startIdx: number
+): { matches: number[]; score: number } {
+  const matches: number[] = []
+  let scriptIdx = startIdx
   let transcriptIdx = 0
+  let score = 0
 
   while (scriptIdx < scriptWords.length && transcriptIdx < transcriptWords.length) {
     const scriptWord = scriptWords[scriptIdx]
@@ -142,18 +166,264 @@ export function findMatchingWords(
 
     if (similarity >= FUZZY_MATCH_THRESHOLD) {
       matches.push(scriptIdx)
+      score += similarity
       scriptIdx++
       transcriptIdx++
     } else {
-      // Try next script word (skip unspoken words)
+      // Try skipping script word (word not spoken yet)
       scriptIdx++
 
-      // Prevent infinite loops - if we've skipped too many words, give up
-      if (scriptIdx - startSearchIdx > transcriptWords.length * 3) {
+      // Prevent infinite loops
+      if (scriptIdx - startIdx > transcriptWords.length * 3) {
         break
       }
     }
   }
 
-  return matches
+  return { matches, score }
+}
+
+/**
+ * Fill gaps between matched words (e.g., if we matched [5, 8, 9], fill to [5, 6, 7, 8, 9])
+ */
+function fillGaps(matches: number[]): number[] {
+  if (matches.length === 0) return matches
+
+  const filled = new Set<number>(matches)
+
+  for (let i = 0; i < matches.length - 1; i++) {
+    const current = matches[i]
+    const next = matches[i + 1]
+
+    if (current === undefined || next === undefined) continue
+
+    const gap = next - current - 1
+
+    // If gap is small (1-2 words), fill it in
+    if (gap > 0 && gap <= MAX_GAP_SIZE) {
+      for (let j = current + 1; j < next; j++) {
+        filled.add(j)
+      }
+    }
+  }
+
+  return Array.from(filled).sort((a, b) => a - b)
+}
+
+/**
+ * Match transcript against words in a specific line only
+ * Returns matched word indices and whether the line is complete
+ */
+export function findMatchingWordsInLine(
+  scriptWords: WordInfo[],
+  lineWordIndices: number[],
+  transcript: string
+): { matches: number[]; lineComplete: boolean } {
+  if (lineWordIndices.length === 0) {
+    return { matches: [], lineComplete: false }
+  }
+
+  const normalizedTranscript = normalizeText(transcript)
+  const transcriptWords = normalizedTranscript.split(' ').filter(w => w.length > 0)
+
+  if (transcriptWords.length === 0) {
+    return { matches: [], lineComplete: false }
+  }
+
+  // Create a sub-array of script words for this line only
+  const lineWords = lineWordIndices
+    .map(idx => scriptWords[idx])
+    .filter((w): w is WordInfo => w !== undefined)
+
+  if (lineWords.length === 0) {
+    return { matches: [], lineComplete: false }
+  }
+
+  // Match sequentially within the line
+  const matches: number[] = []
+  let lineWordIdx = 0
+  let transcriptIdx = 0
+
+  while (lineWordIdx < lineWords.length && transcriptIdx < transcriptWords.length) {
+    const lineWord = lineWords[lineWordIdx]
+    const transcriptWord = transcriptWords[transcriptIdx]
+
+    if (!lineWord || !transcriptWord) break
+
+    const similarity = similarityRatio(lineWord.normalizedWord, transcriptWord)
+
+    if (similarity >= FUZZY_MATCH_THRESHOLD) {
+      // Match found - record the original script index
+      const scriptIdx = lineWordIndices[lineWordIdx]
+      if (scriptIdx !== undefined) {
+        matches.push(scriptIdx)
+      }
+      lineWordIdx++
+      transcriptIdx++
+    } else {
+      // Try skipping line word (word not spoken yet)
+      lineWordIdx++
+
+      // Prevent infinite loops
+      if (lineWordIdx > transcriptWords.length * 3) {
+        break
+      }
+    }
+  }
+
+  // Fill gaps in matches
+  const filledMatches = fillGaps(matches)
+
+  // Line is complete if we've matched all words in the line
+  const lineComplete = filledMatches.length === lineWordIndices.length
+
+  return { matches: filledMatches, lineComplete }
+}
+
+/**
+ * State for buffer-based line matching
+ */
+export type LineMatchState = {
+  gtIndex: number           // Ground truth index (current position in line tokens, 0-indexed)
+  processedAsrIndex: number // Character index in ASR buffer we've processed so far
+  highlightIndices: number[] // Token indices to highlight (0-indexed within the line)
+}
+
+/**
+ * Calculate normalized edit distance (0.0 = identical, 1.0 = completely different)
+ */
+function normalizedEditDistance(str1: string, str2: string): number {
+  const maxLen = Math.max(str1.length, str2.length)
+  if (maxLen === 0) return 0.0
+
+  const distance = levenshteinDistance(str1, str2)
+  return distance / maxLen
+}
+
+/**
+ * Try to match a single ASR token against ground truth tokens in lookahead window
+ * Returns the matched GT index, or -1 if no match
+ */
+function matchTokenWithLookahead(
+  asrToken: string,
+  lineTokens: string[],
+  gtIndex: number
+): number {
+  // Check current expected token + lookahead window
+  const windowEnd = Math.min(gtIndex + LOOKAHEAD_WINDOW + 1, lineTokens.length)
+
+  for (let i = gtIndex; i < windowEnd; i++) {
+    const gtToken = lineTokens[i]
+    if (!gtToken) continue
+
+    // Exact match
+    if (asrToken === gtToken) {
+      return i
+    }
+
+    // Fuzzy match with edit distance threshold
+    const editDist = normalizedEditDistance(asrToken, gtToken)
+    if (editDist < EDIT_DISTANCE_THRESHOLD) {
+      return i
+    }
+  }
+
+  return -1 // No match found
+}
+
+/**
+ * Buffer-based streaming ASR matcher for a single line
+ *
+ * @param lineTokens - Normalized tokens for the current line (0-indexed)
+ * @param asrBuffer - Full ASR text buffer (growing string)
+ * @param currentState - Current matching state
+ * @returns Updated state with new matches and completion status
+ */
+export function matchAsrToLine(
+  lineTokens: string[],
+  asrBuffer: string,
+  currentState: LineMatchState
+): { newState: LineMatchState; lineComplete: boolean } {
+  if (lineTokens.length === 0) {
+    return {
+      newState: currentState,
+      lineComplete: false
+    }
+  }
+
+  // Extract only the new part of the ASR buffer
+  const newAsrText = asrBuffer.substring(currentState.processedAsrIndex)
+
+  if (newAsrText.trim().length === 0) {
+    // No new text to process
+    return {
+      newState: currentState,
+      lineComplete: currentState.gtIndex >= lineTokens.length
+    }
+  }
+
+  // Tokenize only the new chunk
+  const normalizedNewChunk = normalizeText(newAsrText)
+  const newTokens = normalizedNewChunk.split(' ').filter(w => w.length > 0)
+
+  if (newTokens.length === 0) {
+    // No new tokens after normalization
+    return {
+      newState: {
+        ...currentState,
+        processedAsrIndex: asrBuffer.length
+      },
+      lineComplete: currentState.gtIndex >= lineTokens.length
+    }
+  }
+
+  // Process each new ASR token
+  let gtIndex = currentState.gtIndex
+  const highlightIndices = new Set(currentState.highlightIndices)
+
+  for (const asrToken of newTokens) {
+    // Stop if we've already completed the line
+    if (gtIndex >= lineTokens.length) {
+      break
+    }
+
+    // Try to match this ASR token against GT tokens (with lookahead)
+    const matchedGtIndex = matchTokenWithLookahead(asrToken, lineTokens, gtIndex)
+
+    if (matchedGtIndex !== -1) {
+      // Match found! Highlight all tokens from current position to matched position
+      for (let i = gtIndex; i <= matchedGtIndex; i++) {
+        highlightIndices.add(i)
+      }
+
+      // Advance GT pointer to matched position + 1
+      gtIndex = matchedGtIndex + 1
+    }
+    // Else: ASR token didn't match (junk/insertion) → ignore it
+  }
+
+  // Line is complete when GT pointer reaches or exceeds line length
+  const lineComplete = gtIndex >= lineTokens.length
+
+  return {
+    newState: {
+      gtIndex,
+      processedAsrIndex: asrBuffer.length,
+      highlightIndices: Array.from(highlightIndices).sort((a, b) => a - b)
+    },
+    lineComplete
+  }
+}
+
+/**
+ * Tokenize a line (array of word indices) into normalized tokens
+ */
+export function tokenizeLine(
+  scriptWords: WordInfo[],
+  lineWordIndices: number[]
+): string[] {
+  return lineWordIndices
+    .map(idx => scriptWords[idx])
+    .filter((w): w is WordInfo => w !== undefined)
+    .map(w => w.normalizedWord)
 }
