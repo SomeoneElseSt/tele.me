@@ -6,7 +6,7 @@ const WHITESPACE_REGEX = /\s+/g
 
 // Buffer-based matching constants
 const EDIT_DISTANCE_THRESHOLD = 0.2  // Normalized edit distance threshold for fuzzy match
-const LOOKAHEAD_WINDOW = 3  // Check current + next N tokens
+const LOOKAHEAD_WINDOW = 5  // Check current + next N tokens
 
 export type WordInfo = {
   word: string

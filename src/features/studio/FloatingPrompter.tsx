@@ -896,7 +896,8 @@ export function FloatingPrompter(props: Props) {
     processedAsrIndex: 0,
     highlightIndices: []
   })
-  const asrBufferRef = useRef<string>('') // Accumulating ASR text for current line
+  const finalizedBufferRef = useRef<string>('') // Finalized ASR text (from isFinal=true)
+  const lastInterimTranscriptRef = useRef<string>('') // Last interim transcript to detect changes
 
   // Initialize script words when script changes
   useEffect(() => {
@@ -1230,8 +1231,9 @@ export function FloatingPrompter(props: Props) {
       highlightIndices: []
     }
 
-    // Reset ASR buffer
-    asrBufferRef.current = ''
+    // Reset buffers
+    finalizedBufferRef.current = ''
+    lastInterimTranscriptRef.current = ''
 
     console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
   }, [])
@@ -1277,16 +1279,20 @@ export function FloatingPrompter(props: Props) {
       return
     }
 
-    // ONLY process FINAL transcripts for buffer-based matching
-    if (!isFinal) {
-      console.log('[FloatingPrompter] Skipping interim result for buffer matching')
-      console.log('[FloatingPrompter] =========================')
-      return
+    // Build ASR buffer: finalized text + current transcript
+    let asrBuffer: string
+    if (isFinal) {
+      // Lock in this transcript
+      finalizedBufferRef.current += (finalizedBufferRef.current ? ' ' : '') + transcript
+      asrBuffer = finalizedBufferRef.current
+      lastInterimTranscriptRef.current = '' // Reset interim
+      console.log('[FloatingPrompter] FINAL - locked into buffer:', asrBuffer)
+    } else {
+      // Interim: combine finalized + current interim (don't lock in yet)
+      asrBuffer = finalizedBufferRef.current + (finalizedBufferRef.current ? ' ' : '') + transcript
+      lastInterimTranscriptRef.current = transcript
+      console.log('[FloatingPrompter] INTERIM - combined buffer:', asrBuffer)
     }
-
-    // Append transcript to ASR buffer
-    asrBufferRef.current += (asrBufferRef.current ? ' ' : '') + transcript
-    console.log('[FloatingPrompter] ASR buffer:', asrBufferRef.current)
 
     // Get current line tokens
     const lineTokens = currentLineTokensRef.current
@@ -1303,7 +1309,7 @@ export function FloatingPrompter(props: Props) {
     // Match ASR buffer against line tokens
     const { newState, lineComplete } = matchAsrToLine(
       lineTokens,
-      asrBufferRef.current,
+      asrBuffer,
       lineMatchStateRef.current
     )
 
@@ -1338,7 +1344,7 @@ export function FloatingPrompter(props: Props) {
       return next
     })
 
-    // Advance to next line if current line is complete
+    // Advance to next line immediately when current line is complete
     if (lineComplete) {
       console.log('[FloatingPrompter] Line complete! Advancing to next line')
       const nextLineIdx = currentLineIdx + 1
