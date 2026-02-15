@@ -1077,27 +1077,38 @@ export function FloatingPrompter(props: Props) {
 
   // Scroll to show a specific line (by first word index)
   const scrollToLine = useCallback((firstWordIdx: number) => {
-    const el = scrollerRef.current
-    console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
-    if (!el) {
-      console.log('[Scroll] No scroller element')
-      return
-    }
+    // Use RAF to ensure DOM has updated before scrolling
+    requestAnimationFrame(() => {
+      const el = scrollerRef.current
+      console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
+      if (!el) {
+        console.log('[Scroll] No scroller element')
+        return
+      }
 
-    const doc = el.ownerDocument
-    const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
-    if (!wordSpan) {
-      console.log('[Scroll] Word span not found for index:', firstWordIdx)
-      return
-    }
+      const doc = el.ownerDocument
+      const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
+      if (!wordSpan) {
+        console.log('[Scroll] Word span not found for index:', firstWordIdx)
+        return
+      }
 
-    const wordRect = wordSpan.getBoundingClientRect()
-    const containerRect = el.getBoundingClientRect()
-    const lineHeight = fontSize * 1.35
-    const targetScrollTop = el.scrollTop + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+      const wordRect = wordSpan.getBoundingClientRect()
+      const containerRect = el.getBoundingClientRect()
+      const lineHeight = fontSize * 1.35
 
-    console.log('[Scroll] Scrolling to:', targetScrollTop)
-    el.scrollTo({ top: targetScrollTop, behavior: 'smooth' })
+      console.log('[Scroll] wordRect.top:', wordRect.top, 'containerRect.top:', containerRect.top)
+      console.log('[Scroll] containerRect.height:', containerRect.height, 'el.scrollTop:', el.scrollTop)
+
+      const targetScrollTop = el.scrollTop + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+
+      // Clamp to valid range
+      const maxScroll = el.scrollHeight - el.clientHeight
+      const clampedScrollTop = Math.max(0, Math.min(targetScrollTop, maxScroll))
+
+      console.log('[Scroll] targetScrollTop:', targetScrollTop, 'clamped:', clampedScrollTop, 'max:', maxScroll)
+      el.scrollTo({ top: clampedScrollTop, behavior: 'smooth' })
+    })
   }, [fontSize])
 
   // Detect lines from rendered DOM
@@ -1306,11 +1317,21 @@ export function FloatingPrompter(props: Props) {
     console.log('[FloatingPrompter] Line tokens:', lineTokens)
     console.log('[FloatingPrompter] Current state - gtIndex:', lineMatchStateRef.current.gtIndex, 'processedAsrIndex:', lineMatchStateRef.current.processedAsrIndex)
 
-    // Match ASR buffer against line tokens
+    // Get next line tokens for lookahead matching
+    const nextLineIdx = currentLineIdx + 1
+    const nextLine = scriptLinesRef.current[nextLineIdx]
+    const nextLineTokens = nextLine ? tokenizeLine(scriptWordsRef.current, nextLine) : undefined
+
+    if (nextLineTokens) {
+      console.log('[FloatingPrompter] Next line tokens (first 3):', nextLineTokens.slice(0, 3))
+    }
+
+    // Match ASR buffer against line tokens (with next line lookahead)
     const { newState, lineComplete } = matchAsrToLine(
       lineTokens,
       asrBuffer,
-      lineMatchStateRef.current
+      lineMatchStateRef.current,
+      nextLineTokens
     )
 
     // Update state

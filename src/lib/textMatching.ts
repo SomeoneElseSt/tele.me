@@ -6,7 +6,9 @@ const WHITESPACE_REGEX = /\s+/g
 
 // Buffer-based matching constants
 const EDIT_DISTANCE_THRESHOLD = 0.2  // Normalized edit distance threshold for fuzzy match
-const LOOKAHEAD_WINDOW = 5  // Check current + next N tokens
+const LOOKAHEAD_WINDOW = 6 // Check current + next N tokens
+const NEXT_LINE_LOOKAHEAD_COUNT = 3  // Number of tokens from next line to check
+const NEXT_LINE_LOOKAHEAD_THRESHOLD = 0.5  // Start checking next line when 50% through current line
 
 export type WordInfo = {
   word: string
@@ -337,12 +339,14 @@ function matchTokenWithLookahead(
  * @param lineTokens - Normalized tokens for the current line (0-indexed)
  * @param asrBuffer - Full ASR text buffer (growing string)
  * @param currentState - Current matching state
+ * @param nextLineTokens - Optional tokens from next line for lookahead matching
  * @returns Updated state with new matches and completion status
  */
 export function matchAsrToLine(
   lineTokens: string[],
   asrBuffer: string,
-  currentState: LineMatchState
+  currentState: LineMatchState,
+  nextLineTokens?: string[]
 ): { newState: LineMatchState; lineComplete: boolean } {
   if (lineTokens.length === 0) {
     return {
@@ -380,6 +384,7 @@ export function matchAsrToLine(
   // Process each new ASR token
   let gtIndex = currentState.gtIndex
   const highlightIndices = new Set(currentState.highlightIndices)
+  let nextLineDetected = false
 
   for (const asrToken of newTokens) {
     // Stop if we've already completed the line
@@ -398,12 +403,45 @@ export function matchAsrToLine(
 
       // Advance GT pointer to matched position + 1
       gtIndex = matchedGtIndex + 1
+    } else {
+      // Check if we should try matching against next line
+      const pastThreshold = gtIndex >= lineTokens.length * NEXT_LINE_LOOKAHEAD_THRESHOLD
+
+      if (pastThreshold && nextLineTokens && nextLineTokens.length > 0) {
+        // Try matching against first N tokens of next line
+        const nextLinePreview = nextLineTokens.slice(0, NEXT_LINE_LOOKAHEAD_COUNT)
+
+        for (let i = 0; i < nextLinePreview.length; i++) {
+          const nextLineToken = nextLinePreview[i]
+          if (!nextLineToken) continue
+
+          // Exact match
+          if (asrToken === nextLineToken) {
+            console.log('[textMatching] Next line token detected:', asrToken, 'at position', i)
+            nextLineDetected = true
+            break
+          }
+
+          // Fuzzy match
+          const editDist = normalizedEditDistance(asrToken, nextLineToken)
+          if (editDist < EDIT_DISTANCE_THRESHOLD) {
+            console.log('[textMatching] Next line token detected (fuzzy):', asrToken, '~', nextLineToken)
+            nextLineDetected = true
+            break
+          }
+        }
+
+        if (nextLineDetected) {
+          // Treat current line as complete
+          break
+        }
+      }
     }
     // Else: ASR token didn't match (junk/insertion) → ignore it
   }
 
-  // Line is complete when GT pointer reaches or exceeds line length
-  const lineComplete = gtIndex >= lineTokens.length
+  // Line is complete when GT pointer reaches line length OR next line token detected
+  const lineComplete = gtIndex >= lineTokens.length || nextLineDetected
 
   return {
     newState: {
