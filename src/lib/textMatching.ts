@@ -6,9 +6,14 @@ const WHITESPACE_REGEX = /\s+/g
 
 // Buffer-based matching constants
 const EDIT_DISTANCE_THRESHOLD = 0.2  // Normalized edit distance threshold for fuzzy match
+const STRICT_EDIT_DISTANCE_THRESHOLD = 0.1  // Stricter threshold for low-information words
 const LOOKAHEAD_WINDOW = 6 // Check current + next N tokens
 const NEXT_LINE_LOOKAHEAD_COUNT = 3  // Number of tokens from next line to check
 const NEXT_LINE_LOOKAHEAD_THRESHOLD = 0.5  // Start checking next line when 50% through current line
+
+// Dynamic weighting constants
+const SHORT_TOKEN_LENGTH = 3  // Tokens <= 3 chars are considered low-information
+const HIGH_FREQUENCY_PERCENTILE = 0.2  // Top 20% most common tokens
 
 export type WordInfo = {
   word: string
@@ -292,6 +297,51 @@ export type LineMatchState = {
 }
 
 /**
+ * Calculate token frequency across all script tokens
+ * Returns a map of token -> frequency and the high-frequency threshold count
+ */
+export function calculateTokenFrequency(allTokens: string[]): {
+  frequencyMap: Map<string, number>
+  highFrequencyThreshold: number
+} {
+  const frequencyMap = new Map<string, number>()
+
+  // Count occurrences
+  for (const token of allTokens) {
+    frequencyMap.set(token, (frequencyMap.get(token) ?? 0) + 1)
+  }
+
+  // Calculate high-frequency threshold (top 20% percentile)
+  const frequencies = Array.from(frequencyMap.values()).sort((a, b) => b - a)
+  const percentileIndex = Math.floor(frequencies.length * HIGH_FREQUENCY_PERCENTILE)
+  const highFrequencyThreshold = frequencies[percentileIndex] ?? 1
+
+  return { frequencyMap, highFrequencyThreshold }
+}
+
+/**
+ * Determine if a token is low-information (short or high-frequency)
+ */
+function isLowInformationToken(
+  token: string,
+  frequencyMap: Map<string, number>,
+  highFrequencyThreshold: number
+): boolean {
+  // Short tokens are low-information (the, and, de, la, etc.)
+  if (token.length <= SHORT_TOKEN_LENGTH) {
+    return true
+  }
+
+  // High-frequency tokens are low-information
+  const frequency = frequencyMap.get(token) ?? 0
+  if (frequency >= highFrequencyThreshold) {
+    return true
+  }
+
+  return false
+}
+
+/**
  * Calculate normalized edit distance (0.0 = identical, 1.0 = completely different)
  */
 function normalizedEditDistance(str1: string, str2: string): number {
@@ -304,12 +354,15 @@ function normalizedEditDistance(str1: string, str2: string): number {
 
 /**
  * Try to match a single ASR token against ground truth tokens in lookahead window
+ * Uses dynamic thresholds based on token information content
  * Returns the matched GT index, or -1 if no match
  */
 function matchTokenWithLookahead(
   asrToken: string,
   lineTokens: string[],
-  gtIndex: number
+  gtIndex: number,
+  frequencyMap: Map<string, number>,
+  highFrequencyThreshold: number
 ): number {
   // Check current expected token + lookahead window
   const windowEnd = Math.min(gtIndex + LOOKAHEAD_WINDOW + 1, lineTokens.length)
@@ -318,14 +371,18 @@ function matchTokenWithLookahead(
     const gtToken = lineTokens[i]
     if (!gtToken) continue
 
-    // Exact match
+    // Exact match always succeeds
     if (asrToken === gtToken) {
       return i
     }
 
-    // Fuzzy match with edit distance threshold
+    // Determine threshold based on token information content
+    const isLowInfo = isLowInformationToken(gtToken, frequencyMap, highFrequencyThreshold)
+    const threshold = isLowInfo ? STRICT_EDIT_DISTANCE_THRESHOLD : EDIT_DISTANCE_THRESHOLD
+
+    // Fuzzy match with dynamic threshold
     const editDist = normalizedEditDistance(asrToken, gtToken)
-    if (editDist < EDIT_DISTANCE_THRESHOLD) {
+    if (editDist < threshold) {
       return i
     }
   }
@@ -339,6 +396,8 @@ function matchTokenWithLookahead(
  * @param lineTokens - Normalized tokens for the current line (0-indexed)
  * @param asrBuffer - Full ASR text buffer (growing string)
  * @param currentState - Current matching state
+ * @param frequencyMap - Token frequency map for dynamic weighting
+ * @param highFrequencyThreshold - Threshold for high-frequency tokens
  * @param nextLineTokens - Optional tokens from next line for lookahead matching
  * @returns Updated state with new matches and completion status
  */
@@ -346,6 +405,8 @@ export function matchAsrToLine(
   lineTokens: string[],
   asrBuffer: string,
   currentState: LineMatchState,
+  frequencyMap: Map<string, number>,
+  highFrequencyThreshold: number,
   nextLineTokens?: string[]
 ): { newState: LineMatchState; lineComplete: boolean } {
   if (lineTokens.length === 0) {
@@ -392,8 +453,8 @@ export function matchAsrToLine(
       break
     }
 
-    // Try to match this ASR token against GT tokens (with lookahead)
-    const matchedGtIndex = matchTokenWithLookahead(asrToken, lineTokens, gtIndex)
+    // Try to match this ASR token against GT tokens (with lookahead and dynamic weighting)
+    const matchedGtIndex = matchTokenWithLookahead(asrToken, lineTokens, gtIndex, frequencyMap, highFrequencyThreshold)
 
     if (matchedGtIndex !== -1) {
       // Match found! Highlight all tokens from current position to matched position
@@ -415,17 +476,21 @@ export function matchAsrToLine(
           const nextLineToken = nextLinePreview[i]
           if (!nextLineToken) continue
 
-          // Exact match
+          // Exact match always succeeds
           if (asrToken === nextLineToken) {
             console.log('[textMatching] Next line token detected:', asrToken, 'at position', i)
             nextLineDetected = true
             break
           }
 
-          // Fuzzy match
+          // Use stricter threshold for low-information tokens to prevent false positives
+          const isLowInfo = isLowInformationToken(nextLineToken, frequencyMap, highFrequencyThreshold)
+          const threshold = isLowInfo ? STRICT_EDIT_DISTANCE_THRESHOLD : EDIT_DISTANCE_THRESHOLD
+
+          // Fuzzy match with dynamic threshold
           const editDist = normalizedEditDistance(asrToken, nextLineToken)
-          if (editDist < EDIT_DISTANCE_THRESHOLD) {
-            console.log('[textMatching] Next line token detected (fuzzy):', asrToken, '~', nextLineToken)
+          if (editDist < threshold) {
+            console.log('[textMatching] Next line token detected (fuzzy):', asrToken, '~', nextLineToken, 'threshold:', threshold)
             nextLineDetected = true
             break
           }
