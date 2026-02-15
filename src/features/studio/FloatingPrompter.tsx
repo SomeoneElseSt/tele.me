@@ -13,7 +13,7 @@ import { usePointerResize } from '../../hooks/usePointerResize'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
-import { extractWords, matchAsrToLine, tokenizeLine, type WordInfo, type LineMatchState } from '../../lib/textMatching'
+import { extractWords, matchAsrToLine, tokenizeLine, calculateTokenFrequency, type WordInfo, type LineMatchState } from '../../lib/textMatching'
 
 type Props = {
   open: boolean
@@ -379,7 +379,8 @@ function ControlCell({
   formatValue,
   disabled,
   inputMultiplier = 1,
-  suffix
+  suffix,
+  disabledTooltip
 }: {
   Thumb: ComponentType<{ t: MotionValue<number> }>
   title: string
@@ -392,7 +393,10 @@ function ControlCell({
   disabled?: boolean
   inputMultiplier?: number
   suffix?: string
+  disabledTooltip?: string
 }) {
+  // Opacity for disabled controls—consistent visual feedback across slider, track, and text
+  const DISABLED_OPACITY = 'opacity-35'
   const rangeInputRef = useRef<HTMLInputElement | null>(null)
   const textInputRef = useRef<HTMLInputElement | null>(null)
   const activePointerIdRef = useRef<number | null>(null)
@@ -499,9 +503,11 @@ function ControlCell({
   }, [])
 
   return (
-    <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-4 pb-2">
-      <div className={cn("flex items-end justify-between gap-3", disabled && "opacity-40")}>
-        <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
+    <div className="flex h-full min-w-0 flex-1 flex-col">
+      <Tooltip enabled={disabled && !!disabledTooltip} label={disabledTooltip || ''}>
+        <div className="flex h-full min-w-0 flex-1 flex-col px-4 pt-4 pb-2">
+        <div className={cn("flex items-end justify-between gap-3", disabled && DISABLED_OPACITY)}>
+          <div className="truncate text-[13px] font-medium leading-none text-white/70">{title}</div>
         {isEditing ? (
           <div className="flex items-center justify-end">
             <input
@@ -537,7 +543,7 @@ function ControlCell({
             type="button"
             onClick={startEditing}
             disabled={disabled}
-            className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55 hover:text-white/80 transition-colors outline-none cursor-text disabled:cursor-default"
+            className="shrink-0 tabular-nums text-[13px] font-medium leading-none text-white/55 hover:text-white/80 disabled:hover:text-white/55 transition-colors outline-none cursor-text disabled:cursor-default"
           >
             {formatValue ? formatValue(value) : `${value}`}
           </button>
@@ -549,7 +555,7 @@ function ControlCell({
           className={cn(
             'relative mx-4 h-full touch-none select-none',
             'cursor-pointer outline-none',
-            disabled && "blur-[2px] opacity-40"
+            disabled && DISABLED_OPACITY
           )}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -604,6 +610,8 @@ function ControlCell({
           />
         </div>
       </div>
+    </div>
+      </Tooltip>
     </div>
   )
 }
@@ -764,6 +772,7 @@ function ControlsBarPortal({
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
                   disabled={followVoice}
+                  disabledTooltip={!isPip ? "Speed control is disabled while autoscrolling. Disable following voice for manual control." : undefined}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
@@ -899,11 +908,26 @@ export function FloatingPrompter(props: Props) {
   const finalizedBufferRef = useRef<string>('') // Finalized ASR text (from isFinal=true)
   const lastInterimTranscriptRef = useRef<string>('') // Last interim transcript to detect changes
 
+  // Token frequency for dynamic weighting
+  const tokenFrequencyMapRef = useRef<Map<string, number>>(new Map())
+  const highFrequencyThresholdRef = useRef<number>(1)
+
+  // Auto-advance timer for last word timeout
+  const lastWordTimeoutRef = useRef<number | null>(null)
+
   // Initialize script words when script changes
   useEffect(() => {
     scriptWordsRef.current = extractWords(script)
     console.log('[FloatingPrompter] Script initialized with words count:', scriptWordsRef.current.length)
     console.log('[FloatingPrompter] First few words:', scriptWordsRef.current.slice(0, 10).map(w => w.word))
+
+    // Calculate token frequency for dynamic weighting
+    const allTokens = scriptWordsRef.current.map(w => w.normalizedWord)
+    const { frequencyMap, highFrequencyThreshold } = calculateTokenFrequency(allTokens)
+    tokenFrequencyMapRef.current = frequencyMap
+    highFrequencyThresholdRef.current = highFrequencyThreshold
+    console.log('[FloatingPrompter] Token frequency calculated - unique tokens:', frequencyMap.size, 'high-freq threshold:', highFrequencyThreshold)
+
     setSpokenWordIndices(new Set())
     currentLineIndexRef.current = 0
     scriptLinesRef.current = []
@@ -1066,10 +1090,10 @@ export function FloatingPrompter(props: Props) {
     }
   }, [isEditing])
 
-  // Exit edit mode when playing starts
-  useEffect(() => {
-    if (playing) setIsEditing(false)
-  }, [playing])
+  // Allow editing even while playing (removed auto-exit)
+  // useEffect(() => {
+  //   if (playing) setIsEditing(false)
+  // }, [playing])
 
   const displayScript = useMemo(() => {
     return script
@@ -1223,6 +1247,15 @@ export function FloatingPrompter(props: Props) {
     return 0
   }, [])
 
+  // Clear last word timeout
+  const clearLastWordTimeout = useCallback(() => {
+    if (lastWordTimeoutRef.current !== null) {
+      clearTimeout(lastWordTimeoutRef.current)
+      lastWordTimeoutRef.current = null
+      console.log('[FloatingPrompter] Cleared last word timeout')
+    }
+  }, [])
+
   // Initialize line matching state for a specific line (0-indexed)
   const initializeLineState = useCallback((lineIndex: number) => {
     const line = scriptLinesRef.current[lineIndex]
@@ -1246,8 +1279,47 @@ export function FloatingPrompter(props: Props) {
     finalizedBufferRef.current = ''
     lastInterimTranscriptRef.current = ''
 
+    // Clear any pending timeout
+    clearLastWordTimeout()
+
     console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
-  }, [])
+  }, [clearLastWordTimeout])
+
+  // Auto-advance to next line (used by timeout and normal completion)
+  const advanceToNextLine = useCallback(() => {
+    const currentLineIdx = currentLineIndexRef.current
+    const nextLineIdx = currentLineIdx + 1
+
+    console.log('[FloatingPrompter] Auto-advancing from line', currentLineIdx, 'to', nextLineIdx)
+
+    if (nextLineIdx < scriptLinesRef.current.length) {
+      currentLineIndexRef.current = nextLineIdx
+
+      // Gray out completed line
+      setSpokenWordIndices(prev => {
+        const next = new Set(prev)
+        const completedLine = scriptLinesRef.current[currentLineIdx]
+        if (completedLine) {
+          completedLine.forEach(idx => next.add(idx))
+        }
+        return next
+      })
+
+      // Initialize next line
+      initializeLineState(nextLineIdx)
+
+      // Scroll to next line
+      const nextLine = scriptLinesRef.current[nextLineIdx]
+      if (nextLine && nextLine.length > 0) {
+        const firstWordIdx = nextLine[0]
+        if (firstWordIdx !== undefined) {
+          scrollToLine(firstWordIdx)
+        }
+      }
+    } else {
+      console.log('[FloatingPrompter] Reached end of script')
+    }
+  }, [scrollToLine, initializeLineState])
 
   // Initialize current line to first visible line when playing starts
   useEffect(() => {
@@ -1270,8 +1342,11 @@ export function FloatingPrompter(props: Props) {
         }
         return next
       })
+    } else {
+      // Clear timeout when stopping speech recognition
+      clearLastWordTimeout()
     }
-  }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState])
+  }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
 
   // Speech recognition integration
   const { locale } = useI18n()
@@ -1317,20 +1392,23 @@ export function FloatingPrompter(props: Props) {
     console.log('[FloatingPrompter] Line tokens:', lineTokens)
     console.log('[FloatingPrompter] Current state - gtIndex:', lineMatchStateRef.current.gtIndex, 'processedAsrIndex:', lineMatchStateRef.current.processedAsrIndex)
 
-    // Get next line tokens for lookahead matching
+    // Get ONLY the immediate next line (i+1) for lookahead matching
+    // SAFETY: Never look beyond i+1 to prevent multi-line jumps
     const nextLineIdx = currentLineIdx + 1
     const nextLine = scriptLinesRef.current[nextLineIdx]
     const nextLineTokens = nextLine ? tokenizeLine(scriptWordsRef.current, nextLine) : undefined
 
     if (nextLineTokens) {
-      console.log('[FloatingPrompter] Next line tokens (first 3):', nextLineTokens.slice(0, 3))
+      console.log('[FloatingPrompter] Next line (i+1) tokens (first 3):', nextLineTokens.slice(0, 3))
     }
 
-    // Match ASR buffer against line tokens (with next line lookahead)
+    // Match ASR buffer against line tokens (with dynamic weighting and next line lookahead)
     const { newState, lineComplete } = matchAsrToLine(
       lineTokens,
       asrBuffer,
       lineMatchStateRef.current,
+      tokenFrequencyMapRef.current,
+      highFrequencyThresholdRef.current,
       nextLineTokens
     )
 
@@ -1338,6 +1416,32 @@ export function FloatingPrompter(props: Props) {
     lineMatchStateRef.current = newState
     console.log('[FloatingPrompter] New state - gtIndex:', newState.gtIndex, 'highlightIndices:', newState.highlightIndices)
     console.log('[FloatingPrompter] Line complete:', lineComplete)
+
+    // Dynamic timeout based on words remaining (cascading timers)
+    const wordsRemaining = lineTokens.length - newState.gtIndex
+
+    // Always clear previous timer first to prevent race conditions
+    clearLastWordTimeout()
+
+    if (!lineComplete) {
+      if (wordsRemaining === 2) {
+        // 2 words remaining (second-to-last and last) → 2s timer
+        console.log('[FloatingPrompter] 2 words remaining - starting 2s auto-advance timer')
+        lastWordTimeoutRef.current = window.setTimeout(() => {
+          console.log('[FloatingPrompter] 2-word timeout fired - auto-advancing')
+          advanceToNextLine()
+        }, 2000)
+      } else if (wordsRemaining === 1) {
+        // 1 word remaining (just last word) → 1s timer
+        console.log('[FloatingPrompter] 1 word remaining - starting 1s auto-advance timer')
+        lastWordTimeoutRef.current = window.setTimeout(() => {
+          console.log('[FloatingPrompter] 1-word timeout fired - auto-advancing')
+          advanceToNextLine()
+        }, 1000)
+      }
+      // If wordsRemaining > 2, no timeout (still processing main part of line)
+      // If wordsRemaining === 0, line is complete (handled below)
+    }
 
     // Convert line-relative highlight indices to global word indices
     const globalHighlightIndices = newState.highlightIndices.map(lineRelativeIdx => {
@@ -1366,32 +1470,20 @@ export function FloatingPrompter(props: Props) {
     })
 
     // Advance to next line immediately when current line is complete
+    // SAFETY: Only advance by 1 line at a time (i → i+1)
     if (lineComplete) {
       console.log('[FloatingPrompter] Line complete! Advancing to next line')
-      const nextLineIdx = currentLineIdx + 1
+      clearLastWordTimeout()
+      advanceToNextLine()
 
-      if (nextLineIdx < scriptLinesRef.current.length) {
-        currentLineIndexRef.current = nextLineIdx
-        console.log('[FloatingPrompter] Advanced to line:', nextLineIdx)
-
-        // Initialize next line state
-        initializeLineState(nextLineIdx)
-
-        // Scroll to next line
-        const nextLine = scriptLinesRef.current[nextLineIdx]
-        if (nextLine && nextLine.length > 0) {
-          const firstWordIdx = nextLine[0]
-          if (firstWordIdx !== undefined) {
-            scrollToLine(firstWordIdx)
-          }
-        }
-      } else {
-        console.log('[FloatingPrompter] Reached end of script')
-      }
+      // IMPORTANT: Return early after advancing to prevent processing more of this transcript
+      // on the new line (which could cause immediate double-advancement)
+      console.log('[FloatingPrompter] =========================')
+      return
     }
 
     console.log('[FloatingPrompter] =========================')
-  }, [scrollToLine, initializeLineState])
+  }, [scrollToLine, initializeLineState, clearLastWordTimeout, advanceToNextLine])
 
   const handleError = useCallback((error: string) => {
     console.warn('Speech recognition error:', error)
@@ -1467,10 +1559,31 @@ export function FloatingPrompter(props: Props) {
     }
   }, [onFrameChange, onFixedToTopChange])
 
+  // Helper to check if user is typing (works in both main window and PiP)
+  const isTyping = useCallback(() => {
+    // Check main document
+    const mainActiveEl = document.activeElement
+    if (mainActiveEl?.tagName === 'INPUT' || mainActiveEl?.tagName === 'TEXTAREA') {
+      return true
+    }
+
+    // Check PiP document if in PiP mode
+    if (isPip && scrollerRef.current) {
+      const pipDoc = scrollerRef.current.ownerDocument
+      const pipActiveEl = pipDoc.activeElement
+      if (pipActiveEl?.tagName === 'INPUT' || pipActiveEl?.tagName === 'TEXTAREA') {
+        return true
+      }
+    }
+
+    return false
+  }, [isPip])
+
   useHotkeys(
     useMemo(
       () => ({
         c: () => {
+          if (isTyping()) return
           setQuickOpen((prev) => {
             const next = !prev
             onControlsOpenChange?.(next)
@@ -1478,6 +1591,7 @@ export function FloatingPrompter(props: Props) {
           })
         },
         y: () => {
+          if (isTyping()) return
           if (isPip) return
           if (fixedToTop) {
             onUnfixFromTop()
@@ -1485,14 +1599,22 @@ export function FloatingPrompter(props: Props) {
             onFixToTop()
           }
         },
-        space: () => onTogglePlaying(),
+        space: () => {
+          if (isTyping()) return
+          onTogglePlaying()
+        },
         escape: () => {
+          if (isTyping()) return
           if (!playing) return
           onTogglePlaying()
         },
-        p: () => togglePip()
+        p: () => {
+          if (isTyping()) return
+          if (isPip) return  // Disable PiP toggle hotkey when already in PiP mode
+          togglePip()
+        }
       }),
-      [onTogglePlaying, playing, onControlsOpenChange, fixedToTop, onFixToTop, onUnfixFromTop, togglePip]
+      [onTogglePlaying, playing, onControlsOpenChange, fixedToTop, onFixToTop, onUnfixFromTop, togglePip, isPip, isTyping]
     ),
     open
   )
@@ -1722,7 +1844,7 @@ export function FloatingPrompter(props: Props) {
                   minHeight: '100%'
                 }}
                 onClick={() => {
-                  if (!playing) setIsEditing(true)
+                  setIsEditing(true)
                 }}
               >
                 {!playing && isEditing ? (
