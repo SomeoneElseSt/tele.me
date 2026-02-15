@@ -175,7 +175,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Follow Voice',
     followVoiceEnabled: 'Following Voice (speed disabled)',
     speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
-    speedDisabledTooltip: 'Speed control is disabled when Follow Voice is active',
+    speedDisabledTooltip: 'Speed control is disabled while autoscrolling. Disable following voice for manual control.',
     shortcutsMenu:
       'T: edit text\n' +
       'R: record/stop recording\n' +
@@ -274,7 +274,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Siguiendo Voz (velocidad desactivada)',
     speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
-    speedDisabledTooltip: 'El control de velocidad está deshabilitado cuando Seguir Voz está activo',
+    speedDisabledTooltip: 'El control de velocidad está deshabilitado durante el desplazamiento automático. Desactiva seguir voz para control manual.',
     shortcutsMenu:
       'T: editar texto\n' +
       'R: grabar/detener grabación\n' +
@@ -373,7 +373,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '音声を追従',
     followVoiceEnabled: '音声追従中（速度無効）',
     speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
-    speedDisabledTooltip: '音声追従がアクティブのとき、速度コントロールは無効です',
+    speedDisabledTooltip: '自動スクロール中は速度コントロールは無効です。手動制御するには音声追従を無効にしてください。',
     shortcutsMenu:
       'T: テキストを編集\n' +
       'R: 録画/録画停止\n' +
@@ -472,7 +472,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'आवाज़ का पालन करें',
     followVoiceEnabled: 'आवाज़ का पालन (गति अक्षम)',
     speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
-    speedDisabledTooltip: 'जब आवाज़ का पालन करें सक्रिय है तो गति नियंत्रण अक्षम है',
+    speedDisabledTooltip: 'ऑटोस्क्रॉलिंग के दौरान गति नियंत्रण अक्षम है। मैनुअल नियंत्रण के लिए आवाज़ का पालन करें बंद करें।',
     shortcutsMenu:
       'T: टेक्स्ट संपादित करें\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
@@ -571,7 +571,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Suivre la Voix',
     followVoiceEnabled: 'Suivi de la Voix (vitesse désactivée)',
     speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
-    speedDisabledTooltip: 'Le contrôle de vitesse est désactivé lorsque Suivre la Voix est actif',
+    speedDisabledTooltip: 'Le contrôle de vitesse est désactivé pendant le défilement automatique. Désactivez le suivi vocal pour un contrôle manuel.',
     shortcutsMenu:
       'T : éditer le texte du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
@@ -670,7 +670,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Stimme Folgen',
     followVoiceEnabled: 'Stimmverfolgung (Geschwindigkeit deaktiviert)',
     speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
-    speedDisabledTooltip: 'Geschwindigkeitsregelung ist deaktiviert, wenn Stimme Folgen aktiv ist',
+    speedDisabledTooltip: 'Die Geschwindigkeitsregelung ist während des automatischen Scrollens deaktiviert. Deaktivieren Sie Stimme Folgen für manuelle Steuerung.',
     shortcutsMenu:
       'T: Text bearbeiten\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
@@ -769,7 +769,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '语音跟随',
     followVoiceEnabled: '语音跟随中（速度已禁用）',
     speechRecognitionNotSupported: '此浏览器不支持语音识别',
-    speedDisabledTooltip: '启用语音跟随时速度控制被禁用',
+    speedDisabledTooltip: '自动滚动时速度控制已禁用。禁用语音跟随时可手动控制。',
     shortcutsMenu:
       'T：编辑文本\n' +
       'R：录制/停止录制\n' +
@@ -868,7 +868,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'متابعة الصوت',
     followVoiceEnabled: 'متابعة الصوت (السرعة معطلة)',
     speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
-    speedDisabledTooltip: 'التحكم في السرعة معطل عند تفعيل متابعة الصوت',
+    speedDisabledTooltip: 'التحكم في السرعة معطل أثناء التمرير التلقائي. عطّل متابعة الصوت للتحكم اليدوي.',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
@@ -965,7 +965,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Seguindo Voz (velocidade desativada)',
     speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
-    speedDisabledTooltip: 'O controle de velocidade está desativado quando Seguir Voz está ativo',
+    speedDisabledTooltip: 'O controle de velocidade está desativado durante a rolagem automática. Desative seguir voz para controle manual.',
     shortcutsMenu:
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
@@ -1063,7 +1063,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Следовать за Голосом',
     followVoiceEnabled: 'Следование за Голосом (скорость откл.)',
     speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
-    speedDisabledTooltip: 'Управление скоростью отключено, когда активно Следование за Голосом',
+    speedDisabledTooltip: 'Управление скоростью отключено при автоскроллинге. Отключите следование за голосом для ручного управления.',
     shortcutsMenu:
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
@@ -1161,7 +1161,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Podążaj za Głosem',
     followVoiceEnabled: 'Śledzenie Głosu (prędkość wyłączona)',
     speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
-    speedDisabledTooltip: 'Kontrola prędkości jest wyłączona, gdy Podążaj za Głosem jest aktywne',
+    speedDisabledTooltip: 'Kontrola prędkości jest wyłączona podczas automatycznego przewijania. Wyłącz Podążaj za Głosem, aby ręcznie sterować.',
     shortcutsMenu:
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +

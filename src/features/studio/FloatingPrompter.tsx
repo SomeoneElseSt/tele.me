@@ -772,7 +772,7 @@ function ControlsBarPortal({
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
                   disabled={followVoice}
-                  disabledTooltip={!isPip ? "Speed control is disabled while autoscrolling. Disable following voice for manual control." : undefined}
+                  disabledTooltip={!isPip ? strings.speedDisabledTooltip : undefined}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
@@ -1345,6 +1345,8 @@ export function FloatingPrompter(props: Props) {
     } else {
       // Clear timeout when stopping speech recognition
       clearLastWordTimeout()
+      // Clear highlighting when exiting voice follow mode or stopping playback
+      setSpokenWordIndices(new Set())
     }
   }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
 
