@@ -1166,9 +1166,20 @@ export function FloatingPrompter(props: Props) {
 
       console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
 
+      // Add smooth transition for voice-following scrolls
+      content.style.transition = 'transform 0.3s ease-out'
+
       // Update virtual scroll and apply transform
       virtualScrollYRef.current = clampedScrollY
       content.style.transform = `translateY(-${clampedScrollY}px)`
+
+      // Remove transition after animation completes to keep wheel/manual scrolling instant
+      const removeTransition = () => {
+        content.style.transition = ''
+      }
+      content.addEventListener('transitionend', removeTransition, { once: true })
+      // Fallback cleanup in case transitionend doesn't fire
+      setTimeout(removeTransition, 350)
     })
   }, [fontSize])
 
