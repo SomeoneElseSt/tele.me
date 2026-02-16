@@ -88,6 +88,7 @@ type Strings = {
   speechRecognitionNotSupported: string
   speedTooltipPlayToStart: string
   speedTooltipPauseToStop: string
+  speedDisabledByFollowVoice: string
   shortcutsMenu: string
   shortcutsTitle: string
   speakingTime: string
@@ -178,6 +179,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
     speedTooltipPlayToStart: 'Play prompter to start following voice (space)',
     speedTooltipPauseToStop: 'Pause prompter to stop following voice (space)',
+    speedDisabledByFollowVoice: 'Speed disabled while following voice',
     shortcutsMenu:
       'T: edit text\n' +
       'R: record/stop recording\n' +
@@ -278,6 +280,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
     speedTooltipPlayToStart: 'Reproduce el prompter para empezar a seguir la voz (espacio).',
     speedTooltipPauseToStop: 'Pausa el prompter para dejar de seguir la voz (espacio).',
+    speedDisabledByFollowVoice: 'Velocidad desactivada mientras se sigue la voz',
     shortcutsMenu:
       'T: editar texto\n' +
       'R: grabar/detener grabación\n' +
@@ -378,6 +381,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
     speedTooltipPlayToStart: 'プロンプターを再生すると音声追従が始まります（スペース）。',
     speedTooltipPauseToStop: 'プロンプターを一時停止すると音声追従が止まります（スペース）。',
+    speedDisabledByFollowVoice: '音声追従中は速度が無効です',
     shortcutsMenu:
       'T: テキストを編集\n' +
       'R: 録画/録画停止\n' +
@@ -478,6 +482,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
     speedTooltipPlayToStart: 'आवाज़ का पालन शुरू करने के लिए प्रॉम्प्टर चलाएँ (स्पेस)।',
     speedTooltipPauseToStop: 'आवाज़ का पालन रोकने के लिए प्रॉम्प्टर रोकें (स्पेस)।',
+    speedDisabledByFollowVoice: 'आवाज़ का पालन करते समय गति अक्षम है',
     shortcutsMenu:
       'T: टेक्स्ट संपादित करें\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
@@ -578,6 +583,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
     speedTooltipPlayToStart: 'Lancez le prompter pour commencer à suivre la voix (Espace).',
     speedTooltipPauseToStop: 'Mettez le prompter en pause pour arrêter de suivre la voix (Espace).',
+    speedDisabledByFollowVoice: 'Vitesse désactivée lors du suivi de la voix',
     shortcutsMenu:
       'T : éditer le texte du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
@@ -678,6 +684,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
     speedTooltipPlayToStart: 'Teleprompter abspielen, um der Stimme zu folgen (Leertaste).',
     speedTooltipPauseToStop: 'Teleprompter pausieren, um die Stimmverfolgung zu stoppen (Leertaste).',
+    speedDisabledByFollowVoice: 'Geschwindigkeit deaktiviert während Stimmverfolgung',
     shortcutsMenu:
       'T: Text bearbeiten\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
@@ -778,6 +785,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: '此浏览器不支持语音识别',
     speedTooltipPlayToStart: '播放提示器以开始语音跟随（空格）。',
     speedTooltipPauseToStop: '暂停提示器以停止语音跟随（空格）。',
+    speedDisabledByFollowVoice: '跟随语音时速度已禁用',
     shortcutsMenu:
       'T：编辑文本\n' +
       'R：录制/停止录制\n' +
@@ -878,6 +886,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
     speedTooltipPlayToStart: 'شغّل الملقن لبدء متابعة الصوت (مسافة).',
     speedTooltipPauseToStop: 'أوقف الملقن مؤقتاً لإيقاف متابعة الصوت (مسافة).',
+    speedDisabledByFollowVoice: 'السرعة معطلة أثناء متابعة الصوت',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
@@ -976,6 +985,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
     speedTooltipPlayToStart: 'Reproduza o teleprompter para começar a seguir a voz (Espaço).',
     speedTooltipPauseToStop: 'Pause o teleprompter para parar de seguir a voz (Espaço).',
+    speedDisabledByFollowVoice: 'Velocidade desativada ao seguir a voz',
     shortcutsMenu:
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
@@ -1075,6 +1085,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
     speedTooltipPlayToStart: 'Запустите телесуфлёр, чтобы начать следовать за голосом (Пробел).',
     speedTooltipPauseToStop: 'Поставьте телесуфлёр на паузу, чтобы перестать следовать за голосом (Пробел).',
+    speedDisabledByFollowVoice: 'Скорость отключена при следовании за голосом',
     shortcutsMenu:
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
@@ -1174,6 +1185,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
     speedTooltipPlayToStart: 'Odtwórz prompter, aby zacząć podążać za głosem (Spacja).',
     speedTooltipPauseToStop: 'Wstrzymaj prompter, aby przestać podążać za głosem (Spacja).',
+    speedDisabledByFollowVoice: 'Prędkość wyłączona podczas podążania za głosem',
     shortcutsMenu:
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +

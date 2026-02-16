@@ -775,7 +775,7 @@ function ControlsBarPortal({
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
                   disabled={followVoice}
-                  disabledTooltip={!isPip ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : undefined}
+                  disabledTooltip={!isPip && followVoice ? strings.speedDisabledByFollowVoice : undefined}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
