@@ -770,7 +770,7 @@ function ControlsBarPortal({
                   title={strings.speed}
                   value={speed}
                   min={20}
-                  max={180}
+                  max={40}
                   step={1}
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
@@ -1573,16 +1573,18 @@ export function FloatingPrompter(props: Props) {
 
       if (contentHeight <= scrollerHeight) {
         // Content fits in viewport, hide scrollbar
-        scrollbar.style.display = 'none'
+        scrollbar.style.visibility = 'hidden'
         return
       }
 
-      scrollbar.style.display = 'block'
+      scrollbar.style.visibility = 'visible'
 
       // Calculate scrollbar thumb dimensions
-      const scrollbarHeight = scrollerHeight
-      const thumbHeight = Math.max(20, (scrollerHeight / contentHeight) * scrollbarHeight)
-      const thumbPosition = (virtualScrollYRef.current / maxScroll) * (scrollbarHeight - thumbHeight)
+      // Available height is scroller height minus the content padding-top
+      const contentPaddingTop = fixedToTop ? 8 : 24
+      const scrollbarTrackHeight = scrollerHeight - contentPaddingTop
+      const thumbHeight = Math.max(16, (scrollerHeight / contentHeight) * scrollbarTrackHeight)
+      const thumbPosition = (virtualScrollYRef.current / maxScroll) * (scrollbarTrackHeight - thumbHeight)
 
       scrollbar.style.height = `${thumbHeight}px`
       scrollbar.style.transform = `translateY(${thumbPosition}px)`
@@ -1599,7 +1601,7 @@ export function FloatingPrompter(props: Props) {
     rafId = requestAnimationFrame(loop)
 
     return () => cancelAnimationFrame(rafId)
-  }, [open])
+  }, [open, isPip])
 
   const drag = usePointerDrag({
     enabled: open,
@@ -1730,6 +1732,17 @@ export function FloatingPrompter(props: Props) {
     }
     wasOpenRef.current = open
   }, [open, tooltip, onControlsOpenChange])
+
+  // Sync virtual scroll position when switching PiP mode
+  useEffect(() => {
+    if (open) {
+      virtualScrollYRef.current = savedScrollTopRef.current
+      const content = contentRef.current
+      if (content) {
+        content.style.transform = `translateY(-${savedScrollTopRef.current}px)`
+      }
+    }
+  }, [isPip, open])
 
   useEffect(() => {
     if (fixedToTop && frame.y !== 0) {
@@ -2051,10 +2064,12 @@ export function FloatingPrompter(props: Props) {
               {/* Custom scrollbar */}
               <div
                 ref={scrollbarRef}
-                className="absolute right-0 top-0 w-1.5 bg-white/20 rounded-full transition-opacity duration-200 hover:bg-white/40"
+                className="absolute right-1 w-1 bg-white/30 rounded-full transition-colors duration-200 hover:bg-white/50"
                 style={{
-                  opacity: open ? 1 : 0,
-                  pointerEvents: 'none'
+                  top: `${fixedToTop ? 8 : 24}px`,
+                  zIndex: 40,
+                  pointerEvents: 'none',
+                  visibility: 'visible'
                 }}
               />
             </div>
