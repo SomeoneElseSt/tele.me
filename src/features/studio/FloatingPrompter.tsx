@@ -770,7 +770,7 @@ function ControlsBarPortal({
                   title={strings.speed}
                   value={speed}
                   min={20}
-                  max={40}
+                  max={60}
                   step={1}
                   formatValue={(v) => `${Math.round(v)}`}
                   onChange={onSpeedChange}
@@ -1899,45 +1899,60 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice)} shortcut="V">
+                <Tooltip enabled={!isPip} label={speechRecognition.unsupported ? strings.speechRecognitionNotSupportedBrowser : (!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice))} shortcut="V">
                   <button
                     type="button"
-                    onClick={() => onFollowVoiceChange(!followVoice)}
+                    onClick={() => !speechRecognition.unsupported && onFollowVoiceChange(!followVoice)}
                     aria-label={strings.followVoice}
                     onPointerDown={(e) => e.stopPropagation()}
-                    disabled={!speechRecognition.supported}
+                    disabled={!speechRecognition.supported || speechRecognition.unsupported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white'),
-                      !speechRecognition.supported && 'opacity-40 cursor-not-allowed'
+                      followVoice && !speechRecognition.unsupported && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white'),
+                      (!speechRecognition.supported || speechRecognition.unsupported) && 'opacity-40 cursor-not-allowed'
                     )}
                   >
                     <div className="relative">
-                      <Speech className="h-4 w-4" />
-                      {speechRecognition.error && (
-                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                      {speechRecognition.unsupported ? (
+                        <div className="relative">
+                          <Speech className="h-4 w-4" />
+                          <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-white">
+                            <X className="h-1.5 w-1.5" strokeWidth={3} />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <Speech className="h-4 w-4" />
+                          {speechRecognition.error && (
+                            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                          )}
+                        </>
                       )}
-                      <div
-                        className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
-                          followVoice && speechRecognition.active
-                            ? 'bg-emerald-500 scale-100 opacity-100'
-                            : 'scale-0 opacity-0'
-                        )}
-                      >
-                        <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
-                      </div>
-                      <div
-                        className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
-                          followVoice && !speechRecognition.active
-                            ? 'scale-100 opacity-100'
-                            : 'scale-0 opacity-0'
-                        )}
-                      >
-                        <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                      </div>
+                      {!speechRecognition.unsupported && (
+                        <>
+                          <div
+                            className={cn(
+                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
+                              followVoice && speechRecognition.active
+                                ? 'bg-emerald-500 scale-100 opacity-100'
+                                : 'scale-0 opacity-0'
+                            )}
+                          >
+                            <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
+                          </div>
+                          <div
+                            className={cn(
+                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
+                              followVoice && !speechRecognition.active
+                                ? 'scale-100 opacity-100'
+                                : 'scale-0 opacity-0'
+                            )}
+                          >
+                            <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
+                          </div>
+                        </>
+                      )}
                     </div>
                   </button>
                 </Tooltip>
@@ -2231,45 +2246,60 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice)} shortcut="V">
+                <Tooltip enabled={!isPip} label={speechRecognition.unsupported ? strings.speechRecognitionNotSupportedBrowser : (!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice))} shortcut="V">
                   <button
                     type="button"
-                    onClick={() => onFollowVoiceChange(!followVoice)}
+                    onClick={() => !speechRecognition.unsupported && onFollowVoiceChange(!followVoice)}
                     aria-label={strings.followVoice}
                     onPointerDown={(e) => e.stopPropagation()}
-                    disabled={!speechRecognition.supported}
+                    disabled={!speechRecognition.supported || speechRecognition.unsupported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && 'border-white/18 bg-white/10 text-white',
-                      !speechRecognition.supported && 'opacity-40 cursor-not-allowed'
+                      followVoice && !speechRecognition.unsupported && 'border-white/18 bg-white/10 text-white',
+                      (!speechRecognition.supported || speechRecognition.unsupported) && 'opacity-40 cursor-not-allowed'
                     )}
                   >
                     <div className="relative">
-                      <Speech className="h-4 w-4" />
-                      {speechRecognition.error && (
-                        <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                      {speechRecognition.unsupported ? (
+                        <div className="relative">
+                          <Speech className="h-4 w-4" />
+                          <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-white">
+                            <X className="h-1.5 w-1.5" strokeWidth={3} />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <Speech className="h-4 w-4" />
+                          {speechRecognition.error && (
+                            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
+                          )}
+                        </>
                       )}
-                      <div
-                        className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
-                          followVoice && speechRecognition.active
-                            ? 'bg-emerald-500 scale-100 opacity-100'
-                            : 'scale-0 opacity-0'
-                        )}
-                      >
-                        <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
-                      </div>
-                      <div
-                        className={cn(
-                          'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
-                          followVoice && !speechRecognition.active
-                            ? 'scale-100 opacity-100'
-                            : 'scale-0 opacity-0'
-                        )}
-                      >
-                        <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                      </div>
+                      {!speechRecognition.unsupported && (
+                        <>
+                          <div
+                            className={cn(
+                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
+                              followVoice && speechRecognition.active
+                                ? 'bg-emerald-500 scale-100 opacity-100'
+                                : 'scale-0 opacity-0'
+                            )}
+                          >
+                            <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
+                          </div>
+                          <div
+                            className={cn(
+                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
+                              followVoice && !speechRecognition.active
+                                ? 'scale-100 opacity-100'
+                                : 'scale-0 opacity-0'
+                            )}
+                          >
+                            <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
+                          </div>
+                        </>
+                      )}
                     </div>
                   </button>
                 </Tooltip>

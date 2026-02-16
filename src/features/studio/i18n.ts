@@ -86,6 +86,7 @@ type Strings = {
   followVoice: string
   followVoiceEnabled: string
   speechRecognitionNotSupported: string
+  speechRecognitionNotSupportedBrowser: string
   speedTooltipPlayToStart: string
   speedTooltipPauseToStop: string
   speedDisabledByFollowVoice: string
@@ -177,6 +178,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Follow Voice',
     followVoiceEnabled: 'Following Voice (speed disabled)',
     speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
+    speechRecognitionNotSupportedBrowser: 'Speech recognition not supported in this browser. Try using Chrome for better compatibility.',
     speedTooltipPlayToStart: 'Play prompter to start following voice (space)',
     speedTooltipPauseToStop: 'Pause prompter to stop following voice (space)',
     speedDisabledByFollowVoice: 'Speed disabled while following voice',
@@ -278,6 +280,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Siguiendo Voz (velocidad desactivada)',
     speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
+    speechRecognitionNotSupportedBrowser: 'Reconocimiento de voz no compatible con este navegador. Intenta usar Chrome para una mejor compatibilidad.',
     speedTooltipPlayToStart: 'Reproduce el prompter para empezar a seguir la voz (espacio).',
     speedTooltipPauseToStop: 'Pausa el prompter para dejar de seguir la voz (espacio).',
     speedDisabledByFollowVoice: 'Velocidad desactivada mientras se sigue la voz',
@@ -379,6 +382,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '音声を追従',
     followVoiceEnabled: '音声追従中（速度無効）',
     speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
+    speechRecognitionNotSupportedBrowser: 'このブラウザでは音声認識がサポートされていません。互換性を高めるためにChromeを使用してください。',
     speedTooltipPlayToStart: 'プロンプターを再生すると音声追従が始まります（スペース）。',
     speedTooltipPauseToStop: 'プロンプターを一時停止すると音声追従が止まります（スペース）。',
     speedDisabledByFollowVoice: '音声追従中は速度が無効です',
@@ -480,6 +484,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'आवाज़ का पालन करें',
     followVoiceEnabled: 'आवाज़ का पालन (गति अक्षम)',
     speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
+    speechRecognitionNotSupportedBrowser: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     speedTooltipPlayToStart: 'आवाज़ का पालन शुरू करने के लिए प्रॉम्प्टर चलाएँ (स्पेस)।',
     speedTooltipPauseToStop: 'आवाज़ का पालन रोकने के लिए प्रॉम्प्टर रोकें (स्पेस)।',
     speedDisabledByFollowVoice: 'आवाज़ का पालन करते समय गति अक्षम है',
@@ -581,6 +586,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Suivre la Voix',
     followVoiceEnabled: 'Suivi de la Voix (vitesse désactivée)',
     speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
+    speechRecognitionNotSupportedBrowser: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur. Essayez d\'utiliser Chrome pour une meilleure compatibilité.',
     speedTooltipPlayToStart: 'Lancez le prompter pour commencer à suivre la voix (Espace).',
     speedTooltipPauseToStop: 'Mettez le prompter en pause pour arrêter de suivre la voix (Espace).',
     speedDisabledByFollowVoice: 'Vitesse désactivée lors du suivi de la voix',
@@ -682,6 +688,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Stimme Folgen',
     followVoiceEnabled: 'Stimmverfolgung (Geschwindigkeit deaktiviert)',
     speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
+    speechRecognitionNotSupportedBrowser: 'Spracherkennung wird in diesem Browser nicht unterstützt. Verwenden Sie Chrome für bessere Kompatibilität.',
     speedTooltipPlayToStart: 'Teleprompter abspielen, um der Stimme zu folgen (Leertaste).',
     speedTooltipPauseToStop: 'Teleprompter pausieren, um die Stimmverfolgung zu stoppen (Leertaste).',
     speedDisabledByFollowVoice: 'Geschwindigkeit deaktiviert während Stimmverfolgung',
@@ -783,6 +790,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: '语音跟随',
     followVoiceEnabled: '语音跟随中（速度已禁用）',
     speechRecognitionNotSupported: '此浏览器不支持语音识别',
+    speechRecognitionNotSupportedBrowser: '此浏览器不支持语音识别。请尝试使用 Chrome 以获得更好的兼容性。',
     speedTooltipPlayToStart: '播放提示器以开始语音跟随（空格）。',
     speedTooltipPauseToStop: '暂停提示器以停止语音跟随（空格）。',
     speedDisabledByFollowVoice: '跟随语音时速度已禁用',
@@ -884,6 +892,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'متابعة الصوت',
     followVoiceEnabled: 'متابعة الصوت (السرعة معطلة)',
     speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
+    speechRecognitionNotSupportedBrowser: 'التعرف على الصوت غير مدعوم في هذا المتصفح. حاول استخدام Chrome لتوافق أفضل.',
     speedTooltipPlayToStart: 'شغّل الملقن لبدء متابعة الصوت (مسافة).',
     speedTooltipPauseToStop: 'أوقف الملقن مؤقتاً لإيقاف متابعة الصوت (مسافة).',
     speedDisabledByFollowVoice: 'السرعة معطلة أثناء متابعة الصوت',
@@ -983,6 +992,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Seguir Voz',
     followVoiceEnabled: 'Seguindo Voz (velocidade desativada)',
     speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
+    speechRecognitionNotSupportedBrowser: 'Reconhecimento de voz não suportado neste navegador. Tente usar Chrome para melhor compatibilidade.',
     speedTooltipPlayToStart: 'Reproduza o teleprompter para começar a seguir a voz (Espaço).',
     speedTooltipPauseToStop: 'Pause o teleprompter para parar de seguir a voz (Espaço).',
     speedDisabledByFollowVoice: 'Velocidade desativada ao seguir a voz',
@@ -1083,6 +1093,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Следовать за Голосом',
     followVoiceEnabled: 'Следование за Голосом (скорость откл.)',
     speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
+    speechRecognitionNotSupportedBrowser: 'Распознавание речи не поддерживается в этом браузере. Попробуйте использовать Chrome для лучшей совместимости.',
     speedTooltipPlayToStart: 'Запустите телесуфлёр, чтобы начать следовать за голосом (Пробел).',
     speedTooltipPauseToStop: 'Поставьте телесуфлёр на паузу, чтобы перестать следовать за голосом (Пробел).',
     speedDisabledByFollowVoice: 'Скорость отключена при следовании за голосом',
@@ -1183,6 +1194,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     followVoice: 'Podążaj za Głosem',
     followVoiceEnabled: 'Śledzenie Głosu (prędkość wyłączona)',
     speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
+    speechRecognitionNotSupportedBrowser: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce. Spróbuj użyć Chrome dla lepszej kompatybilności.',
     speedTooltipPlayToStart: 'Odtwórz prompter, aby zacząć podążać za głosem (Spacja).',
     speedTooltipPauseToStop: 'Wstrzymaj prompter, aby przestać podążać za głosem (Spacja).',
     speedDisabledByFollowVoice: 'Prędkość wyłączona podczas podążania za głosem',

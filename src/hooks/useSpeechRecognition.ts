@@ -33,6 +33,7 @@ type UseSpeechRecognitionReturn = {
   supported: boolean
   active: boolean
   error: string | undefined
+  unsupported: boolean
   start: () => void
   stop: () => void
 }
@@ -46,6 +47,7 @@ export function useSpeechRecognition({
   const [supported, setSupported] = useState(false)
   const [active, setActive] = useState(false)
   const [error, setError] = useState<string | undefined>(undefined)
+  const [unsupported, setUnsupported] = useState(false)
 
   const recognitionRef = useRef<any>(null)
   const enabledRef = useRef(enabled)
@@ -54,10 +56,61 @@ export function useSpeechRecognition({
   const retryTimeoutRef = useRef<number | null>(null)
   const hasReceivedSpeechRef = useRef(false)
 
-  // Check browser support
+  // Check browser support and test instantiation
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    setSupported(Boolean(SpeechRecognition))
+
+    if (!SpeechRecognition) {
+      setSupported(false)
+      setUnsupported(true)
+      return
+    }
+
+    // Try to actually start it to verify it works (triggers network call)
+    let test: any = null
+    let abortTimeout: number | null = null
+
+    try {
+      test = new SpeechRecognition()
+
+      // Configure the same way as real usage to trigger same errors
+      test.continuous = true
+      test.interimResults = true
+      test.lang = 'en-US'
+
+      test.onerror = (event: any) => {
+        console.log('[ASR] Early check error:', event.error)
+        const persistentErrors = ['network', 'service-not-available', 'bad-grammar', 'not-allowed']
+        if (persistentErrors.includes(event.error)) {
+          setUnsupported(true)
+          setError(`Speech recognition error: ${event.error}`)
+          if (abortTimeout) clearTimeout(abortTimeout)
+          try { test.abort() } catch {}
+        }
+      }
+
+      test.onstart = () => {
+        // Wait 3000ms to see if network error occurs before considering it successful
+        abortTimeout = window.setTimeout(() => {
+          try { test.abort() } catch {}
+        }, 3000)
+      }
+
+      test.start()
+      setSupported(true)
+    } catch (err) {
+      setSupported(false)
+      setUnsupported(true)
+      setError('Speech recognition not available')
+    }
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (abortTimeout) clearTimeout(abortTimeout)
+      if (test) {
+        try { test.abort() } catch {}
+      }
+    }
   }, [])
 
   const cleanup = useCallback(() => {
@@ -139,8 +192,19 @@ export function useSpeechRecognition({
         return
       }
 
-      console.log('[ASR] Setting error state:', errorMsg)
+      // Detect persistent unsupported errors
+      const persistentErrors = ['network', 'service-not-available', 'bad-grammar', 'not-allowed']
+      const isPersistentError = persistentErrors.includes(event.error)
+
+      console.log('[ASR] Setting error state:', errorMsg, 'persistent:', isPersistentError)
       setError(errorMsg)
+
+      if (isPersistentError) {
+        setUnsupported(true)
+        onError?.(errorMsg)
+        return
+      }
+
       onError?.(errorMsg)
 
       // Retry with exponential backoff
@@ -222,6 +286,7 @@ export function useSpeechRecognition({
     supported,
     active,
     error,
+    unsupported,
     start,
     stop
   }
