@@ -1031,8 +1031,10 @@ export function FloatingPrompter(props: Props) {
   }, [isPip, onTogglePlaying, onClose, togglePip, markdownEnabled, props.onMarkdownEnabledChange])
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
+  const contentRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
   const savedScrollTopRef = useRef<number>(0)
+  const virtualScrollYRef = useRef<number>(0)
   const [isEditing, setIsEditing] = useState(false)
   const cursorPositionRef = useRef<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -1106,14 +1108,15 @@ export function FloatingPrompter(props: Props) {
   const scrollToLine = useCallback((firstWordIdx: number) => {
     // Use RAF to ensure DOM has updated before scrolling
     requestAnimationFrame(() => {
-      const el = scrollerRef.current
+      const scroller = scrollerRef.current
+      const content = contentRef.current
       console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
-      if (!el) {
-        console.log('[Scroll] No scroller element')
+      if (!scroller || !content) {
+        console.log('[Scroll] No scroller/content element')
         return
       }
 
-      const doc = el.ownerDocument
+      const doc = scroller.ownerDocument
       const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
       if (!wordSpan) {
         console.log('[Scroll] Word span not found for index:', firstWordIdx)
@@ -1121,20 +1124,24 @@ export function FloatingPrompter(props: Props) {
       }
 
       const wordRect = wordSpan.getBoundingClientRect()
-      const containerRect = el.getBoundingClientRect()
+      const containerRect = scroller.getBoundingClientRect()
       const lineHeight = fontSize * 1.35
 
       console.log('[Scroll] wordRect.top:', wordRect.top, 'containerRect.top:', containerRect.top)
-      console.log('[Scroll] containerRect.height:', containerRect.height, 'el.scrollTop:', el.scrollTop)
+      console.log('[Scroll] containerRect.height:', containerRect.height, 'virtualScrollY:', virtualScrollYRef.current)
 
-      const targetScrollTop = el.scrollTop + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+      // Calculate target scroll position (getBoundingClientRect accounts for transform)
+      const targetScrollY = virtualScrollYRef.current + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
 
       // Clamp to valid range
-      const maxScroll = el.scrollHeight - el.clientHeight
-      const clampedScrollTop = Math.max(0, Math.min(targetScrollTop, maxScroll))
+      const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+      const clampedScrollY = Math.max(0, Math.min(targetScrollY, maxScroll))
 
-      console.log('[Scroll] targetScrollTop:', targetScrollTop, 'clamped:', clampedScrollTop, 'max:', maxScroll)
-      el.scrollTo({ top: clampedScrollTop, behavior: 'smooth' })
+      console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
+
+      // Update virtual scroll and apply transform
+      virtualScrollYRef.current = clampedScrollY
+      content.style.transform = `translateY(-${clampedScrollY}px)`
     })
   }, [fontSize])
 
@@ -1504,18 +1511,52 @@ export function FloatingPrompter(props: Props) {
   // Disable RAF auto-scroll when followVoice is active
   useRafLoop(
     (deltaMs) => {
-      const el = scrollerRef.current
+      const scroller = scrollerRef.current
+      const content = contentRef.current
       if (!open) return
       if (!playing) return
-      if (!el) return
+      if (!scroller || !content) return
       if (followVoice) return
 
-      const effectiveSpeed = Math.max(31, speed)
-      const deltaPx = (effectiveSpeed * deltaMs) / 1000
-      el.scrollTop = el.scrollTop + deltaPx
+      // Calculate pixel delta (no minimum speed clamp)
+      const deltaPx = (speed * deltaMs) / 1000
+
+      // Update virtual scroll position
+      virtualScrollYRef.current += deltaPx
+
+      // Clamp to valid range
+      const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+      virtualScrollYRef.current = Math.max(0, Math.min(virtualScrollYRef.current, maxScroll))
+
+      // Apply transform to content
+      content.style.transform = `translateY(-${virtualScrollYRef.current}px)`
     },
     open && playing
   )
+
+  // Handle manual wheel scrolling
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    const content = contentRef.current
+    if (!scroller || !content || !open) return
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault()
+
+      // Update virtual scroll position based on wheel delta
+      virtualScrollYRef.current += e.deltaY
+
+      // Clamp to valid range
+      const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+      virtualScrollYRef.current = Math.max(0, Math.min(virtualScrollYRef.current, maxScroll))
+
+      // Apply transform
+      content.style.transform = `translateY(-${virtualScrollYRef.current}px)`
+    }
+
+    scroller.addEventListener('wheel', handleWheel, { passive: false })
+    return () => scroller.removeEventListener('wheel', handleWheel)
+  }, [open, playing])
 
   const drag = usePointerDrag({
     enabled: open,
@@ -1627,22 +1668,20 @@ export function FloatingPrompter(props: Props) {
 
   useEffect(() => {
     if (wasOpenRef.current && !open) {
-      // Save scroll position when hiding
-      const el = scrollerRef.current
-      if (el) {
-        savedScrollTopRef.current = el.scrollTop
-      }
+      // Save virtual scroll position when hiding
+      savedScrollTopRef.current = virtualScrollYRef.current
       tooltip.clear()
       setResizing(false)
       setQuickOpen(false)
       onControlsOpenChange?.(false)
     } else if (!wasOpenRef.current && open) {
-      // Restore scroll position when showing
-      const el = scrollerRef.current
-      if (el) {
+      // Restore virtual scroll position when showing
+      const content = contentRef.current
+      if (content) {
         // Use requestAnimationFrame to ensure DOM is ready
         requestAnimationFrame(() => {
-          el.scrollTop = savedScrollTopRef.current
+          virtualScrollYRef.current = savedScrollTopRef.current
+          content.style.transform = `translateY(-${savedScrollTopRef.current}px)`
         })
       }
     }
@@ -1849,17 +1888,20 @@ export function FloatingPrompter(props: Props) {
           <div className="relative flex-1">
             <div
               ref={scrollerRef}
-              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-y-auto select-none')}
+              className={cn('tele-scroll absolute left-0 top-0 right-0 z-10 overflow-hidden select-none')}
               style={{ bottom: isPip ? 0 : (fixedToTop ? PROMPTER_HEADER_HEIGHT_PX : SCROLLBAR_BOTTOM_GUTTER_PX) }}
             >
               <div
+                ref={contentRef}
                 className="grid px-6 text-white/92 select-none transition-[padding] duration-500 ease-in-out"
                 style={{
                   textAlign,
                   paddingTop: fixedToTop ? 8 : 24,
                   // Maintain consistent padding to prevent scroll jumps when toggling play/edit
                   paddingBottom: frame.height * 0.7,
-                  minHeight: '100%'
+                  minHeight: '100%',
+                  willChange: 'transform',
+                  transform: 'translateY(0px)' // Initial transform
                 }}
                 onClick={() => {
                   setIsEditing(true)
