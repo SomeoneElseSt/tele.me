@@ -2049,7 +2049,12 @@ export function FloatingPrompter(props: Props) {
                         'col-start-1 row-start-1 invisible whitespace-pre-wrap font-medium leading-[1.35] tracking-[-0.02em] pointer-events-none',
                         !markdownEnabled && 'font-mono'
                       )}
-                      style={{ fontSize, fontFamily: markdownEnabled ? 'inherit' : 'monospace' }}
+                      style={{
+                        fontSize,
+                        fontFamily: markdownEnabled ? 'inherit' : 'monospace',
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
+                      }}
                     >
                       {script + '\n\n\n'}
                     </div>
@@ -2063,7 +2068,9 @@ export function FloatingPrompter(props: Props) {
                         fontFamily: markdownEnabled ? 'inherit' : 'monospace',
                         lineHeight: '1.35',
                         letterSpacing: '-0.02em',
-                        fontWeight: 500
+                        fontWeight: 500,
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
                       }}
                       value={script}
                       onChange={(e) => onScriptChange(e.target.value)}
