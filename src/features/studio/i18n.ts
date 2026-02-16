@@ -83,13 +83,10 @@ type Strings = {
   popOutOnlyChrome: string
   allowCameraAccess: string
   braveBlockedMessage: string
-  followVoice: string
-  followVoiceEnabled: string
-  speechRecognitionNotSupported: string
-  speechRecognitionNotSupportedBrowser: string
-  speedTooltipPlayToStart: string
-  speedTooltipPauseToStop: string
-  speedDisabledByFollowVoice: string
+  autoScrolling: string
+  autoScrollEnabled: string
+  autoScrollSpeed: string
+  autoScrollSpeedTooltip: string
   shortcutsMenu: string
   shortcutsTitle: string
   speakingTime: string
@@ -109,7 +106,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: hide/show prompter\n' +
       'I: control inputs\n' +
       'M: enable markdown\n' +
-      'V: Follow Voice\n' +
+      'V: Auto-scrolling\n' +
       'F: fullscreen',
     language: 'Language',
     script: 'Script',
@@ -175,13 +172,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Pop out mode is not possible on Safari. Use Chrome for better compatibility.',
     allowCameraAccess: 'Allow camera access',
     braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.',
-    followVoice: 'Follow Voice',
-    followVoiceEnabled: 'Following Voice (speed disabled)',
-    speechRecognitionNotSupported: 'Speech recognition not supported in this browser',
-    speechRecognitionNotSupportedBrowser: 'Speech recognition not supported in this browser. Try using Chrome for better compatibility.',
-    speedTooltipPlayToStart: 'Play prompter to start following voice (space)',
-    speedTooltipPauseToStop: 'Pause prompter to stop following voice (space)',
-    speedDisabledByFollowVoice: 'Speed disabled while following voice',
+    autoScrolling: 'Auto-scrolling',
+    autoScrollEnabled: 'Auto-scrolling active',
+    autoScrollSpeed: 'Auto-scroll speed',
+    autoScrollSpeedTooltip: 'Words per minute when auto-scrolling',
     shortcutsMenu:
       'T: edit text\n' +
       'R: record/stop recording\n' +
@@ -193,7 +187,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: hide/show prompter\n' +
       'I: control inputs\n' +
       'M: enable markdown\n' +
-      'V: follow voice\n' +
+      'V: auto-scrolling\n' +
       'F: fullscreen',
     shortcutsTitle: 'Shortcuts',
     speakingTime: 'Speaking Time',
@@ -211,7 +205,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: ocultar/mostrar teleprompter\n' +
       'I: controlar entradas\n' +
       'M: habilitar markdown\n' +
-      'V: Seguir Voz\n' +
+      'V: Desplazamiento automático\n' +
       'F: pantalla completa',
     language: 'Idioma',
     script: 'Guion',
@@ -277,13 +271,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'El modo de ventana emergente no es posible en Safari. Usa Chrome para una mejor compatibilidad.',
     allowCameraAccess: 'Permitir acceso a la cámara',
     braveBlockedMessage: 'Brave bloqueó el acceso a la cámara. Haz clic en el icono de Shields o en el icono del candado en la barra de direcciones para restablecer los permisos y desactivar la protección contra huellas digitales para este sitio. Usa Chrome para una mejor compatibilidad.',
-    followVoice: 'Seguir Voz',
-    followVoiceEnabled: 'Siguiendo Voz (velocidad desactivada)',
-    speechRecognitionNotSupported: 'Reconocimiento de voz no compatible con este navegador',
-    speechRecognitionNotSupportedBrowser: 'Reconocimiento de voz no compatible con este navegador. Intenta usar Chrome para una mejor compatibilidad.',
-    speedTooltipPlayToStart: 'Reproduce el prompter para empezar a seguir la voz (espacio).',
-    speedTooltipPauseToStop: 'Pausa el prompter para dejar de seguir la voz (espacio).',
-    speedDisabledByFollowVoice: 'Velocidad desactivada mientras se sigue la voz',
+    autoScrolling: 'Desplazamiento automático',
+    autoScrollEnabled: 'Desplazamiento automático activo',
+    autoScrollSpeed: 'Velocidad de desplazamiento automático',
+    autoScrollSpeedTooltip: 'Palabras por minuto en desplazamiento automático',
     shortcutsMenu:
       'T: editar texto\n' +
       'R: grabar/detener grabación\n' +
@@ -295,7 +286,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: ocultar/mostrar teleprompter\n' +
       'I: controlar entradas\n' +
       'M: habilitar markdown\n' +
-      'V: seguir voz\n' +
+      'V: desplazamiento automático\n' +
       'F: pantalla completa',
     shortcutsTitle: 'Atajos',
     speakingTime: 'Tiempo de habla',
@@ -313,7 +304,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: プロンプター表示/非表示\n' +
       'I: 入力設定\n' +
       'M: Markdown を有効化\n' +
-      'V: 音声を追従\n' +
+      'V: 自動スクロール\n' +
       'F: 全画面表示',
     language: '言語',
     script: 'スクリプト',
@@ -379,13 +370,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safariではポップアウトモードは利用できません。互換性を高めるためにChromeを使用してください。',
     allowCameraAccess: 'カメラへのアクセスを許可',
     braveBlockedMessage: 'Braveがカメラへのアクセスをブロックしました。アドレスバーのShieldsアイコンまたは鍵アイコンをクリックして権限をリセットし、このサイトのフィンガープリント保護を無効にしてください。互換性を高めるためにChromeを使用してください。',
-    followVoice: '音声を追従',
-    followVoiceEnabled: '音声追従中（速度無効）',
-    speechRecognitionNotSupported: 'このブラウザでは音声認識がサポートされていません',
-    speechRecognitionNotSupportedBrowser: 'このブラウザでは音声認識がサポートされていません。互換性を高めるためにChromeを使用してください。',
-    speedTooltipPlayToStart: 'プロンプターを再生すると音声追従が始まります（スペース）。',
-    speedTooltipPauseToStop: 'プロンプターを一時停止すると音声追従が止まります（スペース）。',
-    speedDisabledByFollowVoice: '音声追従中は速度が無効です',
+    autoScrolling: '自動スクロール',
+    autoScrollEnabled: '自動スクロール有効',
+    autoScrollSpeed: '自動スクロール速度',
+    autoScrollSpeedTooltip: '自動スクロール時の単語毎分数',
     shortcutsMenu:
       'T: テキストを編集\n' +
       'R: 録画/録画停止\n' +
@@ -397,7 +385,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: プロンプター表示/非表示\n' +
       'I: 入力設定\n' +
       'M: Markdown を有効化\n' +
-      'V: 音声を追従\n' +
+      'V: 自動スクロール\n' +
       'F: 全画面表示',
     shortcutsTitle: 'ショートカット',
     speakingTime: '発話時間',
@@ -415,7 +403,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: टेलीप्रॉम्प्टर दिखाएँ/छिपाएँ\n' +
       'I: इनपुट नियंत्रित करें\n' +
       'M: Markdown सक्षम करें\n' +
-      'V: आवाज़ का पालन करें\n' +
+      'V: स्वचालित स्क्रॉलिंग\n' +
       'F: फ़ुलस्क्रीन',
     language: 'भाषा',
     script: 'स्क्रिप्ट',
@@ -481,13 +469,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari पर पॉप आउट मोड संभव नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     allowCameraAccess: 'कैमरा एक्सेस की अनुमति दें',
     braveBlockedMessage: 'Brave ने कैमरा एक्सेस को ब्लॉक कर दिया है। अनुमतियों को रीसेट करने और इस साइट के लिए फ़िंगरप्रिंटिंग सुरक्षा को अक्षम करने के लिए एड्रेस बार में शील्ड्स आइकन या लॉक आइकन पर क्लिक करें। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
-    followVoice: 'आवाज़ का पालन करें',
-    followVoiceEnabled: 'आवाज़ का पालन (गति अक्षम)',
-    speechRecognitionNotSupported: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है',
-    speechRecognitionNotSupportedBrowser: 'इस ब्राउज़र में वॉइस रिकग्निशन समर्थित नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
-    speedTooltipPlayToStart: 'आवाज़ का पालन शुरू करने के लिए प्रॉम्प्टर चलाएँ (स्पेस)।',
-    speedTooltipPauseToStop: 'आवाज़ का पालन रोकने के लिए प्रॉम्प्टर रोकें (स्पेस)।',
-    speedDisabledByFollowVoice: 'आवाज़ का पालन करते समय गति अक्षम है',
+    autoScrolling: 'स्वचालित स्क्रॉलिंग',
+    autoScrollEnabled: 'स्वचालित स्क्रॉलिंग सक्रिय',
+    autoScrollSpeed: 'स्वचालित स्क्रॉल गति',
+    autoScrollSpeedTooltip: 'स्वचालित स्क्रॉलिंग के दौरान शब्द प्रति मिनट',
     shortcutsMenu:
       'T: टेक्स्ट संपादित करें\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
@@ -499,7 +484,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: टेलीप्रॉम्प्टर दिखाएँ/छिपाएँ\n' +
       'I: इनपुट नियंत्रित करें\n' +
       'M: Markdown सक्षम करें\n' +
-      'V: आवाज़ का पालन करें\n' +
+      'V: स्वचालित स्क्रॉलिंग\n' +
       'F: फ़ुलस्क्रीन',
     shortcutsTitle: 'शॉर्टकट',
     speakingTime: 'बोलने का समय',
@@ -583,13 +568,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Le mode fenêtre surgissante n’est pas possible sur Safari. Utilisez Chrome pour une meilleure compatibilité.',
     allowCameraAccess: "Autoriser l'accès à la caméra",
     braveBlockedMessage: "Brave a bloqué l'accès à la caméra. Cliquez sur l'icône Shields ou sur l'icône du cadenas dans la barre d'adresse pour réinitialiser les permissions et désactiver la protection contre le fingerprinting pour ce site. Utilisez Chrome pour une meilleure compatibilité.",
-    followVoice: 'Suivre la Voix',
-    followVoiceEnabled: 'Suivi de la Voix (vitesse désactivée)',
-    speechRecognitionNotSupported: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur',
-    speechRecognitionNotSupportedBrowser: 'La reconnaissance vocale n\'est pas prise en charge dans ce navigateur. Essayez d\'utiliser Chrome pour une meilleure compatibilité.',
-    speedTooltipPlayToStart: 'Lancez le prompter pour commencer à suivre la voix (Espace).',
-    speedTooltipPauseToStop: 'Mettez le prompter en pause pour arrêter de suivre la voix (Espace).',
-    speedDisabledByFollowVoice: 'Vitesse désactivée lors du suivi de la voix',
+    autoScrolling: 'Défilement automatique',
+    autoScrollEnabled: 'Défilement automatique actif',
+    autoScrollSpeed: 'Vitesse de défilement automatique',
+    autoScrollSpeedTooltip: 'Mots par minute en défilement automatique',
     shortcutsMenu:
       'T : éditer le texte du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
@@ -685,13 +667,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Der Pop-out-Modus ist in Safari nicht möglich. Verwenden Sie Chrome für eine bessere Kompatibilität.',
     allowCameraAccess: 'Kamerazugriff erlauben',
     braveBlockedMessage: 'Brave hat den Kamerazugriff blockiert. Klicken Sie auf das Shields-Symbol oder das Schloss-Symbol in der Adressleiste, um die Berechtigungen zurückzusetzen und den Fingerprinting-Schutz für diese Website zu deaktivieren. Verwenden Sie Chrome für eine bessere Kompatibilität.',
-    followVoice: 'Stimme Folgen',
-    followVoiceEnabled: 'Stimmverfolgung (Geschwindigkeit deaktiviert)',
-    speechRecognitionNotSupported: 'Spracherkennung wird in diesem Browser nicht unterstützt',
-    speechRecognitionNotSupportedBrowser: 'Spracherkennung wird in diesem Browser nicht unterstützt. Verwenden Sie Chrome für bessere Kompatibilität.',
-    speedTooltipPlayToStart: 'Teleprompter abspielen, um der Stimme zu folgen (Leertaste).',
-    speedTooltipPauseToStop: 'Teleprompter pausieren, um die Stimmverfolgung zu stoppen (Leertaste).',
-    speedDisabledByFollowVoice: 'Geschwindigkeit deaktiviert während Stimmverfolgung',
+    autoScrolling: 'Automatisches Scrollen',
+    autoScrollEnabled: 'Automatisches Scrollen aktiv',
+    autoScrollSpeed: 'Geschwindigkeit des automatischen Scrollens',
+    autoScrollSpeedTooltip: 'Wörter pro Minute beim automatischen Scrollen',
     shortcutsMenu:
       'T: Text bearbeiten\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
@@ -721,7 +700,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H：隐藏/显示提示器\n' +
       'I：控制输入\n' +
       'M：启用 Markdown\n' +
-      'V：语音跟随\n' +
+      'V：自动滚动\n' +
       'F：全屏',
     language: '语言',
     script: '脚本',
@@ -787,13 +766,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari 上不支持弹出模式。为了获得更好的兼容性，请使用 Chrome。',
     allowCameraAccess: '允许访问摄像头',
     braveBlockedMessage: 'Brave 已阻止访问摄像头。点击地址栏中的 Shields 图标或锁形图标以重置权限，并禁用此网站的指纹识别保护。为了获得更好的兼容性，请使用 Chrome。',
-    followVoice: '语音跟随',
-    followVoiceEnabled: '语音跟随中（速度已禁用）',
-    speechRecognitionNotSupported: '此浏览器不支持语音识别',
-    speechRecognitionNotSupportedBrowser: '此浏览器不支持语音识别。请尝试使用 Chrome 以获得更好的兼容性。',
-    speedTooltipPlayToStart: '播放提示器以开始语音跟随（空格）。',
-    speedTooltipPauseToStop: '暂停提示器以停止语音跟随（空格）。',
-    speedDisabledByFollowVoice: '跟随语音时速度已禁用',
+    autoScrolling: '自动滚动',
+    autoScrollEnabled: '自动滚动已激活',
+    autoScrollSpeed: '自动滚动速度',
+    autoScrollSpeedTooltip: '自动滚动时的每分钟字数',
     shortcutsMenu:
       'T：编辑文本\n' +
       'R：录制/停止录制\n' +
@@ -805,7 +781,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H：隐藏/显示提示器\n' +
       'I：控制输入\n' +
       'M：启用 Markdown\n' +
-      'V：语音跟随\n' +
+      'V：自动滚动\n' +
       'F：全屏',
     shortcutsTitle: '快捷键',
     speakingTime: '演讲时间',
@@ -823,7 +799,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: إظهار/إخفاء التلقين\n' +
       'I: التحكم بالمدخلات\n' +
       'M: تمكين Markdown\n' +
-      'V: متابعة الصوت\n' +
+      'V: التمرير التلقائي\n' +
       'F: ملء الشاشة',
     language: 'اللغة',
     script: 'النص',
@@ -889,13 +865,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'وضع النافذة المنبثقة غير ممكن على Safari. استخدم Chrome لتوافق أفضل.',
     allowCameraAccess: 'السماح بالوصول إلى الكاميرا',
     braveBlockedMessage: 'حظر Brave الوصول إلى الكاميرا. انقر فوق أيقونة Shields أو أيقونة القفل في شريط العناوين لإعادة تعيين الأذونات وتعطيل حماية البصمة الرقمية لهذا الموقع. استخدم Chrome لتوافق أفضل.',
-    followVoice: 'متابعة الصوت',
-    followVoiceEnabled: 'متابعة الصوت (السرعة معطلة)',
-    speechRecognitionNotSupported: 'التعرف على الصوت غير مدعوم في هذا المتصفح',
-    speechRecognitionNotSupportedBrowser: 'التعرف على الصوت غير مدعوم في هذا المتصفح. حاول استخدام Chrome لتوافق أفضل.',
-    speedTooltipPlayToStart: 'شغّل الملقن لبدء متابعة الصوت (مسافة).',
-    speedTooltipPauseToStop: 'أوقف الملقن مؤقتاً لإيقاف متابعة الصوت (مسافة).',
-    speedDisabledByFollowVoice: 'السرعة معطلة أثناء متابعة الصوت',
+    autoScrolling: 'التمرير التلقائي',
+    autoScrollEnabled: 'التمرير التلقائي نشط',
+    autoScrollSpeed: 'سرعة التمرير التلقائي',
+    autoScrollSpeedTooltip: 'كلمات في الدقيقة أثناء التمرير التلقائي',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
@@ -905,7 +878,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: التحكم بالمدخلات\n' +
       'T: تعديل النص\n' +
       'M: تمكين Markdown\n' +
-      'V: متابعة الصوت\n' +
+      'V: التمرير التلقائي\n' +
       'F: ملء الشاشة\n' +
       'Y: تثبيت/إلغاء التثبيت بالأعلى\n' +
       'P: نافذة تلقين منبثقة/مضمنة',
@@ -989,13 +962,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'O modo pop-out não é possível no Safari. Use o Chrome para melhor compatibilidade.',
     allowCameraAccess: 'Permitir acesso à câmera',
     braveBlockedMessage: 'O Brave bloqueou o acesso à câmera. Clique no ícone Shields ou no ícone de cadeado na barra de endereços para redefinir as permissões e desativar a proteção contra impressão digital para este site. Use o Chrome para melhor compatibilidade.',
-    followVoice: 'Seguir Voz',
-    followVoiceEnabled: 'Seguindo Voz (velocidade desativada)',
-    speechRecognitionNotSupported: 'Reconhecimento de voz não suportado neste navegador',
-    speechRecognitionNotSupportedBrowser: 'Reconhecimento de voz não suportado neste navegador. Tente usar Chrome para melhor compatibilidade.',
-    speedTooltipPlayToStart: 'Reproduza o teleprompter para começar a seguir a voz (Espaço).',
-    speedTooltipPauseToStop: 'Pause o teleprompter para parar de seguir a voz (Espaço).',
-    speedDisabledByFollowVoice: 'Velocidade desativada ao seguir a voz',
+    autoScrolling: 'Rolagem automática',
+    autoScrollEnabled: 'Rolagem automática ativa',
+    autoScrollSpeed: 'Velocidade de rolagem automática',
+    autoScrollSpeedTooltip: 'Palavras por minuto na rolagem automática',
     shortcutsMenu:
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
@@ -1005,7 +975,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: controlar entradas\n' +
       'T: Editar texto\n' +
       'M: Ativar Markdown\n' +
-      'V: seguir voz\n' +
+      'V: rolagem automática\n' +
       'F: tela cheia\n' +
       'Y: fixar/desafixar do topo\n' +
       'P: destacar/embutir teleprompter',
@@ -1022,7 +992,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: скрыть/показать телесуфлёр\n' +
       'I: управление входами\n\n' +
       'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)\n\n' +
-      'V: Следовать за Голосом\n\n' +
+      'V: Автопрокрутка\n\n' +
       'F: полный экран\n' +
       'Y: закрепить/открепить сверху\n' +
       'P: отдельное окно телесуфлёра',
@@ -1090,13 +1060,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Вынос окна невозможен в Safari. Используйте Chrome для лучшей совместимости.',
     allowCameraAccess: 'Разрешить доступ к камере',
     braveBlockedMessage: 'Brave заблокировал доступ к камере. Нажмите на значок Shields или значок замка в адресной строке, чтобы сбросить разрешения и отключить защиту от цифровых отпечатков для этого сайта. Используйте Chrome для лучшей совместимости.',
-    followVoice: 'Следовать за Голосом',
-    followVoiceEnabled: 'Следование за Голосом (скорость откл.)',
-    speechRecognitionNotSupported: 'Распознавание речи не поддерживается в этом браузере',
-    speechRecognitionNotSupportedBrowser: 'Распознавание речи не поддерживается в этом браузере. Попробуйте использовать Chrome для лучшей совместимости.',
-    speedTooltipPlayToStart: 'Запустите телесуфлёр, чтобы начать следовать за голосом (Пробел).',
-    speedTooltipPauseToStop: 'Поставьте телесуфлёр на паузу, чтобы перестать следовать за голосом (Пробел).',
-    speedDisabledByFollowVoice: 'Скорость отключена при следовании за голосом',
+    autoScrolling: 'Автопрокрутка',
+    autoScrollEnabled: 'Автопрокрутка активна',
+    autoScrollSpeed: 'Скорость автопрокрутки',
+    autoScrollSpeedTooltip: 'Слов в минуту при автопрокрутке',
     shortcutsMenu:
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
@@ -1106,7 +1073,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: управление входами\n' +
       'T: Редактировать текст\n' +
       'M: Включить Markdown\n' +
-      'V: следовать за голосом\n' +
+      'V: автопрокрутка\n' +
       'F: полный экран\n' +
       'Y: закрепить/открепить сверху\n' +
       'P: отдельное окно телесуфлёра',
@@ -1123,7 +1090,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: ukryj/pokaż teleprompter\n' +
       'I: sterowanie wejściami\n\n' +
       'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (T) i włącz go (M)\n\n' +
-      'V: Podążaj za Głosem\n\n' +
+      'V: Automatyczne przewijanie\n\n' +
       'F: pełny ekran\n' +
       'Y: przypnij/odepnij od góry\n' +
       'P: teleprompter w wyskakującym okienku',
@@ -1191,13 +1158,10 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Tryb wyskakującego okna nie jest możliwy w Safari. Używaj Chrome dla lepszej kompatybilności.',
     allowCameraAccess: 'Zezwól na dostęp do kamery',
     braveBlockedMessage: 'Brave zablokował dostęp do kamery. Kliknij ikonę Shields lub ikonę kłódki w pasku adresu, aby zresetować uprawnienia i wyłączyć ochronę przed pobieraniem odcisków palców dla tej witryny. Używaj Chrome dla lepszej kompatybilności.',
-    followVoice: 'Podążaj za Głosem',
-    followVoiceEnabled: 'Śledzenie Głosu (prędkość wyłączona)',
-    speechRecognitionNotSupported: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce',
-    speechRecognitionNotSupportedBrowser: 'Rozpoznawanie mowy nie jest obsługiwane w tej przeglądarce. Spróbuj użyć Chrome dla lepszej kompatybilności.',
-    speedTooltipPlayToStart: 'Odtwórz prompter, aby zacząć podążać za głosem (Spacja).',
-    speedTooltipPauseToStop: 'Wstrzymaj prompter, aby przestać podążać za głosem (Spacja).',
-    speedDisabledByFollowVoice: 'Prędkość wyłączona podczas podążania za głosem',
+    autoScrolling: 'Automatyczne przewijanie',
+    autoScrollEnabled: 'Automatyczne przewijanie aktywne',
+    autoScrollSpeed: 'Szybkość automatycznego przewijania',
+    autoScrollSpeedTooltip: 'Słowa na minutę podczas automatycznego przewijania',
     shortcutsMenu:
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +
@@ -1207,7 +1171,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'I: sterowanie wejściami\n' +
       'T: Edytuj tekst\n' +
       'M: Włącz Markdown\n' +
-      'V: podążaj za głosem\n' +
+      'V: automatyczne przewijanie\n' +
       'F: pełny ekran\n' +
       'Y: przypnij/odepnij od góry\n' +
       'P: teleprompter w wyskakującym okienku',

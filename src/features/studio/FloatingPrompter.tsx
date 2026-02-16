@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect, Fragment } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, Check, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, Speech, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, BetweenHorizontalStart, Check, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip, TooltipProvider } from '../../components/Tooltip'
@@ -14,6 +14,7 @@ import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, t
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
 import { extractWords, matchAsrToLine, tokenizeLine, calculateTokenFrequency, type WordInfo, type LineMatchState } from '../../lib/textMatching'
+import { calculateWordTimings, type WordTiming } from '../../lib/wordTiming'
 
 type Props = {
   open: boolean
@@ -38,8 +39,10 @@ type Props = {
   onPipChange?: (isPip: boolean) => void
   onMarkdownEnabledChange?: (enabled: boolean) => void
   onScriptChange: (value: string) => void
-  followVoice: boolean
-  onFollowVoiceChange: (value: boolean) => void
+  autoScrollEnabled: boolean
+  onAutoScrollChange: (value: boolean) => void
+  wpm: number
+  onWpmChange: (value: number) => void
   forceCloseControls?: boolean
 }
 
@@ -677,11 +680,13 @@ function ControlsBarPortal({
   fontSize,
   textAlign,
   fixedToTop,
-  followVoice,
+  autoScrollEnabled,
+  wpm,
   playing,
-  onFollowVoiceChange,
+  onAutoScrollChange,
   onOpacityChange,
   onSpeedChange,
+  onWpmChange,
   onFontSizeChange,
   onTextAlignChange,
   isPip,
@@ -694,11 +699,13 @@ function ControlsBarPortal({
   fontSize: number
   textAlign: 'left' | 'center' | 'right'
   fixedToTop: boolean
-  followVoice: boolean
+  autoScrollEnabled: boolean
+  wpm: number
   playing: boolean
-  onFollowVoiceChange: (value: boolean) => void
+  onAutoScrollChange: (value: boolean) => void
   onOpacityChange: (value: number) => void
   onSpeedChange: (value: number) => void
+  onWpmChange: (value: number) => void
   onFontSizeChange: (value: number) => void
   onTextAlignChange: (value: 'left' | 'center' | 'right') => void
   isPip?: boolean
@@ -819,15 +826,14 @@ function ControlsBarPortal({
               >
                 <ControlCell
                   Thumb={SpeedThumb}
-                  title={strings.speed}
-                  value={speed}
-                  min={20}
-                  max={60}
-                  step={1}
+                  title={autoScrollEnabled ? strings.autoScrollSpeed : strings.speed}
+                  value={autoScrollEnabled ? wpm : speed}
+                  min={autoScrollEnabled ? 100 : 20}
+                  max={autoScrollEnabled ? 300 : 60}
+                  step={autoScrollEnabled ? 5 : 1}
                   formatValue={(v) => `${Math.round(v)}`}
-                  onChange={onSpeedChange}
-                  disabled={followVoice}
-                  disabledTooltip={!isPip && followVoice ? strings.speedDisabledByFollowVoice : undefined}
+                  onChange={autoScrollEnabled ? onWpmChange : onSpeedChange}
+                  disabled={false}
                 />
                 <ControlCell
                   Thumb={TextSizeThumb}
@@ -935,8 +941,10 @@ export function FloatingPrompter(props: Props) {
     onControlsOpenChange,
     onPipChange,
     onMarkdownEnabledChange,
-    followVoice,
-    onFollowVoiceChange,
+    autoScrollEnabled,
+    onAutoScrollChange,
+    wpm,
+    onWpmChange,
     forceCloseControls
   } = props
 
@@ -952,6 +960,7 @@ export function FloatingPrompter(props: Props) {
   const [scrollbarThumbHeight, setScrollbarThumbHeight] = useState(0.2) // 0-1, proportion of track
   const scrollbarTrackRef = useRef<HTMLDivElement>(null)
   const isDraggingScrollbarRef = useRef(false)
+  const [isSmoothScrolling, setIsSmoothScrolling] = useState(false)
 
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
@@ -976,6 +985,13 @@ export function FloatingPrompter(props: Props) {
   // Auto-advance timer for last word timeout
   const lastWordTimeoutRef = useRef<number | null>(null)
 
+  // Auto-scroll state machine
+  const [currentWordIndex, setCurrentWordIndex] = useState<number>(0)
+  const wordTimingsRef = useRef<WordTiming[]>([])
+  const autoScrollTimeoutRef = useRef<number | null>(null)
+  const autoScrollStartTimeRef = useRef<number>(0)
+  const remainingTimeRef = useRef<number>(0)
+
   // Initialize script words when script changes
   useEffect(() => {
     scriptWordsRef.current = extractWords(script)
@@ -989,10 +1005,14 @@ export function FloatingPrompter(props: Props) {
     highFrequencyThresholdRef.current = highFrequencyThreshold
     // console.log('[FloatingPrompter] Token frequency calculated - unique tokens:', frequencyMap.size, 'high-freq threshold:', highFrequencyThreshold)
 
+    // Calculate word timings for auto-scroll
+    wordTimingsRef.current = calculateWordTimings(scriptWordsRef.current, wpm, script)
+
     setSpokenWordIndices(new Set())
     currentLineIndexRef.current = 0
     scriptLinesRef.current = []
-  }, [script])
+    setCurrentWordIndex(0)
+  }, [script, wpm])
 
   useEffect(() => {
     if (forceCloseControls && quickOpen) {
@@ -1234,6 +1254,7 @@ export function FloatingPrompter(props: Props) {
       // console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
 
       // Add smooth transition for voice-following scrolls
+      setIsSmoothScrolling(true)
       content.style.transition = 'transform 0.3s ease-out'
 
       // Update virtual scroll and apply transform
@@ -1243,6 +1264,7 @@ export function FloatingPrompter(props: Props) {
       // Remove transition after animation completes to keep wheel/manual scrolling instant
       const removeTransition = () => {
         content.style.transition = ''
+        setIsSmoothScrolling(false)
       }
       content.addEventListener('transitionend', removeTransition, { once: true })
       // Fallback cleanup in case transitionend doesn't fire
@@ -1400,6 +1422,94 @@ export function FloatingPrompter(props: Props) {
     // console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
   }, [clearLastWordTimeout])
 
+  // Helper to find line index containing a word
+  const findLineIndexContainingWord = useCallback((wordIdx: number): number => {
+    for (let i = 0; i < scriptLinesRef.current.length; i++) {
+      const line = scriptLinesRef.current[i]
+      if (line && line.includes(wordIdx)) {
+        return i
+      }
+    }
+    return 0
+  }, [])
+
+  // Helper to find first word of a line
+  const findFirstWordOfLine = useCallback((lineIdx: number): number => {
+    const line = scriptLinesRef.current[lineIdx]
+    return line?.[0] ?? 0
+  }, [])
+
+  // Auto-scroll core: schedule next word
+  const scheduleNextWord = useCallback(() => {
+    if (!playing || !autoScrollEnabled) return
+
+    const wordIdx = currentWordIndex
+    const timing = wordTimingsRef.current[wordIdx]
+
+    if (!timing || wordIdx >= scriptWordsRef.current.length) {
+      // Reached end of script
+      return
+    }
+
+    const delay = remainingTimeRef.current > 0
+      ? remainingTimeRef.current
+      : timing.durationMs
+
+    autoScrollStartTimeRef.current = performance.now()
+    autoScrollTimeoutRef.current = setTimeout(() => {
+      // Gray out current word
+      setSpokenWordIndices(prev => new Set([...prev, wordIdx]))
+
+      // Check if we need to scroll to next line
+      const lineIdx = findLineIndexContainingWord(wordIdx)
+      const nextLineIdx = findLineIndexContainingWord(wordIdx + 1)
+      if (lineIdx !== nextLineIdx && nextLineIdx !== lineIdx) {
+        scrollToLine(findFirstWordOfLine(nextLineIdx))
+      }
+
+      // Move to next word
+      setCurrentWordIndex(prev => prev + 1)
+      remainingTimeRef.current = 0
+    }, delay)
+  }, [playing, autoScrollEnabled, currentWordIndex, findLineIndexContainingWord, findFirstWordOfLine, scrollToLine])
+
+  // Pause/Resume handling for auto-scroll
+  useEffect(() => {
+    // Clear any existing timeout first
+    if (autoScrollTimeoutRef.current) {
+      clearTimeout(autoScrollTimeoutRef.current)
+      autoScrollTimeoutRef.current = null
+    }
+
+    if (playing && autoScrollEnabled) {
+      // Start/continue auto-scrolling
+      scheduleNextWord()
+    } else if (!playing && autoScrollEnabled) {
+      // Reset to start when pausing
+      setCurrentWordIndex(0)
+      setSpokenWordIndices(new Set())
+      remainingTimeRef.current = 0
+      autoScrollStartTimeRef.current = 0
+    }
+
+    return () => {
+      if (autoScrollTimeoutRef.current) {
+        clearTimeout(autoScrollTimeoutRef.current)
+        autoScrollTimeoutRef.current = null
+      }
+    }
+  }, [playing, autoScrollEnabled, currentWordIndex, scheduleNextWord])
+
+  // Reset auto-scroll when disabled
+  useEffect(() => {
+    if (!autoScrollEnabled) {
+      setCurrentWordIndex(0)
+      setSpokenWordIndices(new Set())
+      remainingTimeRef.current = 0
+      autoScrollStartTimeRef.current = 0
+    }
+  }, [autoScrollEnabled])
+
   // Auto-advance to next line (used by timeout and normal completion)
   const advanceToNextLine = useCallback(() => {
     const currentLineIdx = currentLineIndexRef.current
@@ -1436,14 +1546,14 @@ export function FloatingPrompter(props: Props) {
     }
   }, [scrollToLine, initializeLineState])
 
-  // Initialize current line to first visible line when playing starts
+  // Initialize current line to first visible line when playing starts (for speech recognition)
   useEffect(() => {
-    if (open && playing && followVoice) {
+    if (open && playing && autoScrollEnabled) {
       const firstVisibleLine = getFirstVisibleLineIndex()
       currentLineIndexRef.current = firstVisibleLine
       // console.log('[FloatingPrompter] Initialized current line to:', firstVisibleLine)
 
-      // Initialize line matching state
+      // Initialize line matching state (for speech recognition enhancement)
       initializeLineState(firstVisibleLine)
 
       // Don't gray out previous lines - start fresh with no highlights
@@ -1451,12 +1561,14 @@ export function FloatingPrompter(props: Props) {
     } else {
       // Clear timeout when stopping speech recognition
       clearLastWordTimeout()
-      // Clear highlighting when exiting voice follow mode or stopping playback
-      setSpokenWordIndices(new Set())
+      // Clear highlighting when exiting auto-scroll mode or stopping playback
+      if (!autoScrollEnabled) {
+        setSpokenWordIndices(new Set())
+      }
       // Reset line tracking so we start fresh on resume
       currentLineIndexRef.current = 0
     }
-  }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
+  }, [open, playing, autoScrollEnabled, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
 
   // Speech recognition integration
   const { locale } = useI18n()
@@ -1600,7 +1712,7 @@ export function FloatingPrompter(props: Props) {
   }, [])
 
   const speechRecognition = useSpeechRecognition({
-    enabled: open && playing && followVoice,
+    enabled: open && playing && autoScrollEnabled,
     locale,
     onTranscript: handleTranscript,
     onError: handleError
@@ -1617,23 +1729,17 @@ export function FloatingPrompter(props: Props) {
     return undefined
   }, [])
 
-  // Handle word click during voice recognition
+  // Handle word click during auto-scrolling
   const handleWordClick = useCallback((wordIndex: number) => {
-    if (!speechRecognition.active) return
+    if (!autoScrollEnabled || !playing) return
 
     // console.log('[FloatingPrompter] Word clicked:', wordIndex)
 
-    // Find which line contains this word
-    const lineIndex = findLineIndexForWord(wordIndex)
-    if (lineIndex === undefined) {
-      // console.log('[FloatingPrompter] Word not found in any line')
-      return
+    // Clear current auto-scroll timeout immediately
+    if (autoScrollTimeoutRef.current) {
+      clearTimeout(autoScrollTimeoutRef.current)
+      autoScrollTimeoutRef.current = null
     }
-
-    // console.log('[WordClick] Jumping to line:', lineIndex, 'word:', wordIndex)
-
-    // Update current line index
-    currentLineIndexRef.current = lineIndex
 
     // Mark all words before this word as spoken (clicked word becomes current/white)
     setSpokenWordIndices(() => {
@@ -1644,26 +1750,8 @@ export function FloatingPrompter(props: Props) {
       return next
     })
 
-    // Clear ASR buffers
-    finalizedBufferRef.current = ''
-    lastInterimTranscriptRef.current = ''
-
-    // Clear any pending timeout
-    clearLastWordTimeout()
-
-    // Initialize line state for the new position
-    initializeLineState(lineIndex)
-
-    // Log the new matching buffers
-    // console.log('[WordClick] Main buffer (current line):', currentLineTokensRef.current)
-    // const newNextLineIdx = lineIndex + 1
-    // if (newNextLineIdx < scriptLinesRef.current.length) {
-    //   const newNextLine = scriptLinesRef.current[newNextLineIdx]
-    //   const newNextLineTokens = newNextLine ? tokenizeLine(scriptWordsRef.current, newNextLine) : []
-    //   console.log('[WordClick] Extended buffer (next line lookahead, first 3):', newNextLineTokens.slice(0, 3))
-    // }
-
-    // Scroll to the word's line
+    // Find which line contains this word and scroll to it
+    const lineIndex = findLineIndexContainingWord(wordIndex)
     const line = scriptLinesRef.current[lineIndex]
     if (line && line.length > 0) {
       const firstWordIdx = line[0]
@@ -1671,16 +1759,21 @@ export function FloatingPrompter(props: Props) {
         scrollToLine(firstWordIdx)
       }
     }
-  }, [speechRecognition.active, findLineIndexForWord, clearLastWordTimeout, initializeLineState, scrollToLine])
 
-  // Auto-disable followVoice if speech recognition is unsupported
-  useEffect(() => {
-    if (speechRecognition.unsupported && followVoice) {
-      onFollowVoiceChange(false)
-    }
-  }, [speechRecognition.unsupported, followVoice, onFollowVoiceChange])
+    // Update current line index for speech recognition
+    currentLineIndexRef.current = lineIndex
 
-  // Disable RAF auto-scroll when followVoice is active
+    // Jump to clicked word immediately
+    setCurrentWordIndex(wordIndex)
+
+    // Clear timing state so next word starts fresh
+    remainingTimeRef.current = 0
+    autoScrollStartTimeRef.current = 0
+
+    // The useEffect will automatically resume auto-scrolling from this new word
+  }, [autoScrollEnabled, playing, currentWordIndex, findLineIndexContainingWord, scrollToLine])
+
+  // Disable RAF auto-scroll when auto-scroll is active
   useRafLoop(
     (deltaMs) => {
       const scroller = scrollerRef.current
@@ -1688,7 +1781,7 @@ export function FloatingPrompter(props: Props) {
       if (!open) return
       if (!playing) return
       if (!scroller || !content) return
-      if (followVoice) return
+      if (autoScrollEnabled) return
 
       // Calculate pixel delta (no minimum speed clamp)
       const deltaPx = (speed * deltaMs) / 1000
@@ -2025,59 +2118,31 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={speechRecognition.unsupported ? strings.speechRecognitionNotSupportedBrowser : (!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice))} shortcut="V">
+                <Tooltip enabled={!isPip} label={autoScrollEnabled ? strings.autoScrollEnabled : strings.autoScrolling} shortcut="V">
                   <button
                     type="button"
-                    onClick={() => !speechRecognition.unsupported && onFollowVoiceChange(!followVoice)}
-                    aria-label={strings.followVoice}
+                    onClick={() => onAutoScrollChange(!autoScrollEnabled)}
+                    aria-label={strings.autoScrolling}
                     onPointerDown={(e) => e.stopPropagation()}
-                    disabled={!speechRecognition.supported || speechRecognition.unsupported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && !speechRecognition.unsupported && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white'),
-                      (!speechRecognition.supported || speechRecognition.unsupported) && 'opacity-40 cursor-not-allowed'
+                      autoScrollEnabled && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
                     )}
                   >
                     <div className="relative">
-                      {speechRecognition.unsupported ? (
-                        <div className="relative">
-                          <Speech className="h-4 w-4" />
-                          <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-white">
-                            <X className="h-1.5 w-1.5" strokeWidth={3} />
-                          </div>
+                      <BetweenHorizontalStart className="h-4 w-4" />
+                      {/* Active badge (green check when playing) */}
+                      {autoScrollEnabled && playing && (
+                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-400">
+                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
                         </div>
-                      ) : (
-                        <>
-                          <Speech className="h-4 w-4" />
-                          {speechRecognition.error && (
-                            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
-                          )}
-                        </>
                       )}
-                      {!speechRecognition.unsupported && (
-                        <>
-                          <div
-                            className={cn(
-                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
-                              followVoice && speechRecognition.active
-                                ? 'bg-emerald-500 scale-100 opacity-100'
-                                : 'scale-0 opacity-0'
-                            )}
-                          >
-                            <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
-                          </div>
-                          <div
-                            className={cn(
-                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
-                              followVoice && !speechRecognition.active
-                                ? 'scale-100 opacity-100'
-                                : 'scale-0 opacity-0'
-                            )}
-                          >
-                            <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                          </div>
-                        </>
+                      {/* Paused badge (yellow pause when enabled but not playing) */}
+                      {autoScrollEnabled && !playing && (
+                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-400">
+                          <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
+                        </div>
                       )}
                     </div>
                   </button>
@@ -2259,7 +2324,7 @@ export function FloatingPrompter(props: Props) {
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {renderMarkdownBlocks(displayScript, spokenWordIndices, isPip, handleWordClick, speechRecognition.active)}
+                    {renderMarkdownBlocks(displayScript, spokenWordIndices, isPip, handleWordClick, autoScrollEnabled && playing)}
                     <div className="whitespace-pre-wrap leading-[1.35] text-transparent select-none pointer-events-none" style={{ fontSize }}>{'\n\n\n'}</div>
                   </div>
                 ) : (
@@ -2282,12 +2347,12 @@ export function FloatingPrompter(props: Props) {
                             data-word-idx={idx}
                             className={className}
                             onClick={(e) => {
-                              if (speechRecognition.active) {
+                              if (autoScrollEnabled && playing) {
                                 e.stopPropagation()
                                 handleWordClick(idx)
                               }
                             }}
-                            style={speechRecognition.active ? { cursor: 'pointer' } : undefined}
+                            style={autoScrollEnabled && playing ? { cursor: 'pointer' } : undefined}
                           >
                             {word}
                           </span>
@@ -2316,7 +2381,10 @@ export function FloatingPrompter(props: Props) {
                     style={{
                       top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
                       height: `${scrollbarThumbHeight * 100}%`,
-                      minHeight: '30px'
+                      minHeight: '30px',
+                      transition: isSmoothScrolling
+                        ? 'top 0.3s ease-out, background-color 0.2s ease-in-out'
+                        : 'background-color 0.2s ease-in-out'
                     }}
                   />
                 </div>
@@ -2383,59 +2451,31 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={speechRecognition.unsupported ? strings.speechRecognitionNotSupportedBrowser : (!speechRecognition.supported ? strings.speechRecognitionNotSupported : (followVoice ? (playing ? strings.speedTooltipPauseToStop : strings.speedTooltipPlayToStart) : strings.followVoice))} shortcut="V">
+                <Tooltip enabled={!isPip} label={autoScrollEnabled ? strings.autoScrollEnabled : strings.autoScrolling} shortcut="V">
                   <button
                     type="button"
-                    onClick={() => !speechRecognition.unsupported && onFollowVoiceChange(!followVoice)}
-                    aria-label={strings.followVoice}
+                    onClick={() => onAutoScrollChange(!autoScrollEnabled)}
+                    aria-label={strings.autoScrolling}
                     onPointerDown={(e) => e.stopPropagation()}
-                    disabled={!speechRecognition.supported || speechRecognition.unsupported}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
                       'hover:bg-white/10 hover:text-white',
-                      followVoice && !speechRecognition.unsupported && 'border-white/18 bg-white/10 text-white',
-                      (!speechRecognition.supported || speechRecognition.unsupported) && 'opacity-40 cursor-not-allowed'
+                      autoScrollEnabled && 'border-white/18 bg-white/10 text-white'
                     )}
                   >
                     <div className="relative">
-                      {speechRecognition.unsupported ? (
-                        <div className="relative">
-                          <Speech className="h-4 w-4" />
-                          <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-500 text-white">
-                            <X className="h-1.5 w-1.5" strokeWidth={3} />
-                          </div>
+                      <BetweenHorizontalStart className="h-4 w-4" />
+                      {/* Active badge (green check when playing) */}
+                      {autoScrollEnabled && playing && (
+                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-400">
+                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
                         </div>
-                      ) : (
-                        <>
-                          <Speech className="h-4 w-4" />
-                          {speechRecognition.error && (
-                            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-500" />
-                          )}
-                        </>
                       )}
-                      {!speechRecognition.unsupported && (
-                        <>
-                          <div
-                            className={cn(
-                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full transition-all duration-200',
-                              followVoice && speechRecognition.active
-                                ? 'bg-emerald-500 scale-100 opacity-100'
-                                : 'scale-0 opacity-0'
-                            )}
-                          >
-                            <Check className="h-1.5 w-1.5" strokeWidth={3} text-white />
-                          </div>
-                          <div
-                            className={cn(
-                              'absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-500 text-white transition-all duration-200',
-                              followVoice && !speechRecognition.active
-                                ? 'scale-100 opacity-100'
-                                : 'scale-0 opacity-0'
-                            )}
-                          >
-                            <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                          </div>
-                        </>
+                      {/* Paused badge (yellow pause when enabled but not playing) */}
+                      {autoScrollEnabled && !playing && (
+                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-400">
+                          <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
+                        </div>
                       )}
                     </div>
                   </button>
@@ -2540,11 +2580,13 @@ export function FloatingPrompter(props: Props) {
             fontSize={fontSize}
             textAlign={textAlign}
             fixedToTop={fixedToTop}
-            followVoice={followVoice}
+            autoScrollEnabled={autoScrollEnabled}
+            wpm={wpm}
             playing={playing}
-            onFollowVoiceChange={onFollowVoiceChange}
+            onAutoScrollChange={onAutoScrollChange}
             onOpacityChange={onOpacityChange}
             onSpeedChange={onSpeedChange}
+            onWpmChange={onWpmChange}
             onFontSizeChange={onFontSizeChange}
             onTextAlignChange={onTextAlignChange}
             isPip={isPip}
