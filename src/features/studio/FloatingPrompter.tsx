@@ -895,6 +895,19 @@ export function FloatingPrompter(props: Props) {
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
+  // Debug logging on mount/unmount
+  useEffect(() => {
+    console.log('[LIFECYCLE] FloatingPrompter mounted')
+    return () => {
+      console.log('[LIFECYCLE] FloatingPrompter unmounting')
+    }
+  }, [])
+
+  // Debug logging on isPip changes
+  useEffect(() => {
+    console.log('[LIFECYCLE] isPip changed to:', isPip)
+  }, [isPip])
+
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
   const currentLineIndexRef = useRef(0) // 0-indexed: first line is 0, second line is 1, etc.
@@ -1039,29 +1052,43 @@ export function FloatingPrompter(props: Props) {
   const cursorPositionRef = useRef<number | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  // Track if we just entered edit mode
+  // Track if we just entered edit mode and last cursor position
   const prevIsEditingRef = useRef(isEditing)
+  const lastCursorPositionRef = useRef<number>(0)
   useEffect(() => {
     prevIsEditingRef.current = isEditing
   })
 
   useLayoutEffect(() => {
+    console.log('[EDIT-SCROLL] Effect running - isEditing:', isEditing, 'hasTextarea:', !!textareaRef.current)
+
     if (isEditing && textareaRef.current) {
       const textarea = textareaRef.current
       const scrollParent = scrollerRef.current
       const content = contentRef.current
       const justEnteredEditMode = !prevIsEditingRef.current && isEditing
+      const currentCursor = textarea.selectionStart
+
+      console.log('[EDIT-SCROLL] justEnteredEditMode:', justEnteredEditMode, 'currentCursor:', currentCursor, 'lastCursor:', lastCursorPositionRef.current)
 
       // Only focus and set selection when entering edit mode
       if (justEnteredEditMode) {
+        console.log('[EDIT-SCROLL] Just entered edit mode - focusing textarea')
         textarea.focus()
         if (cursorPositionRef.current !== null) {
           textarea.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current)
         }
+        lastCursorPositionRef.current = currentCursor
       }
 
-      // Always update scroll to keep cursor visible (during typing and when entering)
-      if (scrollParent && content) {
+      // Only update scroll when cursor position changes (not on every script change)
+      const cursorMoved = currentCursor !== lastCursorPositionRef.current
+      console.log('[EDIT-SCROLL] cursorMoved:', cursorMoved, 'scrollParent:', !!scrollParent, 'content:', !!content)
+
+      if (scrollParent && content && (justEnteredEditMode || cursorMoved)) {
+        console.log('[EDIT-SCROLL] WILL AUTO-SCROLL - virtualScrollY before:', virtualScrollYRef.current)
+        lastCursorPositionRef.current = currentCursor
+
         const cursor = textarea.selectionStart
         const style = window.getComputedStyle(textarea)
 
@@ -1109,9 +1136,14 @@ export function FloatingPrompter(props: Props) {
         const maxScroll = Math.max(0, content.scrollHeight - scrollParent.clientHeight)
         const clampedScrollY = Math.max(0, Math.min(targetScrollTop, maxScroll))
 
+        console.log('[EDIT-SCROLL] Calculated scroll - cursorTop:', cursorTop, 'targetScrollTop:', targetScrollTop, 'clampedScrollY:', clampedScrollY, 'maxScroll:', maxScroll)
+
         // Update virtual scroll and apply transform
         virtualScrollYRef.current = clampedScrollY
         content.style.transform = `translateY(-${clampedScrollY}px)`
+        console.log('[EDIT-SCROLL] Applied transform - virtualScrollY after:', virtualScrollYRef.current)
+      } else {
+        console.log('[EDIT-SCROLL] Skipping auto-scroll - no cursor movement')
       }
     }
   }, [isEditing, script])
@@ -1559,9 +1591,16 @@ export function FloatingPrompter(props: Props) {
   useEffect(() => {
     const scroller = scrollerRef.current
     const content = contentRef.current
-    if (!scroller || !content || !open) return
+
+    console.log('[WHEEL] Effect running - scroller:', !!scroller, 'content:', !!content, 'open:', open, 'isPip:', isPip)
+
+    if (!scroller || !content || !open) {
+      console.log('[WHEEL] Skipping wheel handler setup - missing refs or not open')
+      return
+    }
 
     const handleWheel = (e: WheelEvent) => {
+      console.log('[WHEEL] Wheel event fired! deltaY:', e.deltaY, 'isEditing:', isEditing, 'virtualScrollY before:', virtualScrollYRef.current)
       e.preventDefault()
 
       // Update virtual scroll position based on wheel delta
@@ -1571,13 +1610,19 @@ export function FloatingPrompter(props: Props) {
       const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
       virtualScrollYRef.current = Math.max(0, Math.min(virtualScrollYRef.current, maxScroll))
 
+      console.log('[WHEEL] After update - virtualScrollY:', virtualScrollYRef.current, 'maxScroll:', maxScroll, 'contentHeight:', content.scrollHeight, 'scrollerHeight:', scroller.clientHeight)
+
       // Apply transform
       content.style.transform = `translateY(-${virtualScrollYRef.current}px)`
     }
 
+    console.log('[WHEEL] Attaching wheel handler to scroller')
     scroller.addEventListener('wheel', handleWheel, { passive: false })
-    return () => scroller.removeEventListener('wheel', handleWheel)
-  }, [open, playing, isPip])
+    return () => {
+      console.log('[WHEEL] Removing wheel handler')
+      scroller.removeEventListener('wheel', handleWheel)
+    }
+  }, [open, playing, isPip, isEditing])
 
   const drag = usePointerDrag({
     enabled: open,
@@ -1935,6 +1980,7 @@ export function FloatingPrompter(props: Props) {
                   transform: 'translateY(0px)' // Initial transform
                 }}
                 onClick={() => {
+                  console.log('[EDIT] User clicked to enter edit mode')
                   setIsEditing(true)
                 }}
               >
@@ -1965,6 +2011,7 @@ export function FloatingPrompter(props: Props) {
                       value={script}
                       onChange={(e) => onScriptChange(e.target.value)}
                       onBlur={(e) => {
+                        console.log('[EDIT] Textarea blur - exiting edit mode')
                         cursorPositionRef.current = e.target.selectionStart
                         setIsEditing(false)
                       }}
