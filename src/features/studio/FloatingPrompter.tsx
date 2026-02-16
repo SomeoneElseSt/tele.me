@@ -895,6 +895,12 @@ export function FloatingPrompter(props: Props) {
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
+  // Scrollbar state
+  const [scrollbarThumbPosition, setScrollbarThumbPosition] = useState(0)
+  const [scrollbarThumbHeight, setScrollbarThumbHeight] = useState(0.2) // 0-1, proportion of track
+  const scrollbarTrackRef = useRef<HTMLDivElement>(null)
+  const isDraggingScrollbarRef = useRef(false)
+
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
   const currentLineIndexRef = useRef(0) // 0-indexed: first line is 0, second line is 1, etc.
@@ -1596,6 +1602,29 @@ export function FloatingPrompter(props: Props) {
     return () => scroller.removeEventListener('wheel', handleWheel)
   }, [open, playing, isPip, isEditing])
 
+  // Sync scrollbar thumb position with virtual scroll
+  useRafLoop(
+    () => {
+      if (!isDraggingScrollbarRef.current) {
+        const scroller = scrollerRef.current
+        const content = contentRef.current
+        if (!scroller || !content) return
+
+        const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+        const scrollPercent = maxScroll > 0 ? virtualScrollYRef.current / maxScroll : 0
+
+        // Calculate thumb height as proportion of visible content
+        const thumbHeight = content.scrollHeight > 0
+          ? Math.max(0.1, Math.min(1, scroller.clientHeight / content.scrollHeight))
+          : 0.2
+
+        setScrollbarThumbPosition(scrollPercent)
+        setScrollbarThumbHeight(thumbHeight)
+      }
+    },
+    open
+  )
+
   const drag = usePointerDrag({
     enabled: open,
     getOrigin: () => ({ x: frame.x, y: frame.y }),
@@ -1629,6 +1658,61 @@ export function FloatingPrompter(props: Props) {
     },
     [resize]
   )
+
+  // Scrollbar drag handlers
+  const handleScrollbarPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const track = scrollbarTrackRef.current
+    const scroller = scrollerRef.current
+    const content = contentRef.current
+    if (!track || !scroller || !content) return
+
+    isDraggingScrollbarRef.current = true
+    const trackRect = track.getBoundingClientRect()
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const scroller = scrollerRef.current
+      const content = contentRef.current
+      if (!scroller || !content) return
+
+      // Calculate thumb height
+      const thumbHeight = content.scrollHeight > 0
+        ? Math.max(0.1, Math.min(1, scroller.clientHeight / content.scrollHeight))
+        : 0.2
+
+      // Calculate click position within track (0 to 1)
+      const clickY = moveEvent.clientY - trackRect.top
+      const trackHeight = trackRect.height
+
+      // Account for thumb height - map click position to scroll range
+      const availableTrackHeight = 1 - thumbHeight
+      const clickPercent = clickY / trackHeight
+      const scrollPercent = availableTrackHeight > 0
+        ? Math.max(0, Math.min(1, clickPercent / availableTrackHeight))
+        : 0
+
+      // Update scroll position
+      const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+      virtualScrollYRef.current = scrollPercent * maxScroll
+      content.style.transform = `translateY(-${virtualScrollYRef.current}px)`
+      setScrollbarThumbPosition(scrollPercent)
+      setScrollbarThumbHeight(thumbHeight)
+    }
+
+    const handlePointerUp = () => {
+      isDraggingScrollbarRef.current = false
+      document.removeEventListener('pointermove', handlePointerMove)
+      document.removeEventListener('pointerup', handlePointerUp)
+    }
+
+    document.addEventListener('pointermove', handlePointerMove)
+    document.addEventListener('pointerup', handlePointerUp)
+
+    // Handle initial click
+    handlePointerMove(e.nativeEvent)
+  }, [])
 
   const onFixToTop = useCallback(() => {
     originalPositionRef.current = { x: frame.x, y: frame.y }
@@ -2053,6 +2137,29 @@ export function FloatingPrompter(props: Props) {
                   </pre>
                 )}
               </div>
+
+              {/* Scrollbar */}
+              {open && (
+                <div
+                  ref={scrollbarTrackRef}
+                  onPointerDown={handleScrollbarPointerDown}
+                  className="absolute right-1 top-2 bottom-2 w-3 cursor-pointer z-20 group"
+                  style={{ touchAction: 'none' }}
+                >
+                  {/* Track - subtle line */}
+                  <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white/8 group-hover:bg-white/12 transition-colors" />
+
+                  {/* Thumb - thin indicator */}
+                  <div
+                    className="absolute right-0 w-0.5 bg-white/20 group-hover:bg-white/30 transition-colors"
+                    style={{
+                      top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
+                      height: `${scrollbarThumbHeight * 100}%`,
+                      minHeight: '30px'
+                    }}
+                  />
+                </div>
+              )}
             </div>
 
             {!fixedToTop && (
