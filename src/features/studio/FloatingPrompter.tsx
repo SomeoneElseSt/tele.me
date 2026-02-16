@@ -1032,6 +1032,7 @@ export function FloatingPrompter(props: Props) {
   const [resizing, setResizing] = useState(false)
   const scrollerRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
+  const scrollbarRef = useRef<HTMLDivElement | null>(null)
   const wasOpenRef = useRef(open)
   const savedScrollTopRef = useRef<number>(0)
   const virtualScrollYRef = useRef<number>(0)
@@ -1558,6 +1559,48 @@ export function FloatingPrompter(props: Props) {
     return () => scroller.removeEventListener('wheel', handleWheel)
   }, [open, playing])
 
+  // Update scrollbar position and size
+  useEffect(() => {
+    const scroller = scrollerRef.current
+    const content = contentRef.current
+    const scrollbar = scrollbarRef.current
+    if (!scroller || !content || !scrollbar || !open) return
+
+    const updateScrollbar = () => {
+      const scrollerHeight = scroller.clientHeight
+      const contentHeight = content.scrollHeight
+      const maxScroll = Math.max(0, contentHeight - scrollerHeight)
+
+      if (contentHeight <= scrollerHeight) {
+        // Content fits in viewport, hide scrollbar
+        scrollbar.style.display = 'none'
+        return
+      }
+
+      scrollbar.style.display = 'block'
+
+      // Calculate scrollbar thumb dimensions
+      const scrollbarHeight = scrollerHeight
+      const thumbHeight = Math.max(20, (scrollerHeight / contentHeight) * scrollbarHeight)
+      const thumbPosition = (virtualScrollYRef.current / maxScroll) * (scrollbarHeight - thumbHeight)
+
+      scrollbar.style.height = `${thumbHeight}px`
+      scrollbar.style.transform = `translateY(${thumbPosition}px)`
+    }
+
+    updateScrollbar()
+
+    // Continuously update scrollbar on RAF
+    let rafId: number
+    const loop = () => {
+      updateScrollbar()
+      rafId = requestAnimationFrame(loop)
+    }
+    rafId = requestAnimationFrame(loop)
+
+    return () => cancelAnimationFrame(rafId)
+  }, [open])
+
   const drag = usePointerDrag({
     enabled: open,
     getOrigin: () => ({ x: frame.x, y: frame.y }),
@@ -2005,6 +2048,15 @@ export function FloatingPrompter(props: Props) {
                   </pre>
                 )}
               </div>
+              {/* Custom scrollbar */}
+              <div
+                ref={scrollbarRef}
+                className="absolute right-0 top-0 w-1.5 bg-white/20 rounded-full transition-opacity duration-200 hover:bg-white/40"
+                style={{
+                  opacity: open ? 1 : 0,
+                  pointerEvents: 'none'
+                }}
+              />
             </div>
 
             {!fixedToTop && (
