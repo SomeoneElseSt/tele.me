@@ -1385,22 +1385,15 @@ export function FloatingPrompter(props: Props) {
       // Initialize line matching state
       initializeLineState(firstVisibleLine)
 
-      // Gray out all previous lines
-      setSpokenWordIndices(prev => {
-        const next = new Set(prev)
-        for (let i = 0; i < firstVisibleLine; i++) {
-          const line = scriptLinesRef.current[i]
-          if (line) {
-            line.forEach(idx => next.add(idx))
-          }
-        }
-        return next
-      })
+      // Don't gray out previous lines - start fresh with no highlights
+      // This ensures that after pausing and resuming, we start clean
     } else {
       // Clear timeout when stopping speech recognition
       clearLastWordTimeout()
       // Clear highlighting when exiting voice follow mode or stopping playback
       setSpokenWordIndices(new Set())
+      // Reset line tracking so we start fresh on resume
+      currentLineIndexRef.current = 0
     }
   }, [open, playing, followVoice, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
 
