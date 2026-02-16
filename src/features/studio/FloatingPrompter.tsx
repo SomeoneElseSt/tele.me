@@ -139,7 +139,9 @@ function renderInlineMarkdown(
   text: string,
   startWordIdx: number,
   spokenIndices: Set<number>,
-  isPip: boolean
+  isPip: boolean,
+  onWordClick?: (wordIdx: number) => void,
+  isVoiceActive?: boolean
 ): { nodes: ReactNode[]; endWordIdx: number } {
   const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g)
   let wordIdx = startWordIdx
@@ -161,7 +163,18 @@ function renderInlineMarkdown(
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
         const currentIdx = wordIdx++
         return (
-          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+          <span
+            key={`w-${idx}-${i}`}
+            data-word-idx={currentIdx}
+            className={getWordClass(currentIdx)}
+            onClick={(e) => {
+              if (isVoiceActive && onWordClick) {
+                e.stopPropagation()
+                onWordClick(currentIdx)
+              }
+            }}
+            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
+          >
             {word}
           </span>
         )
@@ -181,7 +194,18 @@ function renderInlineMarkdown(
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
         const currentIdx = wordIdx++
         return (
-          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+          <span
+            key={`w-${idx}-${i}`}
+            data-word-idx={currentIdx}
+            className={getWordClass(currentIdx)}
+            onClick={(e) => {
+              if (isVoiceActive && onWordClick) {
+                e.stopPropagation()
+                onWordClick(currentIdx)
+              }
+            }}
+            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
+          >
             {word}
           </span>
         )
@@ -198,7 +222,18 @@ function renderInlineMarkdown(
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
         const currentIdx = wordIdx++
         return (
-          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+          <span
+            key={`w-${idx}-${i}`}
+            data-word-idx={currentIdx}
+            className={getWordClass(currentIdx)}
+            onClick={(e) => {
+              if (isVoiceActive && onWordClick) {
+                e.stopPropagation()
+                onWordClick(currentIdx)
+              }
+            }}
+            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
+          >
             {word}
           </span>
         )
@@ -214,7 +249,18 @@ function renderInlineMarkdown(
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
         const currentIdx = wordIdx++
         return (
-          <span key={`w-${idx}-${i}`} data-word-idx={currentIdx} className={getWordClass(currentIdx)}>
+          <span
+            key={`w-${idx}-${i}`}
+            data-word-idx={currentIdx}
+            className={getWordClass(currentIdx)}
+            onClick={(e) => {
+              if (isVoiceActive && onWordClick) {
+                e.stopPropagation()
+                onWordClick(currentIdx)
+              }
+            }}
+            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
+          >
             {word}
           </span>
         )
@@ -226,7 +272,13 @@ function renderInlineMarkdown(
   return { nodes, endWordIdx: wordIdx }
 }
 
-function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: boolean): ReactNode[] {
+function renderMarkdownBlocks(
+  text: string,
+  spokenIndices: Set<number>,
+  isPip: boolean,
+  onWordClick?: (wordIdx: number) => void,
+  isVoiceActive?: boolean
+): ReactNode[] {
   const lines = text.replace(/\r\n/g, '\n').split('\n')
   const blocks: ReactNode[] = []
   let i = 0
@@ -251,7 +303,7 @@ function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: b
         level === 3 && 'text-[1.1em] leading-[1.3]',
         level > 3 && 'text-[1em] leading-[1.35]'
       )
-      const result = renderInlineMarkdown(textContent, wordIdx, spokenIndices, isPip)
+      const result = renderInlineMarkdown(textContent, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
       wordIdx = result.endWordIdx
 
       if (level === 1) {
@@ -300,7 +352,7 @@ function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: b
       const items: ReactNode[] = []
       while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*[-*+]\s+/, '')
-        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip)
+        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
         wordIdx = result.endWordIdx
         items.push(
           <li key={`ul-${i}`}>
@@ -322,7 +374,7 @@ function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: b
       const items: ReactNode[] = []
       while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i] ?? '')) {
         const itemText = (lines[i] ?? '').replace(/^\s*\d+\.\s+/, '')
-        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip)
+        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
         wordIdx = result.endWordIdx
         items.push(
           <li key={`ol-${i}`}>
@@ -353,7 +405,7 @@ function renderMarkdownBlocks(text: string, spokenIndices: Set<number>, isPip: b
     blocks.push(
       <p key={`p-${i}`} className="text-white/92">
         {paragraphParts.map((segment, idx) => {
-          const result = renderInlineMarkdown(segment, wordIdx, spokenIndices, isPip)
+          const result = renderInlineMarkdown(segment, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
           wordIdx = result.endWordIdx
           return (
             <span key={`p-${i}-${idx}`}>
@@ -927,15 +979,15 @@ export function FloatingPrompter(props: Props) {
   // Initialize script words when script changes
   useEffect(() => {
     scriptWordsRef.current = extractWords(script)
-    console.log('[FloatingPrompter] Script initialized with words count:', scriptWordsRef.current.length)
-    console.log('[FloatingPrompter] First few words:', scriptWordsRef.current.slice(0, 10).map(w => w.word))
+    // console.log('[FloatingPrompter] Script initialized with words count:', scriptWordsRef.current.length)
+    // console.log('[FloatingPrompter] First few words:', scriptWordsRef.current.slice(0, 10).map(w => w.word))
 
     // Calculate token frequency for dynamic weighting
     const allTokens = scriptWordsRef.current.map(w => w.normalizedWord)
     const { frequencyMap, highFrequencyThreshold } = calculateTokenFrequency(allTokens)
     tokenFrequencyMapRef.current = frequencyMap
     highFrequencyThresholdRef.current = highFrequencyThreshold
-    console.log('[FloatingPrompter] Token frequency calculated - unique tokens:', frequencyMap.size, 'high-freq threshold:', highFrequencyThreshold)
+    // console.log('[FloatingPrompter] Token frequency calculated - unique tokens:', frequencyMap.size, 'high-freq threshold:', highFrequencyThreshold)
 
     setSpokenWordIndices(new Set())
     currentLineIndexRef.current = 0
@@ -1152,16 +1204,16 @@ export function FloatingPrompter(props: Props) {
     requestAnimationFrame(() => {
       const scroller = scrollerRef.current
       const content = contentRef.current
-      console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
+      // console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
       if (!scroller || !content) {
-        console.log('[Scroll] No scroller/content element')
+        // console.log('[Scroll] No scroller/content element')
         return
       }
 
       const doc = scroller.ownerDocument
       const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
       if (!wordSpan) {
-        console.log('[Scroll] Word span not found for index:', firstWordIdx)
+        // console.log('[Scroll] Word span not found for index:', firstWordIdx)
         return
       }
 
@@ -1169,8 +1221,8 @@ export function FloatingPrompter(props: Props) {
       const containerRect = scroller.getBoundingClientRect()
       const lineHeight = fontSize * 1.35
 
-      console.log('[Scroll] wordRect.top:', wordRect.top, 'containerRect.top:', containerRect.top)
-      console.log('[Scroll] containerRect.height:', containerRect.height, 'virtualScrollY:', virtualScrollYRef.current)
+      // console.log('[Scroll] wordRect.top:', wordRect.top, 'containerRect.top:', containerRect.top)
+      // console.log('[Scroll] containerRect.height:', containerRect.height, 'virtualScrollY:', virtualScrollYRef.current)
 
       // Calculate target scroll position (getBoundingClientRect accounts for transform)
       const targetScrollY = virtualScrollYRef.current + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
@@ -1179,7 +1231,7 @@ export function FloatingPrompter(props: Props) {
       const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
       const clampedScrollY = Math.max(0, Math.min(targetScrollY, maxScroll))
 
-      console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
+      // console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
 
       // Add smooth transition for voice-following scrolls
       content.style.transition = 'transform 0.3s ease-out'
@@ -1202,11 +1254,11 @@ export function FloatingPrompter(props: Props) {
   const detectLines = useCallback(() => {
     const el = scrollerRef.current
     if (!el) {
-      console.log('[FloatingPrompter] No scroller element for line detection')
+      // console.log('[FloatingPrompter] No scroller element for line detection')
       return
     }
 
-    console.log('[FloatingPrompter] Detecting lines from DOM...')
+    // console.log('[FloatingPrompter] Detecting lines from DOM...')
 
     // Get the actual document (might be PiP window)
     const doc = el.ownerDocument
@@ -1214,7 +1266,7 @@ export function FloatingPrompter(props: Props) {
     // Get all word spans
     const wordSpans = doc.querySelectorAll('[data-word-idx]')
     if (wordSpans.length === 0) {
-      console.log('[FloatingPrompter] No word spans found, will retry...')
+      // console.log('[FloatingPrompter] No word spans found, will retry...')
       return
     }
 
@@ -1251,8 +1303,8 @@ export function FloatingPrompter(props: Props) {
     }
 
     scriptLinesRef.current = lines
-    console.log('[FloatingPrompter] Detected lines:', lines.length)
-    console.log('[FloatingPrompter] First 3 lines:', lines.slice(0, 3))
+    // console.log('[FloatingPrompter] Detected lines:', lines.length)
+    // console.log('[FloatingPrompter] First 3 lines:', lines.slice(0, 3))
   }, [fontSize])
 
   // Detect lines after rendering (when script, fontSize, or frame size changes)
@@ -1260,7 +1312,7 @@ export function FloatingPrompter(props: Props) {
   useLayoutEffect(() => {
     // Skip detection while editing (textarea is shown instead of word spans)
     if (isEditing) {
-      console.log('[FloatingPrompter] Skipping line detection during edit mode')
+      // console.log('[FloatingPrompter] Skipping line detection during edit mode')
       return
     }
 
@@ -1302,7 +1354,7 @@ export function FloatingPrompter(props: Props) {
 
       const wordRect = wordSpan.getBoundingClientRect()
       if (wordRect.bottom > containerTop) {
-        console.log('[FloatingPrompter] First visible line index:', lineIdx)
+        // console.log('[FloatingPrompter] First visible line index:', lineIdx)
         return lineIdx
       }
     }
@@ -1315,7 +1367,7 @@ export function FloatingPrompter(props: Props) {
     if (lastWordTimeoutRef.current !== null) {
       clearTimeout(lastWordTimeoutRef.current)
       lastWordTimeoutRef.current = null
-      console.log('[FloatingPrompter] Cleared last word timeout')
+      // console.log('[FloatingPrompter] Cleared last word timeout')
     }
   }, [])
 
@@ -1323,7 +1375,7 @@ export function FloatingPrompter(props: Props) {
   const initializeLineState = useCallback((lineIndex: number) => {
     const line = scriptLinesRef.current[lineIndex]
     if (!line) {
-      console.log('[FloatingPrompter] Cannot initialize line state - line not found:', lineIndex)
+      // console.log('[FloatingPrompter] Cannot initialize line state - line not found:', lineIndex)
       return
     }
 
@@ -1345,7 +1397,7 @@ export function FloatingPrompter(props: Props) {
     // Clear any pending timeout
     clearLastWordTimeout()
 
-    console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
+    // console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
   }, [clearLastWordTimeout])
 
   // Auto-advance to next line (used by timeout and normal completion)
@@ -1353,7 +1405,7 @@ export function FloatingPrompter(props: Props) {
     const currentLineIdx = currentLineIndexRef.current
     const nextLineIdx = currentLineIdx + 1
 
-    console.log('[FloatingPrompter] Auto-advancing from line', currentLineIdx, 'to', nextLineIdx)
+    // console.log('[FloatingPrompter] Auto-advancing from line', currentLineIdx, 'to', nextLineIdx)
 
     if (nextLineIdx < scriptLinesRef.current.length) {
       currentLineIndexRef.current = nextLineIdx
@@ -1380,7 +1432,7 @@ export function FloatingPrompter(props: Props) {
         }
       }
     } else {
-      console.log('[FloatingPrompter] Reached end of script')
+      // console.log('[FloatingPrompter] Reached end of script')
     }
   }, [scrollToLine, initializeLineState])
 
@@ -1389,7 +1441,7 @@ export function FloatingPrompter(props: Props) {
     if (open && playing && followVoice) {
       const firstVisibleLine = getFirstVisibleLineIndex()
       currentLineIndexRef.current = firstVisibleLine
-      console.log('[FloatingPrompter] Initialized current line to:', firstVisibleLine)
+      // console.log('[FloatingPrompter] Initialized current line to:', firstVisibleLine)
 
       // Initialize line matching state
       initializeLineState(firstVisibleLine)
@@ -1410,16 +1462,16 @@ export function FloatingPrompter(props: Props) {
   const { locale } = useI18n()
 
   const handleTranscript = useCallback((transcript: string, isFinal: boolean) => {
-    console.log(`[FloatingPrompter] ========== ${isFinal ? 'FINAL' : 'INTERIM'} ==========`)
-    console.log('[FloatingPrompter] Transcript:', transcript)
-    console.log('[FloatingPrompter] Current line index:', currentLineIndexRef.current)
+    // console.log(`[FloatingPrompter] ========== ${isFinal ? 'FINAL' : 'INTERIM'} ==========`)
+    // console.log('[FloatingPrompter] Transcript:', transcript)
+    // console.log('[FloatingPrompter] Current line index:', currentLineIndexRef.current)
 
     const currentLineIdx = currentLineIndexRef.current
     const currentLine = scriptLinesRef.current[currentLineIdx]
 
     if (!currentLine || currentLine.length === 0) {
-      console.log('[FloatingPrompter] No current line or empty line')
-      console.log('[FloatingPrompter] =========================')
+      // console.log('[FloatingPrompter] No current line or empty line')
+      // console.log('[FloatingPrompter] =========================')
       return
     }
 
@@ -1430,25 +1482,25 @@ export function FloatingPrompter(props: Props) {
       finalizedBufferRef.current += (finalizedBufferRef.current ? ' ' : '') + transcript
       asrBuffer = finalizedBufferRef.current
       lastInterimTranscriptRef.current = '' // Reset interim
-      console.log('[FloatingPrompter] FINAL - locked into buffer:', asrBuffer)
+      // console.log('[FloatingPrompter] FINAL - locked into buffer:', asrBuffer)
     } else {
       // Interim: combine finalized + current interim (don't lock in yet)
       asrBuffer = finalizedBufferRef.current + (finalizedBufferRef.current ? ' ' : '') + transcript
       lastInterimTranscriptRef.current = transcript
-      console.log('[FloatingPrompter] INTERIM - combined buffer:', asrBuffer)
+      // console.log('[FloatingPrompter] INTERIM - combined buffer:', asrBuffer)
     }
 
     // Get current line tokens
     const lineTokens = currentLineTokensRef.current
     if (lineTokens.length === 0) {
-      console.log('[FloatingPrompter] No line tokens - reinitializing line state')
+      // console.log('[FloatingPrompter] No line tokens - reinitializing line state')
       initializeLineState(currentLineIdx)
-      console.log('[FloatingPrompter] =========================')
+      // console.log('[FloatingPrompter] =========================')
       return
     }
 
-    console.log('[FloatingPrompter] Line tokens:', lineTokens)
-    console.log('[FloatingPrompter] Current state - gtIndex:', lineMatchStateRef.current.gtIndex, 'processedAsrIndex:', lineMatchStateRef.current.processedAsrIndex)
+    // console.log('[FloatingPrompter] Line tokens:', lineTokens)
+    // console.log('[FloatingPrompter] Current state - gtIndex:', lineMatchStateRef.current.gtIndex, 'processedAsrIndex:', lineMatchStateRef.current.processedAsrIndex)
 
     // Get ONLY the immediate next line (i+1) for lookahead matching
     // SAFETY: Never look beyond i+1 to prevent multi-line jumps
@@ -1456,9 +1508,9 @@ export function FloatingPrompter(props: Props) {
     const nextLine = scriptLinesRef.current[nextLineIdx]
     const nextLineTokens = nextLine ? tokenizeLine(scriptWordsRef.current, nextLine) : undefined
 
-    if (nextLineTokens) {
-      console.log('[FloatingPrompter] Next line (i+1) tokens (first 3):', nextLineTokens.slice(0, 3))
-    }
+    // if (nextLineTokens) {
+    //   console.log('[FloatingPrompter] Next line (i+1) tokens (first 3):', nextLineTokens.slice(0, 3))
+    // }
 
     // Match ASR buffer against line tokens (with dynamic weighting and next line lookahead)
     const { newState, lineComplete } = matchAsrToLine(
@@ -1472,8 +1524,8 @@ export function FloatingPrompter(props: Props) {
 
     // Update state
     lineMatchStateRef.current = newState
-    console.log('[FloatingPrompter] New state - gtIndex:', newState.gtIndex, 'highlightIndices:', newState.highlightIndices)
-    console.log('[FloatingPrompter] Line complete:', lineComplete)
+    // console.log('[FloatingPrompter] New state - gtIndex:', newState.gtIndex, 'highlightIndices:', newState.highlightIndices)
+    // console.log('[FloatingPrompter] Line complete:', lineComplete)
 
     // Dynamic timeout based on words remaining (cascading timers)
     const wordsRemaining = lineTokens.length - newState.gtIndex
@@ -1484,16 +1536,16 @@ export function FloatingPrompter(props: Props) {
     if (!lineComplete) {
       if (wordsRemaining === 2) {
         // 2 words remaining (second-to-last and last) → 2s timer
-        console.log('[FloatingPrompter] 2 words remaining - starting 2s auto-advance timer')
+        // console.log('[FloatingPrompter] 2 words remaining - starting 2s auto-advance timer')
         lastWordTimeoutRef.current = window.setTimeout(() => {
-          console.log('[FloatingPrompter] 2-word timeout fired - auto-advancing')
+          // console.log('[FloatingPrompter] 2-word timeout fired - auto-advancing')
           advanceToNextLine()
         }, 2000)
       } else if (wordsRemaining === 1) {
         // 1 word remaining (just last word) → 1s timer
-        console.log('[FloatingPrompter] 1 word remaining - starting 1s auto-advance timer')
+        // console.log('[FloatingPrompter] 1 word remaining - starting 1s auto-advance timer')
         lastWordTimeoutRef.current = window.setTimeout(() => {
-          console.log('[FloatingPrompter] 1-word timeout fired - auto-advancing')
+          // console.log('[FloatingPrompter] 1-word timeout fired - auto-advancing')
           advanceToNextLine()
         }, 1000)
       }
@@ -1506,7 +1558,7 @@ export function FloatingPrompter(props: Props) {
       return currentLine[lineRelativeIdx]
     }).filter((idx): idx is number => idx !== undefined)
 
-    console.log('[FloatingPrompter] Global highlight indices:', globalHighlightIndices)
+    // console.log('[FloatingPrompter] Global highlight indices:', globalHighlightIndices)
 
     // Update spoken indices for visual feedback
     setSpokenWordIndices(prev => {
@@ -1523,24 +1575,24 @@ export function FloatingPrompter(props: Props) {
       // Add highlighted words from current line
       globalHighlightIndices.forEach(idx => next.add(idx))
 
-      console.log('[FloatingPrompter] Updated spokenWordIndices, size:', next.size)
+      // console.log('[FloatingPrompter] Updated spokenWordIndices, size:', next.size)
       return next
     })
 
     // Advance to next line immediately when current line is complete
     // SAFETY: Only advance by 1 line at a time (i → i+1)
     if (lineComplete) {
-      console.log('[FloatingPrompter] Line complete! Advancing to next line')
+      // console.log('[FloatingPrompter] Line complete! Advancing to next line')
       clearLastWordTimeout()
       advanceToNextLine()
 
       // IMPORTANT: Return early after advancing to prevent processing more of this transcript
       // on the new line (which could cause immediate double-advancement)
-      console.log('[FloatingPrompter] =========================')
+      // console.log('[FloatingPrompter] =========================')
       return
     }
 
-    console.log('[FloatingPrompter] =========================')
+    // console.log('[FloatingPrompter] =========================')
   }, [scrollToLine, initializeLineState, clearLastWordTimeout, advanceToNextLine])
 
   const handleError = useCallback((error: string) => {
@@ -1553,6 +1605,73 @@ export function FloatingPrompter(props: Props) {
     onTranscript: handleTranscript,
     onError: handleError
   })
+
+  // Find which line contains a given word index
+  const findLineIndexForWord = useCallback((wordIndex: number): number | undefined => {
+    for (let lineIdx = 0; lineIdx < scriptLinesRef.current.length; lineIdx++) {
+      const line = scriptLinesRef.current[lineIdx]
+      if (line && line.includes(wordIndex)) {
+        return lineIdx
+      }
+    }
+    return undefined
+  }, [])
+
+  // Handle word click during voice recognition
+  const handleWordClick = useCallback((wordIndex: number) => {
+    if (!speechRecognition.active) return
+
+    // console.log('[FloatingPrompter] Word clicked:', wordIndex)
+
+    // Find which line contains this word
+    const lineIndex = findLineIndexForWord(wordIndex)
+    if (lineIndex === undefined) {
+      // console.log('[FloatingPrompter] Word not found in any line')
+      return
+    }
+
+    // console.log('[WordClick] Jumping to line:', lineIndex, 'word:', wordIndex)
+
+    // Update current line index
+    currentLineIndexRef.current = lineIndex
+
+    // Mark all words before this word as spoken (clicked word becomes current/white)
+    setSpokenWordIndices(() => {
+      const next = new Set<number>()
+      for (let i = 0; i < wordIndex; i++) {
+        next.add(i)
+      }
+      return next
+    })
+
+    // Clear ASR buffers
+    finalizedBufferRef.current = ''
+    lastInterimTranscriptRef.current = ''
+
+    // Clear any pending timeout
+    clearLastWordTimeout()
+
+    // Initialize line state for the new position
+    initializeLineState(lineIndex)
+
+    // Log the new matching buffers
+    // console.log('[WordClick] Main buffer (current line):', currentLineTokensRef.current)
+    // const newNextLineIdx = lineIndex + 1
+    // if (newNextLineIdx < scriptLinesRef.current.length) {
+    //   const newNextLine = scriptLinesRef.current[newNextLineIdx]
+    //   const newNextLineTokens = newNextLine ? tokenizeLine(scriptWordsRef.current, newNextLine) : []
+    //   console.log('[WordClick] Extended buffer (next line lookahead, first 3):', newNextLineTokens.slice(0, 3))
+    // }
+
+    // Scroll to the word's line
+    const line = scriptLinesRef.current[lineIndex]
+    if (line && line.length > 0) {
+      const firstWordIdx = line[0]
+      if (firstWordIdx !== undefined) {
+        scrollToLine(firstWordIdx)
+      }
+    }
+  }, [speechRecognition.active, findLineIndexForWord, clearLastWordTimeout, initializeLineState, scrollToLine])
 
   // Auto-disable followVoice if speech recognition is unsupported
   useEffect(() => {
@@ -2140,7 +2259,7 @@ export function FloatingPrompter(props: Props) {
                     className="font-medium leading-[1.35] tracking-[-0.02em]"
                     style={{ fontSize }}
                   >
-                    {renderMarkdownBlocks(displayScript, spokenWordIndices, isPip)}
+                    {renderMarkdownBlocks(displayScript, spokenWordIndices, isPip, handleWordClick, speechRecognition.active)}
                     <div className="whitespace-pre-wrap leading-[1.35] text-transparent select-none pointer-events-none" style={{ fontSize }}>{'\n\n\n'}</div>
                   </div>
                 ) : (
@@ -2158,7 +2277,18 @@ export function FloatingPrompter(props: Props) {
                           ? (isPip ? 'text-white/92' : '')
                           : (isPip ? 'text-[#666]' : 'opacity-40')
                         return (
-                          <span key={i} data-word-idx={idx} className={className}>
+                          <span
+                            key={i}
+                            data-word-idx={idx}
+                            className={className}
+                            onClick={(e) => {
+                              if (speechRecognition.active) {
+                                e.stopPropagation()
+                                handleWordClick(idx)
+                              }
+                            }}
+                            style={speechRecognition.active ? { cursor: 'pointer' } : undefined}
+                          >
                             {word}
                           </span>
                         )
