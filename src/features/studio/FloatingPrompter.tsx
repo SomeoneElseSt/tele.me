@@ -769,7 +769,7 @@ function ControlsBarPortal({
                   Thumb={SpeedThumb}
                   title={strings.speed}
                   value={speed}
-                  min={30}
+                  min={20}
                   max={180}
                   step={1}
                   formatValue={(v) => `${Math.round(v)}`}
