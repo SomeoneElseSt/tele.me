@@ -130,6 +130,26 @@ export function Dock({
     setConfirmDelete(false)
   }, [playingTakeId])
 
+  // Dismiss the default-open inputs tooltip on any user interaction
+  useEffect(() => {
+    if (hasOpenedInputs) return
+
+    const dismissTooltip = () => {
+      setHasOpenedInputs(true)
+      window.localStorage.setItem('teleme.me:has_opened_inputs_v2', 'true')
+    }
+
+    // Dismiss on any mouse movement (user is active)
+    window.addEventListener('mousemove', dismissTooltip, { once: true })
+    // Also dismiss on any click
+    window.addEventListener('click', dismissTooltip, { once: true })
+
+    return () => {
+      window.removeEventListener('mousemove', dismissTooltip)
+      window.removeEventListener('click', dismissTooltip)
+    }
+  }, [hasOpenedInputs])
+
   const playingTake = useMemo(
     () => (playingTakeId ? takes.find((t) => t.id === playingTakeId) : null),
     [takes, playingTakeId]
