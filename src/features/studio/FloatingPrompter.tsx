@@ -2147,11 +2147,11 @@ export function FloatingPrompter(props: Props) {
                   style={{ touchAction: 'none' }}
                 >
                   {/* Track - subtle line */}
-                  <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white/8 group-hover:bg-white/12 transition-colors" />
+                  <div className="absolute right-0 top-0 bottom-0 w-0.5 rounded-full bg-white/8 group-hover:bg-white/12 transition-colors" />
 
                   {/* Thumb - thin indicator */}
                   <div
-                    className="absolute right-0 w-0.5 bg-white/20 group-hover:bg-white/30 transition-colors"
+                    className="absolute right-0 w-0.5 rounded-full bg-white/20 group-hover:bg-white/30 transition-colors"
                     style={{
                       top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
                       height: `${scrollbarThumbHeight * 100}%`,
