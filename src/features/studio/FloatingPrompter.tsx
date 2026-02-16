@@ -960,7 +960,7 @@ export function FloatingPrompter(props: Props) {
   const [scrollbarThumbHeight, setScrollbarThumbHeight] = useState(0.2) // 0-1, proportion of track
   const scrollbarTrackRef = useRef<HTMLDivElement>(null)
   const isDraggingScrollbarRef = useRef(false)
-  const [isSmoothScrolling, setIsSmoothScrolling] = useState(false)
+  const [hasTransitionRef] = useState(() => ({ enabled: false })) // Track if transition should be active
 
   // Speech recognition state
   const [spokenWordIndices, setSpokenWordIndices] = useState<Set<number>>(new Set())
@@ -991,6 +991,7 @@ export function FloatingPrompter(props: Props) {
   const autoScrollTimeoutRef = useRef<number | null>(null)
   const autoScrollStartTimeRef = useRef<number>(0)
   const remainingTimeRef = useRef<number>(0)
+  const previousLineIndexRef = useRef<number>(0)
 
   // Initialize script words when script changes
   useEffect(() => {
@@ -1220,57 +1221,42 @@ export function FloatingPrompter(props: Props) {
 
   // Scroll to show a specific line (by first word index)
   const scrollToLine = useCallback((firstWordIdx: number) => {
-    // Use RAF to ensure DOM has updated before scrolling
-    requestAnimationFrame(() => {
-      const scroller = scrollerRef.current
-      const content = contentRef.current
-      // console.log('[Scroll] Scrolling to line starting with word index:', firstWordIdx)
-      if (!scroller || !content) {
-        // console.log('[Scroll] No scroller/content element')
-        return
-      }
+    const scroller = scrollerRef.current
+    const content = contentRef.current
+    if (!scroller || !content) return
 
-      const doc = scroller.ownerDocument
-      const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
-      if (!wordSpan) {
-        // console.log('[Scroll] Word span not found for index:', firstWordIdx)
-        return
-      }
+    const doc = scroller.ownerDocument
+    const wordSpan = doc.querySelector(`[data-word-idx="${firstWordIdx}"]`)
+    if (!wordSpan) return
 
-      const wordRect = wordSpan.getBoundingClientRect()
-      const containerRect = scroller.getBoundingClientRect()
-      const lineHeight = fontSize * 1.35
+    // Use offsetTop for stable document position (not affected by transforms)
+    const wordOffsetTop = (wordSpan as HTMLElement).offsetTop
 
-      // console.log('[Scroll] wordRect.top:', wordRect.top, 'containerRect.top:', containerRect.top)
-      // console.log('[Scroll] containerRect.height:', containerRect.height, 'virtualScrollY:', virtualScrollYRef.current)
+    // Position current line at the top of viewport (small padding)
+    // This ensures first line appears at very top, and subsequent lines scroll smoothly
+    const readingPosition = 8 // Small padding from absolute top
+    const targetScrollY = wordOffsetTop - readingPosition
 
-      // Calculate target scroll position (getBoundingClientRect accounts for transform)
-      const targetScrollY = virtualScrollYRef.current + (wordRect.top - containerRect.top) - (containerRect.height / 2) + (lineHeight / 2)
+    // Clamp to valid range
+    const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+    const clampedScrollY = Math.max(0, Math.min(targetScrollY, maxScroll))
 
-      // Clamp to valid range
-      const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
-      const clampedScrollY = Math.max(0, Math.min(targetScrollY, maxScroll))
-
-      // console.log('[Scroll] targetScrollY:', targetScrollY, 'clamped:', clampedScrollY, 'max:', maxScroll)
-
-      // Add smooth transition for voice-following scrolls
-      setIsSmoothScrolling(true)
+    // Enable transition for auto-scroll line jumps, then disable after animation
+    hasTransitionRef.enabled = true
+    if (content.style.transition === '') {
       content.style.transition = 'transform 0.3s ease-out'
+    }
 
-      // Update virtual scroll and apply transform
-      virtualScrollYRef.current = clampedScrollY
-      content.style.transform = `translateY(-${clampedScrollY}px)`
+    // Update scroll position — CSS transition will animate the change
+    virtualScrollYRef.current = clampedScrollY
+    content.style.transform = `translateY(-${clampedScrollY}px)`
 
-      // Remove transition after animation completes to keep wheel/manual scrolling instant
-      const removeTransition = () => {
-        content.style.transition = ''
-        setIsSmoothScrolling(false)
-      }
-      content.addEventListener('transitionend', removeTransition, { once: true })
-      // Fallback cleanup in case transitionend doesn't fire
-      setTimeout(removeTransition, 350)
-    })
-  }, [fontSize])
+    // Disable transition after animation completes
+    setTimeout(() => {
+      content.style.transition = ''
+      hasTransitionRef.enabled = false
+    }, 300)
+  }, [])
 
   // Detect lines from rendered DOM
   const detectLines = useCallback(() => {
@@ -1457,15 +1443,19 @@ export function FloatingPrompter(props: Props) {
 
     autoScrollStartTimeRef.current = performance.now()
     autoScrollTimeoutRef.current = setTimeout(() => {
+      // Check if this word is on a new line compared to previous
+      const currentLineIdx = findLineIndexContainingWord(wordIdx)
+
+      // Scroll to line if changed
+      const shouldScroll = currentLineIdx !== previousLineIndexRef.current || wordIdx === 0
+      if (shouldScroll) {
+        const firstWordOfLine = findFirstWordOfLine(currentLineIdx)
+        scrollToLine(firstWordOfLine)
+        previousLineIndexRef.current = currentLineIdx
+      }
+
       // Gray out current word
       setSpokenWordIndices(prev => new Set([...prev, wordIdx]))
-
-      // Check if we need to scroll to next line
-      const lineIdx = findLineIndexContainingWord(wordIdx)
-      const nextLineIdx = findLineIndexContainingWord(wordIdx + 1)
-      if (lineIdx !== nextLineIdx && nextLineIdx !== lineIdx) {
-        scrollToLine(findFirstWordOfLine(nextLineIdx))
-      }
 
       // Move to next word
       setCurrentWordIndex(prev => prev + 1)
@@ -1490,6 +1480,7 @@ export function FloatingPrompter(props: Props) {
       setSpokenWordIndices(new Set())
       remainingTimeRef.current = 0
       autoScrollStartTimeRef.current = 0
+      previousLineIndexRef.current = 0
     }
 
     return () => {
@@ -1507,6 +1498,7 @@ export function FloatingPrompter(props: Props) {
       setSpokenWordIndices(new Set())
       remainingTimeRef.current = 0
       autoScrollStartTimeRef.current = 0
+      previousLineIndexRef.current = 0
     }
   }, [autoScrollEnabled])
 
@@ -2241,7 +2233,7 @@ export function FloatingPrompter(props: Props) {
                   paddingBottom: frame.height * 0.7,
                   minHeight: '100%',
                   willChange: 'transform',
-                  transform: 'translateY(0px)' // Initial transform
+                  transition: 'none', // Transitions added dynamically by scrollToLine
                 }}
                 onClick={() => {
                   setIsEditing(true)
@@ -2382,9 +2374,7 @@ export function FloatingPrompter(props: Props) {
                       top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
                       height: `${scrollbarThumbHeight * 100}%`,
                       minHeight: '30px',
-                      transition: isSmoothScrolling
-                        ? 'top 0.3s ease-out, background-color 0.2s ease-in-out'
-                        : 'background-color 0.2s ease-in-out'
+                      transition: 'top 0.3s ease-out, background-color 0.2s ease-in-out'
                     }}
                   />
                 </div>

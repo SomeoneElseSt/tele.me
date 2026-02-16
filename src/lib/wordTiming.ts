@@ -37,7 +37,7 @@ const DEFAULT_WPM = 150
  * - 1-syllable word: 267ms (var=1.0), 356ms (var=0.5), 178ms (var=1.5)
  * - 3-syllable word: 800ms (var=1.0), 711ms (var=0.5), 889ms (var=1.5)
  */
-const DURATION_VARIANCE = 1.0
+const DURATION_VARIANCE = 0.5 
 
 /**
  * Check if a word has punctuation at its position in the original script
