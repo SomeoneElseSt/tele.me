@@ -24,6 +24,22 @@ const LINE_BREAK_PAUSE_MS = 500
 const DEFAULT_WPM = 150
 
 /**
+ * Duration variance control (0.0 - 2.0)
+ *
+ * Controls how much word duration varies based on syllable count:
+ * - 1.0 = Normal distribution (default) - syllable count directly determines duration
+ * - 0.5 = Low variance - short and long words are closer in duration
+ * - 0.0 = Zero variance - all words same duration regardless of syllable count
+ * - 1.5 = High variance - bigger difference between short and long words
+ * - 2.0 = Very high variance - extreme difference between short and long words
+ *
+ * Examples at 150 WPM with different variance values:
+ * - 1-syllable word: 267ms (var=1.0), 356ms (var=0.5), 178ms (var=1.5)
+ * - 3-syllable word: 800ms (var=1.0), 711ms (var=0.5), 889ms (var=1.5)
+ */
+const DURATION_VARIANCE = 1.0
+
+/**
  * Check if a word has punctuation at its position in the original script
  */
 function hasPunctuationAtPosition(
@@ -110,7 +126,8 @@ export function calculateWordTimings(
   // WPM = words per minute
   // Assuming average word has ~1.5 syllables, we can derive syllables per minute
   // Time per syllable = 60000ms / (WPM * 1.5)
-  const msPerSyllable = 60000 / (validWpm * 1.5)
+  const avgSyllables = 1.5
+  const msPerSyllable = 60000 / (validWpm * avgSyllables)
 
   const timings: WordTiming[] = []
 
@@ -121,8 +138,14 @@ export function calculateWordTimings(
     // Count syllables in the word
     const syllableCount = Math.max(1, syllable(wordInfo.word))
 
+    // Apply variance control to syllable count
+    // This normalizes duration distribution - lower variance = more uniform durations
+    const syllableRatio = syllableCount / avgSyllables
+    const adjustedRatio = Math.pow(syllableRatio, DURATION_VARIANCE)
+    const adjustedSyllables = adjustedRatio * avgSyllables
+
     // Calculate base duration for this word
-    const baseDuration = syllableCount * msPerSyllable
+    const baseDuration = adjustedSyllables * msPerSyllable
 
     // Check for punctuation
     const { hasPunctuation, punctuationType } = hasPunctuationAtPosition(script, wordInfo, words)
