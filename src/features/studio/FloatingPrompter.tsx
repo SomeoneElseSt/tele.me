@@ -1016,14 +1016,23 @@ export function FloatingPrompter(props: Props) {
   useEffect(() => {
     if (isPip && pipWindowRef.current) {
       const handleKeyDown = (e: any) => {
+        const target = e.target as HTMLElement | null
+        const isTypingTarget =
+          target?.tagName === 'INPUT' ||
+          target?.tagName === 'TEXTAREA' ||
+          (target?.getAttribute('contenteditable') ?? 'false') === 'true'
+
         if (e.code === 'Space') {
           e.preventDefault()
           onTogglePlaying()
         } else if (e.code === 'KeyP') {
+          if (isTypingTarget) return
           togglePip()
         } else if (e.code === 'KeyM') {
+          if (isTypingTarget) return
           props.onMarkdownEnabledChange?.(!markdownEnabled)
         } else if (e.code === 'KeyC') {
+          if (isTypingTarget) return
           setQuickOpen((prev) => {
             const next = !prev
             props.onControlsOpenChange?.(next)
