@@ -1554,6 +1554,13 @@ export function FloatingPrompter(props: Props) {
     onError: handleError
   })
 
+  // Auto-disable followVoice if speech recognition is unsupported
+  useEffect(() => {
+    if (speechRecognition.unsupported && followVoice) {
+      onFollowVoiceChange(false)
+    }
+  }, [speechRecognition.unsupported, followVoice, onFollowVoiceChange])
+
   // Disable RAF auto-scroll when followVoice is active
   useRafLoop(
     (deltaMs) => {

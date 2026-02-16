@@ -152,7 +152,6 @@ export function useSpeechRecognition({
 
     recognition.onstart = () => {
       if (!mountedRef.current) return
-      console.log('[ASR] Speech recognition started, locale:', SPEECH_RECOGNITION_LANGS[locale])
       setActive(true)
       setError(undefined)
       hasReceivedSpeechRef.current = false
@@ -170,7 +169,6 @@ export function useSpeechRecognition({
         if (!transcript) continue
 
         const isFinal = result.isFinal
-        console.log('[ASR] Transcript:', transcript, 'isFinal:', isFinal, 'confidence:', result[0]?.confidence)
         hasReceivedSpeechRef.current = true
         onTranscript(transcript, isFinal)
       }
@@ -180,7 +178,6 @@ export function useSpeechRecognition({
       if (!mountedRef.current) return
 
       const errorMsg = `Speech recognition error: ${event.error}`
-      console.log('[ASR] Error event:', event.error)
 
       // Don't set error for 'no-speech' - it's expected during pauses
       if (event.error === 'no-speech') {
@@ -196,7 +193,6 @@ export function useSpeechRecognition({
       const persistentErrors = ['network', 'service-not-available', 'bad-grammar', 'not-allowed']
       const isPersistentError = persistentErrors.includes(event.error)
 
-      console.log('[ASR] Setting error state:', errorMsg, 'persistent:', isPersistentError)
       setError(errorMsg)
 
       if (isPersistentError) {
@@ -232,14 +228,12 @@ export function useSpeechRecognition({
       // Don't restart if it ended immediately (permission/device issues)
       if (enabledRef.current && hasReceivedSpeechRef.current && retryCountRef.current < MAX_RETRIES) {
         const delay = 100
-        console.log('[ASR] Recognition timed out after speech, auto-restarting...')
         retryTimeoutRef.current = window.setTimeout(() => {
           if (!mountedRef.current) return
           if (!enabledRef.current) return
           start()
         }, delay)
       } else {
-        console.log('[ASR] Recognition ended, no auto-restart (hasSpoken:', hasReceivedSpeechRef.current, 'enabled:', enabledRef.current, ')')
         setActive(false)
       }
     }
