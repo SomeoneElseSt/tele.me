@@ -83,8 +83,9 @@ type Strings = {
   popOutOnlyChrome: string
   allowCameraAccess: string
   braveBlockedMessage: string
+  autoScroll: string
   autoScrolling: string
-  autoScrollEnabled: string
+  autoScrollStartPlaying: string
   autoScrollSpeed: string
   autoScrollSpeedTooltip: string
   shortcutsMenu: string
@@ -106,7 +107,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: hide/show prompter\n' +
       'I: control inputs\n' +
       'M: enable markdown\n' +
-      'V: Auto-scrolling\n' +
+      'V: Autoscroll\n' +
       'F: fullscreen',
     language: 'Language',
     script: 'Script',
@@ -172,8 +173,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Pop out mode is not possible on Safari. Use Chrome for better compatibility.',
     allowCameraAccess: 'Allow camera access',
     braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.',
-    autoScrolling: 'Auto-scrolling',
-    autoScrollEnabled: 'Auto-scrolling active',
+    autoScroll: 'Autoscroll',
+    autoScrolling: 'Autoscrolling',
+    autoScrollStartPlaying: 'Start playing to autoscroll',
     autoScrollSpeed: 'Auto-scroll speed',
     autoScrollSpeedTooltip: 'Words per minute when auto-scrolling',
     shortcutsMenu:
@@ -187,7 +189,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'H: hide/show prompter\n' +
       'I: control inputs\n' +
       'M: enable markdown\n' +
-      'V: auto-scrolling\n' +
+      'V: Autoscroll\n' +
       'F: fullscreen',
     shortcutsTitle: 'Shortcuts',
     speakingTime: 'Speaking Time',
@@ -271,8 +273,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'El modo de ventana emergente no es posible en Safari. Usa Chrome para una mejor compatibilidad.',
     allowCameraAccess: 'Permitir acceso a la cámara',
     braveBlockedMessage: 'Brave bloqueó el acceso a la cámara. Haz clic en el icono de Shields o en el icono del candado en la barra de direcciones para restablecer los permisos y desactivar la protección contra huellas digitales para este sitio. Usa Chrome para una mejor compatibilidad.',
-    autoScrolling: 'Desplazamiento automático',
-    autoScrollEnabled: 'Desplazamiento automático activo',
+    autoScroll: 'Desplazamiento automático',
+    autoScrolling: 'Desplazamiento automático en curso',
+    autoScrollStartPlaying: 'Reproduce para activar el desplazamiento automático',
     autoScrollSpeed: 'Velocidad de desplazamiento automático',
     autoScrollSpeedTooltip: 'Palabras por minuto en desplazamiento automático',
     shortcutsMenu:
@@ -370,8 +373,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safariではポップアウトモードは利用できません。互換性を高めるためにChromeを使用してください。',
     allowCameraAccess: 'カメラへのアクセスを許可',
     braveBlockedMessage: 'Braveがカメラへのアクセスをブロックしました。アドレスバーのShieldsアイコンまたは鍵アイコンをクリックして権限をリセットし、このサイトのフィンガープリント保護を無効にしてください。互換性を高めるためにChromeを使用してください。',
-    autoScrolling: '自動スクロール',
-    autoScrollEnabled: '自動スクロール有効',
+    autoScroll: '自動スクロール',
+    autoScrolling: '自動スクロール中',
+    autoScrollStartPlaying: '再生すると自動スクロール',
     autoScrollSpeed: '自動スクロール速度',
     autoScrollSpeedTooltip: '自動スクロール時の単語毎分数',
     shortcutsMenu:
@@ -469,8 +473,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari पर पॉप आउट मोड संभव नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     allowCameraAccess: 'कैमरा एक्सेस की अनुमति दें',
     braveBlockedMessage: 'Brave ने कैमरा एक्सेस को ब्लॉक कर दिया है। अनुमतियों को रीसेट करने और इस साइट के लिए फ़िंगरप्रिंटिंग सुरक्षा को अक्षम करने के लिए एड्रेस बार में शील्ड्स आइकन या लॉक आइकन पर क्लिक करें। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
-    autoScrolling: 'स्वचालित स्क्रॉलिंग',
-    autoScrollEnabled: 'स्वचालित स्क्रॉलिंग सक्रिय',
+    autoScroll: 'स्वचालित स्क्रॉल',
+    autoScrolling: 'स्वचालित स्क्रॉल हो रहा है',
+    autoScrollStartPlaying: 'स्वचालित स्क्रॉल के लिए चलाएं',
     autoScrollSpeed: 'स्वचालित स्क्रॉल गति',
     autoScrollSpeedTooltip: 'स्वचालित स्क्रॉलिंग के दौरान शब्द प्रति मिनट',
     shortcutsMenu:
@@ -568,8 +573,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Le mode fenêtre surgissante n’est pas possible sur Safari. Utilisez Chrome pour une meilleure compatibilité.',
     allowCameraAccess: "Autoriser l'accès à la caméra",
     braveBlockedMessage: "Brave a bloqué l'accès à la caméra. Cliquez sur l'icône Shields ou sur l'icône du cadenas dans la barre d'adresse pour réinitialiser les permissions et désactiver la protection contre le fingerprinting pour ce site. Utilisez Chrome pour une meilleure compatibilité.",
-    autoScrolling: 'Défilement automatique',
-    autoScrollEnabled: 'Défilement automatique actif',
+    autoScroll: 'Défilement automatique',
+    autoScrolling: 'Défilement en cours',
+    autoScrollStartPlaying: 'Lancez la lecture pour défiler automatiquement',
     autoScrollSpeed: 'Vitesse de défilement automatique',
     autoScrollSpeedTooltip: 'Mots par minute en défilement automatique',
     shortcutsMenu:
@@ -667,8 +673,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Der Pop-out-Modus ist in Safari nicht möglich. Verwenden Sie Chrome für eine bessere Kompatibilität.',
     allowCameraAccess: 'Kamerazugriff erlauben',
     braveBlockedMessage: 'Brave hat den Kamerazugriff blockiert. Klicken Sie auf das Shields-Symbol oder das Schloss-Symbol in der Adressleiste, um die Berechtigungen zurückzusetzen und den Fingerprinting-Schutz für diese Website zu deaktivieren. Verwenden Sie Chrome für eine bessere Kompatibilität.',
-    autoScrolling: 'Automatisches Scrollen',
-    autoScrollEnabled: 'Automatisches Scrollen aktiv',
+    autoScroll: 'Automatisches Scrollen',
+    autoScrolling: 'Wird automatisch gescrollt',
+    autoScrollStartPlaying: 'Wiedergabe starten für automatisches Scrollen',
     autoScrollSpeed: 'Geschwindigkeit des automatischen Scrollens',
     autoScrollSpeedTooltip: 'Wörter pro Minute beim automatischen Scrollen',
     shortcutsMenu:
@@ -766,8 +773,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Safari 上不支持弹出模式。为了获得更好的兼容性，请使用 Chrome。',
     allowCameraAccess: '允许访问摄像头',
     braveBlockedMessage: 'Brave 已阻止访问摄像头。点击地址栏中的 Shields 图标或锁形图标以重置权限，并禁用此网站的指纹识别保护。为了获得更好的兼容性，请使用 Chrome。',
-    autoScrolling: '自动滚动',
-    autoScrollEnabled: '自动滚动已激活',
+    autoScroll: '自动滚动',
+    autoScrolling: '正在自动滚动',
+    autoScrollStartPlaying: '开始播放以自动滚动',
     autoScrollSpeed: '自动滚动速度',
     autoScrollSpeedTooltip: '自动滚动时的每分钟字数',
     shortcutsMenu:
@@ -865,8 +873,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'وضع النافذة المنبثقة غير ممكن على Safari. استخدم Chrome لتوافق أفضل.',
     allowCameraAccess: 'السماح بالوصول إلى الكاميرا',
     braveBlockedMessage: 'حظر Brave الوصول إلى الكاميرا. انقر فوق أيقونة Shields أو أيقونة القفل في شريط العناوين لإعادة تعيين الأذونات وتعطيل حماية البصمة الرقمية لهذا الموقع. استخدم Chrome لتوافق أفضل.',
-    autoScrolling: 'التمرير التلقائي',
-    autoScrollEnabled: 'التمرير التلقائي نشط',
+    autoScroll: 'التمرير التلقائي',
+    autoScrolling: 'جاري التمرير التلقائي',
+    autoScrollStartPlaying: 'ابدأ التشغيل للتمرير التلقائي',
     autoScrollSpeed: 'سرعة التمرير التلقائي',
     autoScrollSpeedTooltip: 'كلمات في الدقيقة أثناء التمرير التلقائي',
     shortcutsMenu:
@@ -962,8 +971,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'O modo pop-out não é possível no Safari. Use o Chrome para melhor compatibilidade.',
     allowCameraAccess: 'Permitir acesso à câmera',
     braveBlockedMessage: 'O Brave bloqueou o acesso à câmera. Clique no ícone Shields ou no ícone de cadeado na barra de endereços para redefinir as permissões e desativar a proteção contra impressão digital para este site. Use o Chrome para melhor compatibilidade.',
-    autoScrolling: 'Rolagem automática',
-    autoScrollEnabled: 'Rolagem automática ativa',
+    autoScroll: 'Rolagem automática',
+    autoScrolling: 'Rolagem automática em andamento',
+    autoScrollStartPlaying: 'Inicie a reprodução para rolagem automática',
     autoScrollSpeed: 'Velocidade de rolagem automática',
     autoScrollSpeedTooltip: 'Palavras por minuto na rolagem automática',
     shortcutsMenu:
@@ -1060,8 +1070,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Вынос окна невозможен в Safari. Используйте Chrome для лучшей совместимости.',
     allowCameraAccess: 'Разрешить доступ к камере',
     braveBlockedMessage: 'Brave заблокировал доступ к камере. Нажмите на значок Shields или значок замка в адресной строке, чтобы сбросить разрешения и отключить защиту от цифровых отпечатков для этого сайта. Используйте Chrome для лучшей совместимости.',
-    autoScrolling: 'Автопрокрутка',
-    autoScrollEnabled: 'Автопрокрутка активна',
+    autoScroll: 'Автопрокрутка',
+    autoScrolling: 'Идёт автопрокрутка',
+    autoScrollStartPlaying: 'Начните воспроизведение для автопрокрутки',
     autoScrollSpeed: 'Скорость автопрокрутки',
     autoScrollSpeedTooltip: 'Слов в минуту при автопрокрутке',
     shortcutsMenu:
@@ -1158,8 +1169,9 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     popOutOnlyChrome: 'Tryb wyskakującego okna nie jest możliwy w Safari. Używaj Chrome dla lepszej kompatybilności.',
     allowCameraAccess: 'Zezwól na dostęp do kamery',
     braveBlockedMessage: 'Brave zablokował dostęp do kamery. Kliknij ikonę Shields lub ikonę kłódki w pasku adresu, aby zresetować uprawnienia i wyłączyć ochronę przed pobieraniem odcisków palców dla tej witryny. Używaj Chrome dla lepszej kompatybilności.',
-    autoScrolling: 'Automatyczne przewijanie',
-    autoScrollEnabled: 'Automatyczne przewijanie aktywne',
+    autoScroll: 'Automatyczne przewijanie',
+    autoScrolling: 'Trwa automatyczne przewijanie',
+    autoScrollStartPlaying: 'Uruchom odtwarzanie, aby przewijać automatycznie',
     autoScrollSpeed: 'Szybkość automatycznego przewijania',
     autoScrollSpeedTooltip: 'Słowa na minutę podczas automatycznego przewijania',
     shortcutsMenu:

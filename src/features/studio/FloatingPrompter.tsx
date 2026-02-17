@@ -2143,11 +2143,27 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={autoScrollEnabled ? strings.autoScrollEnabled : strings.autoScrolling} shortcut="V">
+                <Tooltip
+                  enabled={!isPip}
+                  label={
+                    !autoScrollEnabled
+                      ? strings.autoScroll
+                      : playing
+                        ? strings.autoScrolling
+                        : strings.autoScrollStartPlaying
+                  }
+                  shortcut="V"
+                >
                   <button
                     type="button"
                     onClick={() => onAutoScrollChange(!autoScrollEnabled)}
-                    aria-label={strings.autoScrolling}
+                    aria-label={
+                      !autoScrollEnabled
+                        ? strings.autoScroll
+                        : playing
+                          ? strings.autoScrolling
+                          : strings.autoScrollStartPlaying
+                    }
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
@@ -2475,11 +2491,27 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip enabled={!isPip} label={autoScrollEnabled ? strings.autoScrollEnabled : strings.autoScrolling} shortcut="V">
+                <Tooltip
+                  enabled={!isPip}
+                  label={
+                    !autoScrollEnabled
+                      ? strings.autoScroll
+                      : playing
+                        ? strings.autoScrolling
+                        : strings.autoScrollStartPlaying
+                  }
+                  shortcut="V"
+                >
                   <button
                     type="button"
                     onClick={() => onAutoScrollChange(!autoScrollEnabled)}
-                    aria-label={strings.autoScrolling}
+                    aria-label={
+                      !autoScrollEnabled
+                        ? strings.autoScroll
+                        : playing
+                          ? strings.autoScrolling
+                          : strings.autoScrollStartPlaying
+                    }
                     onPointerDown={(e) => e.stopPropagation()}
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
