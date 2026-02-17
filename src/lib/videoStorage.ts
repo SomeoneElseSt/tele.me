@@ -183,6 +183,24 @@ export async function deleteVideo(id: string): Promise<void> {
 }
 
 /**
+ * Update an existing video blob in IndexedDB (in-place replacement)
+ */
+export async function updateVideo(id: string, newBlob: Blob): Promise<void> {
+    const db = await openDB()
+    const existing = await new Promise<StoredVideo>((resolve, reject) => {
+        const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(id)
+        req.onsuccess = () => resolve(req.result as StoredVideo)
+        req.onerror = () => reject(req.error)
+    })
+    const updated: StoredVideo = { ...existing, blob: newBlob }
+    await new Promise<void>((resolve, reject) => {
+        const req = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updated)
+        req.onsuccess = () => resolve()
+        req.onerror = () => reject(req.error)
+    })
+}
+
+/**
  * Clear all videos from IndexedDB
  */
 export async function clearAllVideos(): Promise<void> {

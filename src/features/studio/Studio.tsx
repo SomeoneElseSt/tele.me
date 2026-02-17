@@ -20,6 +20,7 @@ import { VideoScrubber } from './VideoScrubber'
 import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
+import { trimVideo } from '../../lib/videoTrim'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -194,6 +195,10 @@ export function Studio() {
   const [videoPlaying, setVideoPlaying] = useState(false)
   const [videoCurrentTime, setVideoCurrentTime] = useState(0)
   const [videoDuration, setVideoDuration] = useState(0)
+  const [trimMode, setTrimMode] = useState(false)
+  const [trimStart, setTrimStart] = useState(0)
+  const [trimEnd, setTrimEnd] = useState(0)
+  const [trimming, setTrimming] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastProcessedUrlRef = useRef<string | null>(null)
 
@@ -500,7 +505,48 @@ export function Studio() {
     }
     setPlayingTakeId(null)
     setVideoPlaying(false)
+    setTrimMode(false)
+    setTrimming(false)
   }, [])
+
+  const onToggleTrim = useCallback(() => {
+    if (trimMode) { setTrimMode(false); return }
+    const safeStart = Math.min(1, videoDuration * 0.1)
+    const safeEnd = Math.max(videoDuration - 1, videoDuration * 0.9)
+    setTrimStart(safeStart)
+    setTrimEnd(safeEnd)
+    setTrimMode(true)
+  }, [trimMode, videoDuration])
+
+  const onConfirmTrim = useCallback(async () => {
+    if (!playingTakeId) return
+    const take = takes.find(t => t.id === playingTakeId)
+    if (!take) return
+    console.log('[Studio] Starting trim', { id: take.id, trimStart, trimEnd, mimeType: take.mimeType })
+    setTrimming(true)
+    if (videoRef.current) videoRef.current.pause()
+    setVideoPlaying(false)
+    try {
+      const blob = await fetch(take.url).then(r => r.blob())
+      console.log('[Studio] Fetched blob, size=', blob.size)
+      const trimmed = await trimVideo(blob, trimStart, trimEnd, take.mimeType)
+      if (persistVideos) {
+        console.log('[Studio] Saving trimmed blob to IndexedDB')
+        await videoStorage.updateVideo(take.id, trimmed)
+      }
+      const newUrl = URL.createObjectURL(trimmed)
+      URL.revokeObjectURL(take.url)
+      setTakes(prev => prev.map(t => t.id === take.id ? { ...t, url: newUrl } : t))
+      setTrimMode(false)
+      setVideoCurrentTime(0)
+      setVideoDuration(0)
+      console.log('[Studio] Trim complete')
+    } catch (err) {
+      console.error('[Studio] Trim failed', err)
+    } finally {
+      setTrimming(false)
+    }
+  }, [playingTakeId, takes, trimStart, trimEnd, persistVideos])
 
   const onToggleVideoPlayback = useCallback(() => {
     if (!videoRef.current) return
@@ -586,7 +632,14 @@ export function Studio() {
 
         if (playingTakeId) {
           hotkeys.space = () => onToggleVideoPlayback()
-          hotkeys.escape = () => onCloseVideo()
+          hotkeys.escape = () => {
+            if (trimMode) {
+              setTrimMode(false)
+              return
+            }
+            onCloseVideo()
+          }
+          hotkeys.t = () => onToggleTrim()
         } else {
           hotkeys.r = () => onToggleRecord()
           hotkeys.space = () => onTogglePrompter()
@@ -616,7 +669,7 @@ export function Studio() {
 
         return hotkeys
       },
-      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip, handleClosePrompter, setAutoScrollEnabled]
+      [onToggleDrawer, onTogglePrompter, onToggleRecord, prompterOpen, playingTakeId, onToggleVideoPlayback, onCloseVideo, onToggleFullscreen, prompterIsPip, handleClosePrompter, setAutoScrollEnabled, onToggleTrim, trimMode, setTrimMode]
     ),
     true
   )
@@ -645,6 +698,13 @@ export function Studio() {
               currentTime={videoCurrentTime}
               duration={videoDuration}
               onSeek={onSeekVideo}
+              trimMode={trimMode}
+              trimStart={trimStart}
+              trimEnd={trimEnd}
+              onTrimChange={(s, e) => { setTrimStart(s); setTrimEnd(e) }}
+              onConfirmTrim={() => { void onConfirmTrim() }}
+              trimming={trimming}
+              onExitTrim={() => setTrimMode(false)}
             />
           </div>
         ) : (
@@ -838,6 +898,8 @@ export function Studio() {
           isLoadingVideos={isLoadingVideos}
           recordDisabledReason={recordDisabledReason}
           error={error}
+          trimMode={trimMode}
+          onToggleTrim={onToggleTrim}
         />
 
         <SettingsDrawer

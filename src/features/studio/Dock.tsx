@@ -1,4 +1,4 @@
-import { AlignLeft, Check, ChevronUp, Download, Maximize2, Minimize2, Pause, Play, Trash2, Type, Video, X } from 'lucide-react'
+import { AlignLeft, Check, ChevronUp, Download, Maximize2, Minimize2, Pause, Play, Scissors, Trash2, Type, Video, X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -42,6 +42,8 @@ type Props = {
   isLoadingVideos?: boolean
   recordDisabledReason?: string
   error?: string
+  trimMode: boolean
+  onToggleTrim: () => void
 }
 
 type DockButtonProps = {
@@ -110,7 +112,9 @@ export function Dock({
   onPersistVideosChange,
   isLoadingVideos,
   recordDisabledReason,
-  error
+  error,
+  trimMode,
+  onToggleTrim,
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -363,6 +367,15 @@ export function Dock({
                 onClick={handleDownloadActive}
               >
                 <Download className="h-4 w-4" />
+              </DockButton>
+
+              <DockButton
+                label={trimMode ? "Exit trim" : "Trim video"}
+                shortcut="T"
+                onClick={onToggleTrim}
+                active={trimMode}
+              >
+                <Scissors className="h-4 w-4" />
               </DockButton>
 
               <div className="relative">
