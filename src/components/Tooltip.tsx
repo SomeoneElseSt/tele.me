@@ -30,6 +30,7 @@ type TooltipProps = {
   className?: string
   interactive?: boolean
   enabled?: boolean
+  forceHide?: boolean
   children: ReactNode
 }
 
@@ -96,6 +97,7 @@ export function Tooltip({
   className,
   interactive,
   enabled: enabledProp = true,
+  forceHide = false,
   children
 }: TooltipProps) {
   const reactId = useId()
@@ -121,7 +123,7 @@ export function Tooltip({
   const text = useMemo(() => formatLabel(label, shortcut), [label, shortcut])
   const show = enabled && enabledProp && Boolean(label)
   const locked = lockedId === id
-  const open = show && (locked || forceOpen || (hovered && activeId === id))
+  const open = show && !forceHide && (locked || forceOpen || (hovered && activeId === id))
 
   useEffect(() => {
     setForceOpen(!!defaultOpen)

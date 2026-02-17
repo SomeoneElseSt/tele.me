@@ -51,12 +51,13 @@ type DockButtonProps = {
   disabled?: boolean
   active?: boolean
   className?: string
+  tooltipForceHide?: boolean
   children: ReactNode
 }
 
-function DockButton({ label, shortcut, onClick, disabled, active, className, children }: DockButtonProps) {
+function DockButton({ label, shortcut, onClick, disabled, active, className, tooltipForceHide, children }: DockButtonProps) {
   return (
-    <Tooltip label={label} shortcut={shortcut}>
+    <Tooltip label={label} shortcut={shortcut} forceHide={tooltipForceHide}>
       <button
         type="button"
         aria-label={label}
@@ -120,6 +121,7 @@ export function Dock({
     if (typeof document === 'undefined') return false
     return !!document.fullscreenElement
   })
+  const [hideFullscreenTooltip, setHideFullscreenTooltip] = useState(false)
 
   // Track delete confirmation state for the active video
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -418,7 +420,13 @@ export function Dock({
                 <Type className="h-4 w-4" />
               </DockButton>
 
-              <DockButton label={strings.fullscreen} shortcut="F" onClick={onToggleFullscreen}>
+              <DockButton label={isFullscreen ? strings.exitFullscreen : strings.enterFullscreen} shortcut="F" tooltipForceHide={hideFullscreenTooltip} onClick={() => {
+                setHideFullscreenTooltip(true)
+                setTimeout(() => {
+                  onToggleFullscreen()
+                  setTimeout(() => setHideFullscreenTooltip(false), 50)
+                }, 200)
+              }}>
                 <span className="relative flex h-4 w-4 items-center justify-center">
                   <span
                     className={cn(
