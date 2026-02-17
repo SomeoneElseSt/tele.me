@@ -1,4 +1,4 @@
-import { AlignLeft, Check, ChevronUp, Download, Maximize2, Minimize2, Pause, Play, Scissors, Trash2, Type, Video, X } from 'lucide-react'
+import { AlignLeft, Check, ChevronUp, Download, Maximize2, Minimize2, Pause, PenLine, Play, Scissors, Trash2, Video, X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -438,7 +438,7 @@ export function Dock({
           ) : (
             <>
               <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
-                <Type className="h-4 w-4" />
+                <PenLine className="h-4 w-4" />
               </DockButton>
 
               <DockButton label={isFullscreen ? strings.exitFullscreen : strings.enterFullscreen} shortcut="F" tooltipForceHide={hideFullscreenTooltip} onClick={() => {
