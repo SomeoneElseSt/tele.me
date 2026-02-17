@@ -232,11 +232,13 @@ export function VideoScrubber({
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
               >
-                {/* Fill — z-index 1 */}
-                <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-white/30"
-                  style={{ width: `${progress}%`, zIndex: 1 }}
-                />
+                {/* Fill — hidden in trim mode to avoid clashing with dim overlays */}
+                {!trimMode && (
+                  <div
+                    className="absolute inset-y-0 left-0 rounded-full bg-white/30"
+                    style={{ width: `${progress}%`, zIndex: 1 }}
+                  />
+                )}
                 {/* Thumb — z-index above overlays/handles so it stays visible */}
                 <div
                   className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-white shadow pointer-events-none"
