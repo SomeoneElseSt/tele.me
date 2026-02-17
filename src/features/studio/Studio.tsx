@@ -675,16 +675,31 @@ export function Studio() {
   )
 
   const playingTake = playingTakeId ? takes.find(t => t.id === playingTakeId) : null
+  const playbackScrubber = playingTake ? (
+    <VideoScrubber
+      inline
+      currentTime={videoCurrentTime}
+      duration={videoDuration}
+      onSeek={onSeekVideo}
+      trimMode={trimMode}
+      trimStart={trimStart}
+      trimEnd={trimEnd}
+      onTrimChange={(s, e) => { setTrimStart(s); setTrimEnd(e) }}
+      onConfirmTrim={() => { void onConfirmTrim() }}
+      trimming={trimming}
+      onExitTrim={() => setTrimMode(false)}
+    />
+  ) : null
 
   return (
     <I18nProvider locale={locale}>
       <div className="fixed inset-0 overflow-hidden bg-black text-white/90">
         {playingTake ? (
-          <div className="absolute inset-0 bg-black">
+          <div className="absolute inset-0 bg-black overflow-hidden">
             <video
               ref={videoRef}
               src={playingTake.url}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-contain scale-[1.05]"
               onPlay={() => setVideoPlaying(true)}
               onPause={() => setVideoPlaying(false)}
               onEnded={() => {
@@ -693,18 +708,6 @@ export function Studio() {
               onLoadedMetadata={() => {
                 if (videoRef.current) setVideoDuration(videoRef.current.duration)
               }}
-            />
-            <VideoScrubber
-              currentTime={videoCurrentTime}
-              duration={videoDuration}
-              onSeek={onSeekVideo}
-              trimMode={trimMode}
-              trimStart={trimStart}
-              trimEnd={trimEnd}
-              onTrimChange={(s, e) => { setTrimStart(s); setTrimEnd(e) }}
-              onConfirmTrim={() => { void onConfirmTrim() }}
-              trimming={trimming}
-              onExitTrim={() => setTrimMode(false)}
             />
           </div>
         ) : (
@@ -900,6 +903,7 @@ export function Studio() {
           error={error}
           trimMode={trimMode}
           onToggleTrim={onToggleTrim}
+          topSlot={playbackScrubber}
         />
 
         <SettingsDrawer

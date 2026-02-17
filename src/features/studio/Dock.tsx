@@ -44,6 +44,7 @@ type Props = {
   error?: string
   trimMode: boolean
   onToggleTrim: () => void
+  topSlot?: ReactNode
 }
 
 type DockButtonProps = {
@@ -115,6 +116,7 @@ export function Dock({
   error,
   trimMode,
   onToggleTrim,
+  topSlot,
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -282,12 +284,16 @@ export function Dock({
   return (
     // Fixed container centered with flex to avoid transform scaling trap on fixed children
     <div className="fixed bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none">
-      <div className="pointer-events-auto relative">
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              key="dock-error"
-              className="absolute bottom-full left-0 right-0 mb-3"
+      <div className="pointer-events-auto flex flex-col items-center gap-4">
+        {topSlot && (
+          <div className="flex justify-center w-full">{topSlot}</div>
+        )}
+        <div className="relative">
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                key="dock-error"
+                className="absolute bottom-full left-0 right-0 mb-3"
               initial={{ opacity: 0, y: 12, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -299,15 +305,15 @@ export function Dock({
             </motion.div>
           )}
         </AnimatePresence>
-        {/* Background Pill - Clipped for blur */}
-        <div className="absolute inset-0 rounded-3xl overflow-hidden">
-          <div className="absolute inset-0 bg-black/40 shadow-glow backdrop-blur" />
-        </div>
-        {/* Border Overlay - Not clipped so anti-aliasing stays clean */}
-        <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none" />
+          {/* Background Pill - Clipped for blur */}
+          <div className="absolute inset-0 rounded-3xl overflow-hidden">
+            <div className="absolute inset-0 bg-black/40 shadow-glow backdrop-blur" />
+          </div>
+          {/* Border Overlay - Not clipped so anti-aliasing stays clean */}
+          <div className="absolute inset-0 rounded-3xl border border-white/10 pointer-events-none" />
 
-        {/* Content - Unclipped so tooltips/popups can escape */}
-        <div className="relative flex items-center gap-2 px-3 py-2">
+          {/* Content - Unclipped so tooltips/popups can escape */}
+          <div className="relative flex items-center gap-2 px-3 py-2">
           {!isVideoPlaying && (
             <div
               className="hidden min-w-[86px] items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 sm:flex"
@@ -612,6 +618,7 @@ export function Dock({
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
     </div>

@@ -16,6 +16,7 @@ type Props = {
   onConfirmTrim?: () => void
   trimming?: boolean
   onExitTrim?: () => void
+  inline?: boolean
 }
 
 function formatDuration(seconds: number): string {
@@ -37,6 +38,7 @@ export function VideoScrubber({
   onConfirmTrim,
   trimming,
   onExitTrim,
+  inline = false,
 }: Props) {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const isDragging = useRef(false)
@@ -105,8 +107,12 @@ export function VideoScrubber({
   const startPct = duration > 0 && trimStart != null ? (trimStart / duration) * 100 : 0
   const endPct = duration > 0 && trimEnd != null ? (trimEnd / duration) * 100 : 100
 
+  const containerClass = inline
+    ? 'flex justify-center w-full'
+    : 'fixed bottom-24 inset-x-0 z-24 flex justify-center pointer-events-none'
+
   return (
-    <div className="fixed bottom-24 inset-x-0 z-24 flex justify-center pointer-events-none">
+    <div className={containerClass}>
       <div className="pointer-events-auto relative w-[min(380px,calc(100vw-3rem))]">
         {/* Background — clipped so backdrop-blur doesn't leak */}
         <div className="absolute inset-0 rounded-3xl overflow-hidden">
