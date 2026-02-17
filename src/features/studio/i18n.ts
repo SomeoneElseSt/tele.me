@@ -93,6 +93,8 @@ type Strings = {
   shortcutsMenu: string
   shortcutsTitle: string
   speakingTime: string
+  trimVideo: string
+  exitTrim: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
@@ -169,7 +171,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     persistVideos: 'Save videos locally',
     persistVideosTooltip: 'By default videos are saved on local memory and limited to 10 videos saved at a time. Disable to enable temporary storage and download all recorded videos before refreshing the website.',
     persistVideosWillSave10: 'Will save the 10 most recent videos locally. Enable to keep them across reloads.',
-    maxVideosReached: 'Maximum of 10 videos can be saved locally. Delete some videos or disable persistent storage to record more.',
+    maxVideosReached: 'Storage is almost full. Download and delete videos to record more.',
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
@@ -197,6 +199,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F: fullscreen',
     shortcutsTitle: 'Shortcuts',
     speakingTime: 'Speaking Time',
+    trimVideo: 'Trim video',
+    exitTrim: 'Exit trim',
   },
   es: {
     defaultScript:
@@ -299,6 +303,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F: pantalla completa',
     shortcutsTitle: 'Atajos',
     speakingTime: 'Tiempo de habla',
+    trimVideo: 'Recortar video',
+    exitTrim: 'Salir de recorte',
   },
   ja: {
     defaultScript:
@@ -401,6 +407,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F: 全画面表示',
     shortcutsTitle: 'ショートカット',
     speakingTime: '発話時間',
+    trimVideo: 'ビデオをトリミング',
+    exitTrim: 'トリミング終了',
   },
   hi: {
     defaultScript:
@@ -503,6 +511,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F: फ़ुलस्क्रीन',
     shortcutsTitle: 'शॉर्टकट',
     speakingTime: 'बोलने का समय',
+    trimVideo: 'वीडियो ट्रिम करें',
+    exitTrim: 'ट्रिम से बाहर निकलें',
   },
   fr: {
     defaultScript:
@@ -605,6 +615,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F : plein écran',
     shortcutsTitle: 'Raccourcis',
     speakingTime: 'Temps de parole',
+    trimVideo: 'Rogner la vidéo',
+    exitTrim: 'Quitter rogner',
   },
   de: {
     defaultScript:
@@ -707,6 +719,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F: Vollbild',
     shortcutsTitle: 'Tastenkombinationen',
     speakingTime: 'Sprechzeit',
+    trimVideo: 'Video trimmen',
+    exitTrim: 'Trimmen beenden',
   },
   zh: {
     defaultScript:
@@ -809,6 +823,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'F：全屏',
     shortcutsTitle: '快捷键',
     speakingTime: '演讲时间',
+    trimVideo: '修剪视频',
+    exitTrim: '退出修剪',
   },
   ar: {
     defaultScript:
@@ -911,6 +927,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'P: نافذة تلقين منبثقة/مضمنة',
     shortcutsTitle: 'الاختصارات',
     speakingTime: 'وقت التحدث',
+    trimVideo: 'قص الفيديو',
+    exitTrim: 'خروج القص',
   },
   pt: {
     defaultScript:
@@ -1011,6 +1029,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'P: destacar/embutir teleprompter',
     shortcutsTitle: 'Atalhos',
     speakingTime: 'Tempo de fala',
+    trimVideo: 'Aparar vídeo',
+    exitTrim: 'Sair do corte',
   },
   ru: {
     defaultScript:
@@ -1112,6 +1132,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'P: отдельное окно телесуфлёра',
     shortcutsTitle: 'Горячие клавиши',
     speakingTime: 'Время речи',
+    trimVideo: 'Обрезать видео',
+    exitTrim: 'Выход из обрезки',
   },
   pl: {
     defaultScript:
@@ -1213,6 +1235,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
       'P: teleprompter w wyskakującym okienku',
     shortcutsTitle: 'Skróty',
     speakingTime: 'Czas mówienia',
+    trimVideo: 'Przytnij wideo',
+    exitTrim: 'Wyjdź z przycinania',
   },
 }
 

@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { AlertCircle, Check, Download, Film, Loader2, Play, Save, Trash2, X } from 'lucide-react'
+import { AlertCircle, Check, Download, HardDrive, Loader2, Play, Save, Trash2, X } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '../../lib/cn'
@@ -48,6 +48,7 @@ type Props = {
   persistVideos: boolean
   onPersistVideosChange: (enabled: boolean) => void
   isLoadingVideos?: boolean
+  storagePercent: number
 }
 
 const POPOVER_WIDTH = 300
@@ -56,6 +57,7 @@ const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
 const CONFIRM_SWAP_DELAY_MS = 140
+
 
 function formatTime(value: number, locale: string) {
   return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
@@ -69,7 +71,7 @@ function getFileExtension(mimeType?: string): string {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake, persistVideos, onPersistVideosChange, isLoadingVideos } = props
+  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake, persistVideos, onPersistVideosChange, isLoadingVideos, storagePercent } = props
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
@@ -82,9 +84,6 @@ export function DownloadPopover(props: Props) {
   const desiredLeft = rect ? rect.left + rect.width / 2 - POPOVER_WIDTH / 2 : 0
   const left = rect ? clamp(desiredLeft, MARGIN_PX, window.innerWidth - POPOVER_WIDTH - MARGIN_PX) : 0
   const top = rect ? rect.top - GAP_PX : 0
-
-  const showWarning = takes.length >= 3
-
 
   const removeTake = (takeId: string) => {
     setConfirmingTakeId(null)
@@ -299,20 +298,35 @@ export function DownloadPopover(props: Props) {
                 </div>
               </div>
 
-              <div
-                className={cn(
-                  'overflow-hidden transition-[max-height,opacity,margin] duration-200 ease-out',
-                  showWarning ? 'max-h-48 opacity-100 mt-3' : 'max-h-0 opacity-0 mt-0'
-                )}
-              >
-                <div className="flex items-start gap-3.5 rounded-xl border border-red-500/30 bg-red-500/20 px-5 py-4 text-xs">
+              <div className="mt-3 flex items-center gap-2.5 rounded-2xl border border-white/10 px-3.5 py-2.5">
+                <HardDrive className={cn(
+                  'h-4 w-4 shrink-0 transition-colors duration-300',
+                  storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                )} />
+                <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all duration-300',
+                      storagePercent >= 90 ? 'bg-red-400' : storagePercent >= 70 ? 'bg-amber-400' : 'bg-white/50'
+                    )}
+                    style={{ width: `${Math.max(storagePercent, 2)}%` }}
+                  />
+                </div>
+                <span className={cn(
+                  'text-[11px] tabular-nums font-medium shrink-0 transition-colors duration-300',
+                  storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                )}>{storagePercent}%</span>
+              </div>
+
+              {storagePercent >= 90 && (
+                <div className="mt-3 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/20 px-3 py-3 text-xs">
                   <AlertCircle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
                   <div className="min-w-0 flex-1 break-words">
                     <div className="font-medium text-white/85 leading-relaxed break-words">{strings.memoryWarningTitle}</div>
-                    <div className="mt-1.5 text-white/65 leading-relaxed break-words">{strings.memoryWarningMessage}</div>
+                    <div className="mt-1 text-white/65 leading-relaxed break-words">{strings.memoryWarningMessage}</div>
                   </div>
                 </div>
-              </div>
+              )}
 
               <div className="mt-4 flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain pr-1 -mr-1 py-1 max-h-96">
                 <AnimatePresence initial={false}>

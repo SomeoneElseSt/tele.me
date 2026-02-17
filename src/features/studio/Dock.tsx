@@ -40,6 +40,7 @@ type Props = {
   persistVideos: boolean
   onPersistVideosChange: (enabled: boolean) => void
   isLoadingVideos?: boolean
+  storagePercent: number
   recordDisabledReason?: string
   error?: string
   trimMode: boolean
@@ -112,6 +113,7 @@ export function Dock({
   persistVideos,
   onPersistVideosChange,
   isLoadingVideos,
+  storagePercent,
   recordDisabledReason,
   error,
   trimMode,
@@ -376,7 +378,7 @@ export function Dock({
               </DockButton>
 
               <DockButton
-                label={trimMode ? "Exit trim" : "Trim video"}
+                label={trimMode ? strings.exitTrim : strings.trimVideo}
                 shortcut="T"
                 onClick={onToggleTrim}
                 active={trimMode}
@@ -614,6 +616,7 @@ export function Dock({
                   persistVideos={persistVideos}
                   onPersistVideosChange={onPersistVideosChange}
                   isLoadingVideos={isLoadingVideos}
+                  storagePercent={storagePercent}
                 />
               </div>
             </>

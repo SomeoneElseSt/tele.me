@@ -6,7 +6,6 @@
 const DB_NAME = 'teleme.me-videos'
 const DB_VERSION = 1
 const STORE_NAME = 'videos'
-const MAX_VIDEOS = 10
 const MAX_STORAGE_MB = 500 // 500MB total storage limit
 
 export type StoredVideo = {
@@ -112,11 +111,6 @@ export async function getStorageSize(): Promise<number> {
  * Save a video to IndexedDB
  */
 export async function saveVideo(video: StoredVideo): Promise<void> {
-    const count = await getVideoCount()
-    if (count >= MAX_VIDEOS) {
-        throw new Error(`Maximum of ${MAX_VIDEOS} videos can be stored`)
-    }
-
     const quota = await checkStorageQuota()
     if (!quota.available) {
         throw new Error('Insufficient storage space available')

@@ -49,7 +49,6 @@ const TEXT_ALIGN_STORAGE_KEY = 'teleme.me:prompter_text_align'
 const FRAME_STORAGE_KEY = 'teleme.me:prompter_frame'
 const FIXED_TO_TOP_STORAGE_KEY = 'teleme.me:prompter_fixed_to_top'
 const PERSIST_VIDEOS_STORAGE_KEY = 'teleme.me:persist_videos'
-const MAX_PERSISTENT_VIDEOS = 10
 const SCRIPT_STORAGE_KEY = 'teleme.me:script'
 const MARKDOWN_ENABLED_STORAGE_KEY = 'teleme.me:markdown_enabled'
 const AUDIO_DEVICE_ID_STORAGE_KEY = 'teleme.me:audio_device_id'
@@ -215,6 +214,18 @@ export function Studio() {
 
   const [persistVideos, setPersistVideos] = useLocalStorage(PERSIST_VIDEOS_STORAGE_KEY, true)
   const [isLoadingVideos, setIsLoadingVideos] = useState(false)
+  const [storagePercent, setStoragePercent] = useState(0)
+
+  const refreshStorageQuota = useCallback(async () => {
+    const usedBytes = await videoStorage.getStorageSize()
+    const usedMB = usedBytes / (1024 * 1024)
+    const capMB = 500 // matches MAX_STORAGE_MB in videoStorage
+    setStoragePercent(Math.min(100, Math.max(0, Math.round((usedMB / capMB) * 100))))
+  }, [])
+
+  useEffect(() => {
+    void refreshStorageQuota()
+  }, [refreshStorageQuota])
 
   const [localeOpen, setLocaleOpen] = useState(false)
   const tooltip = useTooltipController()
@@ -354,23 +365,15 @@ export function Studio() {
   const canRecord = useMemo(() => {
     const hasMediaAccess = ready && Boolean(stream) && recorder.supported
     if (!hasMediaAccess) return false
-
-    // Disable recording if we have 10 videos and persistent storage is enabled
-    if (persistVideos && takes.length >= MAX_PERSISTENT_VIDEOS) {
-      return false
-    }
-
+    if (storagePercent >= 90) return false
     return true
-  }, [ready, recorder.supported, stream, persistVideos, takes.length])
-
+  }, [ready, recorder.supported, stream, storagePercent])
 
   const recordDisabledReason = useMemo(() => {
     if (!ready || !stream || !recorder.supported) return undefined
-    if (persistVideos && takes.length >= MAX_PERSISTENT_VIDEOS) {
-      return getStrings(locale).maxVideosReached
-    }
+    if (storagePercent >= 90) return getStrings(locale).maxVideosReached
     return undefined
-  }, [ready, stream, recorder.supported, persistVideos, takes.length, locale])
+  }, [ready, stream, recorder.supported, storagePercent, locale])
 
   const elapsedLabel = useMemo(() => formatMs(recorder.elapsedMs), [recorder.elapsedMs])
 
@@ -413,39 +416,31 @@ export function Studio() {
     setTakes((prev) => {
       const take = prev.find(t => t.id === takeId)
       if (take) {
-        try {
-          URL.revokeObjectURL(take.url)
-        } catch {
-          // ignore
-        }
-        // Delete from IndexedDB if persistent storage is enabled
-        if (persistVideos) {
-          void videoStorage.deleteVideo(takeId)
-        }
+        try { URL.revokeObjectURL(take.url) } catch { /* ignore */ }
       }
       return prev.filter(t => t.id !== takeId)
     })
-  }, [persistVideos])
+    if (persistVideos) {
+      videoStorage.deleteVideo(takeId)
+        .then(() => refreshStorageQuota())
+        .catch(e => console.error('Failed to delete video:', e))
+    }
+  }, [persistVideos, refreshStorageQuota])
 
   const onClearAllTakes = useCallback(() => {
     setTakes((prev) => {
-      prev.forEach(take => {
-        try {
-          URL.revokeObjectURL(take.url)
-        } catch {
-          // ignore
-        }
-      })
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(TAKE_NUMBER_STORAGE_KEY, '1')
-      }
-      // Clear IndexedDB if persistent storage is enabled
-      if (persistVideos) {
-        void videoStorage.clearAllVideos()
-      }
+      prev.forEach(take => { try { URL.revokeObjectURL(take.url) } catch { /* ignore */ } })
       return []
     })
-  }, [persistVideos])
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(TAKE_NUMBER_STORAGE_KEY, '1')
+    }
+    if (persistVideos) {
+      videoStorage.clearAllVideos()
+        .then(() => refreshStorageQuota())
+        .catch(e => console.error('Failed to clear videos:', e))
+    }
+  }, [persistVideos, refreshStorageQuota])
 
   const onPersistVideosChange = useCallback(async (enabled: boolean) => {
     setPersistVideos(enabled)
@@ -458,7 +453,7 @@ export function Studio() {
       await videoStorage.clearAllVideos()
 
       // Save the first 10 (most recent) videos to IndexedDB
-      const videosToSave = takes.slice(0, MAX_PERSISTENT_VIDEOS)
+      const videosToSave = takes
       for (const take of videosToSave) {
         try {
           const response = await fetch(take.url)
@@ -482,7 +477,8 @@ export function Studio() {
       // Clear all videos from IndexedDB when disabled
       await videoStorage.clearAllVideos()
     }
-  }, [takes])
+    await refreshStorageQuota()
+  }, [takes, refreshStorageQuota])
 
   const onPlayTake = useCallback((takeId: string) => {
     setPlayingTakeId(takeId)
@@ -625,12 +621,13 @@ export function Studio() {
             mimeType: newTake.mimeType,
             takeNumber: newTake.takeNumber
           }))
+          .then(() => refreshStorageQuota())
           .catch(error => console.error('Failed to save video to storage:', error))
       }
 
       return [newTake, ...prev]
     })
-  }, [recorder.url, recorder.mimeType, incrementTakeNumber, persistVideos])
+  }, [recorder.url, recorder.mimeType, incrementTakeNumber, persistVideos, refreshStorageQuota])
 
   const onToggleFullscreen = useCallback(() => {
     if (typeof document === 'undefined') return
@@ -934,6 +931,7 @@ export function Studio() {
           persistVideos={persistVideos}
           onPersistVideosChange={onPersistVideosChange}
           isLoadingVideos={isLoadingVideos}
+          storagePercent={storagePercent}
           recordDisabledReason={recordDisabledReason}
           error={error}
           trimMode={trimMode}
