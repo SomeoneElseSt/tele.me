@@ -12,12 +12,13 @@ function getExtension(mimeType: string): string {
 async function getFFmpeg(): Promise<FFmpeg> {
   if (ffmpegInstance) return ffmpegInstance
   const ffmpeg = new FFmpeg()
-  await ffmpeg.load({
+  const loadConfig: Parameters<typeof ffmpeg.load>[0] & { classWorkerURL?: string } = {
     coreURL: FFMPEG_CORE_JS_URL,
     wasmURL: FFMPEG_CORE_WASM_URL,
     workerURL: FFMPEG_WORKER_URL,
     classWorkerURL: FFMPEG_WORKER_URL,
-  })
+  }
+  await ffmpeg.load(loadConfig)
   ffmpegInstance = ffmpeg
   return ffmpeg
 }

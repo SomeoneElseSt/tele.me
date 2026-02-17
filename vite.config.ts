@@ -2,6 +2,9 @@ import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const COOP_HEADER = 'Cross-Origin-Opener-Policy'
+const COEP_HEADER = 'Cross-Origin-Embedder-Policy'
+
 export default defineConfig({
   plugins: [
     react(),
@@ -45,9 +48,18 @@ export default defineConfig({
       }
     })
   ],
+  optimizeDeps: {
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+  },
+  build: {
+    target: 'esnext'
+  },
   server: {
     port: 5173,
-    strictPort: false
+    strictPort: false,
+    headers: {
+      [COOP_HEADER]: 'same-origin',
+      [COEP_HEADER]: 'require-corp'
+    }
   }
 })
-
