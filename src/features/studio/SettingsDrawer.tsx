@@ -318,7 +318,10 @@ export function SettingsDrawer(props: Props) {
               </div>
             </header>
 
-            <div ref={scrollRef} className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-hidden pb-6">
+            <div
+              ref={scrollRef}
+              className="mt-5 flex h-[calc(100%-72px)] flex-col gap-20 overflow-hidden pb-2"
+            >
               {view === 'editor' && (
                 <section className="space-y-3">
                   <div
@@ -377,10 +380,10 @@ export function SettingsDrawer(props: Props) {
                 </section>
               )}
               {view === 'savedList' && (
-                <section className="space-y-4">
+                <section className="flex min-h-0 flex-col space-y-4">
                   <p className="text-sm text-white/70">{strings.savedScriptsInfo}</p>
                   {hasSavedScripts ? (
-                    <div className="space-y-3">
+                    <div className="mt-1 flex-1 min-h-0 space-y-3 overflow-y-auto pr-1 tele-scroll">
                       {savedScripts.map((entry) => (
                         <button
                           key={entry.id}
