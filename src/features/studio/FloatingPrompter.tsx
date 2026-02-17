@@ -959,6 +959,7 @@ export function FloatingPrompter(props: Props) {
   const [scrollbarThumbPosition, setScrollbarThumbPosition] = useState(0)
   const [scrollbarThumbHeight, setScrollbarThumbHeight] = useState(0.2) // 0-1, proportion of track
   const scrollbarTrackRef = useRef<HTMLDivElement>(null)
+  const scrollbarThumbRef = useRef<HTMLDivElement>(null)
   const isDraggingScrollbarRef = useRef(false)
   const [hasTransitionRef] = useState(() => ({ enabled: false })) // Track if transition should be active
 
@@ -992,28 +993,34 @@ export function FloatingPrompter(props: Props) {
   const autoScrollStartTimeRef = useRef<number>(0)
   const remainingTimeRef = useRef<number>(0)
   const previousLineIndexRef = useRef<number>(0)
+  const wpmRef = useRef(wpm)
+  wpmRef.current = wpm
 
-  // Initialize script words when script changes
+  // Initialize script words when script changes — full reset
   useEffect(() => {
     scriptWordsRef.current = extractWords(script)
-    // console.log('[FloatingPrompter] Script initialized with words count:', scriptWordsRef.current.length)
-    // console.log('[FloatingPrompter] First few words:', scriptWordsRef.current.slice(0, 10).map(w => w.word))
 
     // Calculate token frequency for dynamic weighting
     const allTokens = scriptWordsRef.current.map(w => w.normalizedWord)
     const { frequencyMap, highFrequencyThreshold } = calculateTokenFrequency(allTokens)
     tokenFrequencyMapRef.current = frequencyMap
     highFrequencyThresholdRef.current = highFrequencyThreshold
-    // console.log('[FloatingPrompter] Token frequency calculated - unique tokens:', frequencyMap.size, 'high-freq threshold:', highFrequencyThreshold)
 
     // Calculate word timings for auto-scroll
-    wordTimingsRef.current = calculateWordTimings(scriptWordsRef.current, wpm, script)
+    wordTimingsRef.current = calculateWordTimings(scriptWordsRef.current, wpmRef.current, script)
 
     setSpokenWordIndices(new Set())
     currentLineIndexRef.current = 0
     scriptLinesRef.current = []
     setCurrentWordIndex(0)
-  }, [script, wpm])
+  }, [script])
+
+  // WPM change: recalculate timings only — do NOT reset position or line map
+  useEffect(() => {
+    if (!scriptWordsRef.current.length) return
+    wordTimingsRef.current = calculateWordTimings(scriptWordsRef.current, wpm, script)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wpm]) // script intentionally omitted — only wpm changes should trigger this
 
   useEffect(() => {
     if (forceCloseControls && quickOpen) {
@@ -1800,6 +1807,9 @@ export function FloatingPrompter(props: Props) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
 
+      // Kill any lingering transition for immediate response
+      content.style.transition = 'none'
+
       // Update virtual scroll position based on wheel delta
       virtualScrollYRef.current += e.deltaY
 
@@ -1872,50 +1882,71 @@ export function FloatingPrompter(props: Props) {
     [resize]
   )
 
-  // Scrollbar drag handlers
+  // Scrollbar drag handlers — bypasses React state entirely for immediate feedback
   const handleScrollbarPointerDown = useCallback((e: React.PointerEvent) => {
     e.preventDefault()
     e.stopPropagation()
 
     const track = scrollbarTrackRef.current
+    const thumb = scrollbarThumbRef.current
     const scroller = scrollerRef.current
     const content = contentRef.current
-    if (!track || !scroller || !content) return
+    if (!track || !thumb || !scroller || !content) return
 
     isDraggingScrollbarRef.current = true
     const trackRect = track.getBoundingClientRect()
 
+    // Disable all transitions for immediate feedback
+    content.style.transition = 'none'
+    thumb.style.transition = 'background-color 0.2s ease-in-out'
+    hasTransitionRef.enabled = false
+
     const handlePointerMove = (moveEvent: PointerEvent) => {
       const scroller = scrollerRef.current
       const content = contentRef.current
-      if (!scroller || !content) return
+      const thumb = scrollbarThumbRef.current
+      if (!scroller || !content || !thumb) return
 
-      // Calculate thumb height
       const thumbHeight = content.scrollHeight > 0
         ? Math.max(0.1, Math.min(1, scroller.clientHeight / content.scrollHeight))
         : 0.2
 
-      // Calculate click position within track (0 to 1)
       const clickY = moveEvent.clientY - trackRect.top
       const trackHeight = trackRect.height
-
-      // Account for thumb height - map click position to scroll range
       const availableTrackHeight = 1 - thumbHeight
       const clickPercent = clickY / trackHeight
       const scrollPercent = availableTrackHeight > 0
         ? Math.max(0, Math.min(1, clickPercent / availableTrackHeight))
         : 0
 
-      // Update scroll position
+      // Update content scroll via DOM directly (no React state)
       const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
       virtualScrollYRef.current = scrollPercent * maxScroll
       content.style.transform = `translateY(-${virtualScrollYRef.current}px)`
-      setScrollbarThumbPosition(scrollPercent)
-      setScrollbarThumbHeight(thumbHeight)
+
+      // Update thumb via DOM directly (no React state)
+      thumb.style.top = `${scrollPercent * (1 - thumbHeight) * 100}%`
+      thumb.style.height = `${thumbHeight * 100}%`
     }
 
     const handlePointerUp = () => {
       isDraggingScrollbarRef.current = false
+      // Sync React state once at the end so RAF loop picks up
+      const scroller = scrollerRef.current
+      const content = contentRef.current
+      if (scroller && content) {
+        const maxScroll = Math.max(0, content.scrollHeight - scroller.clientHeight)
+        const scrollPercent = maxScroll > 0 ? virtualScrollYRef.current / maxScroll : 0
+        const thumbHeight = content.scrollHeight > 0
+          ? Math.max(0.1, Math.min(1, scroller.clientHeight / content.scrollHeight))
+          : 0.2
+        setScrollbarThumbPosition(scrollPercent)
+        setScrollbarThumbHeight(thumbHeight)
+      }
+      // Restore thumb transition
+      if (scrollbarThumbRef.current) {
+        scrollbarThumbRef.current.style.transition = 'top 0.3s ease-out, background-color 0.2s ease-in-out'
+      }
       document.removeEventListener('pointermove', handlePointerMove)
       document.removeEventListener('pointerup', handlePointerUp)
     }
@@ -2369,7 +2400,8 @@ export function FloatingPrompter(props: Props) {
 
                   {/* Thumb - thin indicator */}
                   <div
-                    className="absolute right-0 w-0.5 rounded-full bg-white/20 group-hover:bg-white/30 transition-colors"
+                    ref={scrollbarThumbRef}
+                    className="absolute right-0 w-0.5 rounded-full bg-white/20 group-hover:bg-white/30"
                     style={{
                       top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
                       height: `${scrollbarThumbHeight * 100}%`,
