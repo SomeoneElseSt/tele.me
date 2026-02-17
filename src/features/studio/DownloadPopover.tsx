@@ -398,7 +398,7 @@ export function DownloadPopover(props: Props) {
                 <motion.div
                   key="delete-confirm"
                   className={cn(
-                    'absolute z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5 whitespace-nowrap'
+                    'absolute z-[80] rounded-xl border border-white/10 bg-black px-2.5 py-1.5 whitespace-nowrap'
                   )}
                   style={{
                     bottom: trayRect.height - confirmTop + 8,
