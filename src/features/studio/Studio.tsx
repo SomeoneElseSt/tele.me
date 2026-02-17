@@ -9,12 +9,14 @@ import { useMediaStream } from '../../hooks/useMediaStream'
 import { useRecorder } from '../../hooks/useRecorder'
 import { useMirroredStream } from '../../hooks/useMirroredStream'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { useRafLoop } from '../../hooks/useRafLoop'
 import { clamp } from '../../hooks/geometry'
 import { formatMs } from '../recording/format'
 import { Dock } from './Dock'
 import { FloatingPrompter } from './FloatingPrompter'
 import { SettingsDrawer } from './SettingsDrawer'
 import { StageVideo } from './StageVideo'
+import { VideoScrubber } from './VideoScrubber'
 import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
@@ -190,8 +192,14 @@ export function Studio() {
   const takesRef = useRef(takes)
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
   const [videoPlaying, setVideoPlaying] = useState(false)
+  const [videoCurrentTime, setVideoCurrentTime] = useState(0)
+  const [videoDuration, setVideoDuration] = useState(0)
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastProcessedUrlRef = useRef<string | null>(null)
+
+  useRafLoop(() => {
+    if (videoRef.current) setVideoCurrentTime(videoRef.current.currentTime)
+  }, videoPlaying)
 
   useEffect(() => {
     takesRef.current = takes
@@ -471,11 +479,19 @@ export function Studio() {
   const onPlayTake = useCallback((takeId: string) => {
     setPlayingTakeId(takeId)
     setVideoPlaying(false)
+    setVideoCurrentTime(0)
+    setVideoDuration(0)
     if (prompterOpen) {
       setPrompterOpen(false)
       setPlaying(false)
     }
   }, [prompterOpen])
+
+  const onSeekVideo = useCallback((time: number) => {
+    if (!videoRef.current) return
+    videoRef.current.currentTime = time
+    setVideoCurrentTime(time)
+  }, [])
 
   const onCloseVideo = useCallback(() => {
     if (videoRef.current) {
@@ -489,6 +505,10 @@ export function Studio() {
   const onToggleVideoPlayback = useCallback(() => {
     if (!videoRef.current) return
     if (videoRef.current.paused) {
+      if (videoRef.current.ended) {
+        videoRef.current.currentTime = 0
+        setVideoCurrentTime(0)
+      }
       void videoRef.current.play()
       setVideoPlaying(true)
     } else {
@@ -616,10 +636,15 @@ export function Studio() {
               onPause={() => setVideoPlaying(false)}
               onEnded={() => {
                 setVideoPlaying(false)
-                if (videoRef.current) {
-                  videoRef.current.currentTime = 0
-                }
               }}
+              onLoadedMetadata={() => {
+                if (videoRef.current) setVideoDuration(videoRef.current.duration)
+              }}
+            />
+            <VideoScrubber
+              currentTime={videoCurrentTime}
+              duration={videoDuration}
+              onSeek={onSeekVideo}
             />
           </div>
         ) : (
