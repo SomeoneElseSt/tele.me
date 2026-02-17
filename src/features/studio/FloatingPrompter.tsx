@@ -2408,7 +2408,7 @@ export function FloatingPrompter(props: Props) {
                       top: `${scrollbarThumbPosition * (1 - scrollbarThumbHeight) * 100}%`,
                       height: `${scrollbarThumbHeight * 100}%`,
                       minHeight: '30px',
-                      transition: 'top 0.3s ease-out, background-color 0.2s ease-in-out'
+                      transition: autoScrollEnabled && playing ? 'top 0.3s ease-out, background-color 0.2s ease-in-out' : 'background-color 0.2s ease-in-out'
                     }}
                   />
                 </div>
