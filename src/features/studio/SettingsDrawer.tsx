@@ -31,11 +31,13 @@ export function SettingsDrawer(props: Props) {
   const { open, onClose, script, onScriptChange, markdownEnabled, onMarkdownEnabledChange } = props
   const { strings } = useI18n()
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const savedDetailTextareaRef = useRef<HTMLTextAreaElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const boxRef = useRef<HTMLDivElement | null>(null)
+  const editorBoxRef = useRef<HTMLDivElement | null>(null)
+  const savedDetailBoxRef = useRef<HTMLDivElement | null>(null)
   const MIN_TEXTAREA_HEIGHT = 220
   // Reserve extra space so the action buttons stay visible
-  const BOTTOM_PADDING = 50
+  const BOTTOM_PADDING = 120
   const [view, setView] = useState<DrawerView>('editor')
   const [selectedScript, setSelectedScript] = useState<SavedScriptEntry | null>(null)
   const [savedScripts, setSavedScripts] = useLocalStorage<SavedScriptEntry[]>(SAVED_SCRIPTS_STORAGE_KEY, [])
@@ -48,10 +50,10 @@ export function SettingsDrawer(props: Props) {
 
   const syncTextarea = useCallback(() => {
     if (!open) return
-    const textarea = textareaRef.current
-    if (!textarea) return
     const container = scrollRef.current
-    const box = boxRef.current
+    const isEditorView = view === 'editor'
+    const textarea = isEditorView ? textareaRef.current : savedDetailTextareaRef.current
+    const box = isEditorView ? editorBoxRef.current : savedDetailBoxRef.current
     const available = container && container.clientHeight > 0 ? container.clientHeight - BOTTOM_PADDING : null
 
     if (box && available != null) {
@@ -59,6 +61,8 @@ export function SettingsDrawer(props: Props) {
     } else if (box) {
       box.style.maxHeight = ''
     }
+
+    if (!textarea) return
 
     let maxTextareaHeight: number | null = null
     if (box && available != null) {
@@ -74,11 +78,11 @@ export function SettingsDrawer(props: Props) {
     textarea.style.height = 'auto'
     textarea.style.maxHeight = maxTextareaHeight != null ? `${maxTextareaHeight}px` : ''
     textarea.style.height = `${Math.max(MIN_TEXTAREA_HEIGHT, textarea.scrollHeight)}px`
-  }, [open])
+  }, [open, view])
 
   useLayoutEffect(() => {
     syncTextarea()
-  }, [script, syncTextarea])
+  }, [script, selectedScript, syncTextarea])
 
   useEffect(() => {
     if (!open) return
@@ -95,7 +99,7 @@ export function SettingsDrawer(props: Props) {
   }, [open])
 
   useEffect(() => {
-    if (open && view === 'editor') {
+    if (open && (view === 'editor' || view === 'savedDetail')) {
       syncTextarea()
     }
   }, [open, view, syncTextarea])
@@ -318,7 +322,7 @@ export function SettingsDrawer(props: Props) {
               {view === 'editor' && (
                 <section className="space-y-3">
                   <div
-                    ref={boxRef}
+                    ref={editorBoxRef}
                     className={cn(
                       'w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6',
                       'overflow-hidden focus-within:border-white/20 focus-within:bg-white/5'
@@ -403,16 +407,20 @@ export function SettingsDrawer(props: Props) {
               )}
                 {view === 'savedDetail' && (
                   <section className="space-y-4">
-                    <div className="w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6">
+                    <div
+                      ref={savedDetailBoxRef}
+                      className="w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6"
+                    >
                       <textarea
+                        ref={savedDetailTextareaRef}
                         value={selectedScript?.text ?? ''}
-                      readOnly
-                      className={cn(
-                        'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
-                        'focus:outline-none overflow-y-auto'
-                      )}
-                      spellCheck={false}
-                    />
+                        readOnly
+                        className={cn(
+                          'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
+                          'focus:outline-none overflow-y-auto'
+                        )}
+                        spellCheck={false}
+                      />
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <button
@@ -420,7 +428,7 @@ export function SettingsDrawer(props: Props) {
                         disabled={!selectedScript}
                         onClick={handleReplaceCurrentScript}
                       className={cn(
-                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/85 transition',
+                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm text-white/85 transition',
                         'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10',
                         'disabled:cursor-not-allowed disabled:opacity-40'
                       )}
@@ -432,7 +440,7 @@ export function SettingsDrawer(props: Props) {
                         disabled={!selectedScript}
                         onClick={() => selectedScript && handleDeleteSavedScript(selectedScript.id)}
                       className={cn(
-                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/80 transition',
+                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm text-white/80 transition',
                         'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10',
                         'disabled:cursor-not-allowed disabled:opacity-40'
                       )}
