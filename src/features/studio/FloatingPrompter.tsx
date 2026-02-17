@@ -1250,9 +1250,7 @@ export function FloatingPrompter(props: Props) {
 
     // Enable transition for auto-scroll line jumps, then disable after animation
     hasTransitionRef.enabled = true
-    if (content.style.transition === '') {
-      content.style.transition = 'transform 0.3s ease-out'
-    }
+    content.style.transition = 'transform 0.3s ease-out'
 
     // Update scroll position — CSS transition will animate the change
     virtualScrollYRef.current = clampedScrollY
@@ -1807,8 +1805,12 @@ export function FloatingPrompter(props: Props) {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
 
-      // Kill any lingering transition for immediate response
-      content.style.transition = 'none'
+      // Kill any lingering transition for immediate response — but NOT if we're in an autoscroll animation
+      if (!hasTransitionRef.enabled) {
+        content.style.transition = 'none'
+      } else {
+        return
+      }
 
       // Update virtual scroll position based on wheel delta
       virtualScrollYRef.current += e.deltaY
