@@ -1,4 +1,4 @@
-import { AlignLeft, Check, ChevronUp, Download, Maximize, Pause, Play, Trash2, Type, Video, X } from 'lucide-react'
+import { AlignLeft, Check, ChevronUp, Download, Maximize2, Minimize2, Pause, Play, Trash2, Type, Video, X } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import type { ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -116,6 +116,10 @@ export function Dock({
   const inputsAnchorRef = useRef<HTMLButtonElement | null>(null)
   const [downloadsOpen, setDownloadsOpen] = useState(false)
   const downloadAnchorRef = useRef<HTMLButtonElement | null>(null)
+  const [isFullscreen, setIsFullscreen] = useState(() => {
+    if (typeof document === 'undefined') return false
+    return !!document.fullscreenElement
+  })
 
   // Track delete confirmation state for the active video
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -129,6 +133,18 @@ export function Dock({
   useEffect(() => {
     setConfirmDelete(false)
   }, [playingTakeId])
+
+  // Track fullscreen state
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
 
   // Dismiss the default-open inputs tooltip on any user interaction
   useEffect(() => {
@@ -403,7 +419,24 @@ export function Dock({
               </DockButton>
 
               <DockButton label={strings.fullscreen} shortcut="F" onClick={onToggleFullscreen}>
-                <Maximize className="h-4 w-4" />
+                <span className="relative flex h-4 w-4 items-center justify-center">
+                  <span
+                    className={cn(
+                      'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                      isFullscreen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                    )}
+                  >
+                    <Minimize2 className="h-4 w-4" />
+                  </span>
+                  <span
+                    className={cn(
+                      'absolute transition-[opacity,transform] duration-200 ease-in-out',
+                      isFullscreen ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                    )}
+                  >
+                    <Maximize2 className="h-4 w-4" />
+                  </span>
+                </span>
               </DockButton>
 
               {!prompterOpen ? (
