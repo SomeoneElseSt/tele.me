@@ -219,7 +219,7 @@ export function Studio() {
   const refreshStorageQuota = useCallback(async () => {
     const usedBytes = await videoStorage.getStorageSize()
     const usedMB = usedBytes / (1024 * 1024)
-    const capMB = 500 // matches MAX_STORAGE_MB in videoStorage
+    const capMB = 300 // matches MAX_STORAGE_MB in videoStorage
     setStoragePercent(Math.min(100, Math.max(0, Math.round((usedMB / capMB) * 100))))
   }, [])
 

@@ -6,7 +6,7 @@
 const DB_NAME = 'teleme.me-videos'
 const DB_VERSION = 1
 const STORE_NAME = 'videos'
-const MAX_STORAGE_MB = 500 // 500MB total storage limit
+const MAX_STORAGE_MB = 300 // 300MB total storage limit
 
 export type StoredVideo = {
     id: string

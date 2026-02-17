@@ -310,7 +310,7 @@ export function DownloadPopover(props: Props) {
                       className="overflow-hidden shrink-0"
                     >
                       <Tooltip label={strings.storageTooltip} className="max-w-xs whitespace-normal" wrapperClassName="block w-full">
-                        <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 px-4 py-3 cursor-default">
+                        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 px-4 py-3 cursor-default">
                           <HardDrive className={cn(
                             'h-4 w-4 shrink-0 transition-colors duration-300',
                             storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
