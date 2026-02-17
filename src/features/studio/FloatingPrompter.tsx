@@ -993,6 +993,7 @@ export function FloatingPrompter(props: Props) {
   const autoScrollStartTimeRef = useRef<number>(0)
   const remainingTimeRef = useRef<number>(0)
   const previousLineIndexRef = useRef<number>(0)
+  const prevAutoScrollEnabledRef = useRef(autoScrollEnabled)
   const wpmRef = useRef(wpm)
   wpmRef.current = wpm
 
@@ -1496,7 +1497,7 @@ export function FloatingPrompter(props: Props) {
     }
   }, [playing, autoScrollEnabled, currentWordIndex, scheduleNextWord])
 
-  // Reset auto-scroll when disabled
+  // Reset auto-scroll when disabled and pause if needed
   useEffect(() => {
     if (!autoScrollEnabled) {
       setCurrentWordIndex(0)
@@ -1504,8 +1505,13 @@ export function FloatingPrompter(props: Props) {
       remainingTimeRef.current = 0
       autoScrollStartTimeRef.current = 0
       previousLineIndexRef.current = 0
+      // Pause playback only when autoscroll is being turned OFF (transition from true to false)
+      if (prevAutoScrollEnabledRef.current && playing) {
+        onTogglePlaying()
+      }
     }
-  }, [autoScrollEnabled])
+    prevAutoScrollEnabledRef.current = autoScrollEnabled
+  }, [autoScrollEnabled, playing, onTogglePlaying])
 
   // Auto-advance to next line (used by timeout and normal completion)
   const advanceToNextLine = useCallback(() => {
