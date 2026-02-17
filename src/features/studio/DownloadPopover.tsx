@@ -55,6 +55,7 @@ const GAP_PX = 12
 const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
+const CONFIRM_SWAP_DELAY_MS = 140
 
 function formatTime(value: number, locale: string) {
   return new Date(value).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' })
@@ -74,6 +75,7 @@ export function DownloadPopover(props: Props) {
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
   const deleteButtonRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
   const trayRef = useRef<HTMLDivElement>(null)
+  const confirmSwapTimeout = useRef<number | null>(null)
   const tooltip = useTooltipController()
 
   const rect = open && anchorEl ? anchorEl.getBoundingClientRect() : null
@@ -100,8 +102,21 @@ export function DownloadPopover(props: Props) {
       setConfirmingTakeId(null)
       setConfirmingClearAll(false)
       tooltip.clear()
+      if (confirmSwapTimeout.current) {
+        window.clearTimeout(confirmSwapTimeout.current)
+        confirmSwapTimeout.current = null
+      }
     }
   }, [open, tooltip])
+
+  useEffect(() => {
+    return () => {
+      if (confirmSwapTimeout.current) {
+        window.clearTimeout(confirmSwapTimeout.current)
+        confirmSwapTimeout.current = null
+      }
+    }
+  }, [])
 
   useHotkeys(
     {
@@ -126,7 +141,26 @@ export function DownloadPopover(props: Props) {
 
   const confirmTop = confirmRect && trayRect ? confirmRect.top - trayRect.top : 0
   const confirmLeft = confirmRect && trayRect ? confirmRect.left - trayRect.left : 0
-  const confirmRight = confirmRect && trayRect ? trayRect.right - confirmRect.right : 0
+  const handleConfirmButtonClick = (takeId: string, isCurrentlyConfirming: boolean) => {
+    if (confirmSwapTimeout.current) {
+      window.clearTimeout(confirmSwapTimeout.current)
+      confirmSwapTimeout.current = null
+    }
+    if (isCurrentlyConfirming) {
+      setConfirmingTakeId(null)
+      return
+    }
+    setConfirmingTakeId((current) => {
+      if (!current) {
+        return takeId
+      }
+      confirmSwapTimeout.current = window.setTimeout(() => {
+        setConfirmingTakeId(takeId)
+        confirmSwapTimeout.current = null
+      }, CONFIRM_SWAP_DELAY_MS)
+      return null
+    })
+  }
 
   return createPortal(
     <AnimatePresence>
@@ -374,7 +408,7 @@ export function DownloadPopover(props: Props) {
                                   deleteButtonRefs.current.delete(take.id)
                                 }
                               }}
-                              onClick={() => setConfirmingTakeId(isConfirming ? null : take.id)}
+                              onClick={() => handleConfirmButtonClick(take.id, isConfirming)}
                               aria-label={strings.deleteTakeLabel(take.takeNumber)}
                               className={cn(
                                 'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
