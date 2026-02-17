@@ -298,7 +298,7 @@ export function DownloadPopover(props: Props) {
                 </div>
               </div>
 
-              <div className="mt-2 flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain py-1 max-h-96">
+              <div className="mt-2 flex flex-col overflow-y-auto overflow-x-hidden tele-scroll-hidden overscroll-contain py-1 max-h-96">
                 <AnimatePresence initial={false}>
                   {persistVideos && (
                     <motion.div

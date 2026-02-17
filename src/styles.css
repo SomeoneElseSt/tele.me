@@ -51,6 +51,14 @@ button:focus {
   background-clip: content-box;
 }
 
+.tele-scroll-hidden {
+  scrollbar-width: none;
+}
+
+.tele-scroll-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 .grip-hit {
   border-radius: 999px;
   background: transparent;
