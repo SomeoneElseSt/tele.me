@@ -983,9 +983,6 @@ export function FloatingPrompter(props: Props) {
   const tokenFrequencyMapRef = useRef<Map<string, number>>(new Map())
   const highFrequencyThresholdRef = useRef<number>(1)
 
-  // Auto-advance timer for last word timeout
-  const lastWordTimeoutRef = useRef<number | null>(null)
-
   // Auto-scroll state machine
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0)
   const wordTimingsRef = useRef<WordTiming[]>([])
@@ -1376,15 +1373,6 @@ export function FloatingPrompter(props: Props) {
     return 0
   }, [])
 
-  // Clear last word timeout
-  const clearLastWordTimeout = useCallback(() => {
-    if (lastWordTimeoutRef.current !== null) {
-      clearTimeout(lastWordTimeoutRef.current)
-      lastWordTimeoutRef.current = null
-      // console.log('[FloatingPrompter] Cleared last word timeout')
-    }
-  }, [])
-
   // Initialize line matching state for a specific line (0-indexed)
   const initializeLineState = useCallback((lineIndex: number) => {
     const line = scriptLinesRef.current[lineIndex]
@@ -1408,11 +1396,8 @@ export function FloatingPrompter(props: Props) {
     finalizedBufferRef.current = ''
     lastInterimTranscriptRef.current = ''
 
-    // Clear any pending timeout
-    clearLastWordTimeout()
-
     // console.log('[FloatingPrompter] Initialized line', lineIndex, 'with', lineTokens.length, 'tokens:', lineTokens)
-  }, [clearLastWordTimeout])
+  }, [])
 
   // Helper to find line index containing a word
   const findLineIndexContainingWord = useCallback((wordIdx: number): number => {
@@ -1562,8 +1547,6 @@ export function FloatingPrompter(props: Props) {
       // Don't gray out previous lines - start fresh with no highlights
       // This ensures that after pausing and resuming, we start clean
     } else {
-      // Clear timeout when stopping speech recognition
-      clearLastWordTimeout()
       // Clear highlighting when exiting auto-scroll mode or stopping playback
       if (!autoScrollEnabled) {
         setSpokenWordIndices(new Set())
@@ -1571,7 +1554,7 @@ export function FloatingPrompter(props: Props) {
       // Reset line tracking so we start fresh on resume
       currentLineIndexRef.current = 0
     }
-  }, [open, playing, autoScrollEnabled, getFirstVisibleLineIndex, initializeLineState, clearLastWordTimeout])
+  }, [open, playing, autoScrollEnabled, getFirstVisibleLineIndex, initializeLineState])
 
   // Speech recognition integration
   const { locale } = useI18n()
@@ -1642,32 +1625,6 @@ export function FloatingPrompter(props: Props) {
     // console.log('[FloatingPrompter] New state - gtIndex:', newState.gtIndex, 'highlightIndices:', newState.highlightIndices)
     // console.log('[FloatingPrompter] Line complete:', lineComplete)
 
-    // Dynamic timeout based on words remaining (cascading timers)
-    const wordsRemaining = lineTokens.length - newState.gtIndex
-
-    // Always clear previous timer first to prevent race conditions
-    clearLastWordTimeout()
-
-    if (!lineComplete) {
-      if (wordsRemaining === 2) {
-        // 2 words remaining (second-to-last and last) → 2s timer
-        // console.log('[FloatingPrompter] 2 words remaining - starting 2s auto-advance timer')
-        lastWordTimeoutRef.current = window.setTimeout(() => {
-          // console.log('[FloatingPrompter] 2-word timeout fired - auto-advancing')
-          advanceToNextLine()
-        }, 2000)
-      } else if (wordsRemaining === 1) {
-        // 1 word remaining (just last word) → 1s timer
-        // console.log('[FloatingPrompter] 1 word remaining - starting 1s auto-advance timer')
-        lastWordTimeoutRef.current = window.setTimeout(() => {
-          // console.log('[FloatingPrompter] 1-word timeout fired - auto-advancing')
-          advanceToNextLine()
-        }, 1000)
-      }
-      // If wordsRemaining > 2, no timeout (still processing main part of line)
-      // If wordsRemaining === 0, line is complete (handled below)
-    }
-
     // Convert line-relative highlight indices to global word indices
     const globalHighlightIndices = newState.highlightIndices.map(lineRelativeIdx => {
       return currentLine[lineRelativeIdx]
@@ -1698,7 +1655,6 @@ export function FloatingPrompter(props: Props) {
     // SAFETY: Only advance by 1 line at a time (i → i+1)
     if (lineComplete) {
       // console.log('[FloatingPrompter] Line complete! Advancing to next line')
-      clearLastWordTimeout()
       advanceToNextLine()
 
       // IMPORTANT: Return early after advancing to prevent processing more of this transcript
@@ -1708,7 +1664,7 @@ export function FloatingPrompter(props: Props) {
     }
 
     // console.log('[FloatingPrompter] =========================')
-  }, [scrollToLine, initializeLineState, clearLastWordTimeout, advanceToNextLine])
+  }, [scrollToLine, initializeLineState, advanceToNextLine])
 
   const handleError = useCallback((error: string) => {
     console.warn('Speech recognition error:', error)

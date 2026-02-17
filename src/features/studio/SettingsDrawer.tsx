@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { X } from 'lucide-react'
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { ArrowLeft, Check, Trash2, X } from 'lucide-react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Tooltip } from '../../components/Tooltip'
 import { cn } from '../../lib/cn'
+import { useLocalStorage } from '../../hooks/useLocalStorage'
 import { useI18n } from './i18n'
 
 type Props = {
@@ -14,6 +15,18 @@ type Props = {
   onMarkdownEnabledChange: (value: boolean) => void
 }
 
+const SAVED_SCRIPTS_STORAGE_KEY = 'teleme.me:saved_scripts'
+const MAX_SAVED_SCRIPTS = 10
+const PREVIEW_WORD_COUNT = 12
+
+type SavedScriptEntry = {
+  id: string
+  text: string
+  savedAt: number
+}
+
+type DrawerView = 'editor' | 'savedList' | 'savedDetail'
+
 export function SettingsDrawer(props: Props) {
   const { open, onClose, script, onScriptChange, markdownEnabled, onMarkdownEnabledChange } = props
   const { strings } = useI18n()
@@ -21,7 +34,17 @@ export function SettingsDrawer(props: Props) {
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const boxRef = useRef<HTMLDivElement | null>(null)
   const MIN_TEXTAREA_HEIGHT = 220
-  const BOTTOM_PADDING = 24
+  // Reserve extra space so the action buttons stay visible
+  const BOTTOM_PADDING = 50
+  const [view, setView] = useState<DrawerView>('editor')
+  const [selectedScript, setSelectedScript] = useState<SavedScriptEntry | null>(null)
+  const [savedScripts, setSavedScripts] = useLocalStorage<SavedScriptEntry[]>(SAVED_SCRIPTS_STORAGE_KEY, [])
+  const [saveIndicatorVisible, setSaveIndicatorVisible] = useState(false)
+  const saveIndicatorTimeoutRef = useRef<number | null>(null)
+  const dateFormatter = useMemo(
+    () => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
+    []
+  )
 
   const syncTextarea = useCallback(() => {
     if (!open) return
@@ -64,6 +87,156 @@ export function SettingsDrawer(props: Props) {
     return () => window.removeEventListener('resize', onResize)
   }, [open, syncTextarea])
 
+  useEffect(() => {
+    if (!open) {
+      setView('editor')
+      setSelectedScript(null)
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (open && view === 'editor') {
+      syncTextarea()
+    }
+  }, [open, view, syncTextarea])
+
+  useEffect(() => {
+    return () => {
+      if (saveIndicatorTimeoutRef.current != null) {
+        window.clearTimeout(saveIndicatorTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const canSave = script.trim().length > 0
+
+  const formatSavedDate = useCallback(
+    (timestamp: number) => dateFormatter.format(new Date(timestamp)),
+    [dateFormatter]
+  )
+
+  const getPreviewLabel = useCallback(
+    (value: string) => {
+      const normalized = value.replace(/\s+/g, ' ').trim()
+      if (!normalized) return strings.emptySavedScript
+      const words = normalized.split(' ')
+      const preview = words.slice(0, PREVIEW_WORD_COUNT).join(' ')
+      return words.length > PREVIEW_WORD_COUNT ? `${preview}…` : preview
+    },
+    [strings.emptySavedScript]
+  )
+
+  const handleSaveScript = useCallback(() => {
+    if (!canSave) return
+    const entry: SavedScriptEntry = {
+      id:
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      text: script,
+      savedAt: Date.now()
+    }
+    setSavedScripts((prev) => {
+      const next = [entry, ...prev]
+      return next.slice(0, MAX_SAVED_SCRIPTS)
+    })
+
+    setSaveIndicatorVisible(true)
+    if (saveIndicatorTimeoutRef.current != null) {
+      window.clearTimeout(saveIndicatorTimeoutRef.current)
+    }
+    saveIndicatorTimeoutRef.current = window.setTimeout(() => {
+      setSaveIndicatorVisible(false)
+    }, 1000)
+  }, [canSave, script, setSavedScripts])
+
+  const handleOpenSavedScripts = useCallback(() => {
+    setSelectedScript(null)
+    setView('savedList')
+  }, [])
+
+  const handleSelectSavedScript = useCallback((entry: SavedScriptEntry) => {
+    setSelectedScript(entry)
+    setView('savedDetail')
+  }, [])
+
+  const handleReplaceCurrentScript = useCallback(() => {
+    if (!selectedScript) return
+    onScriptChange(selectedScript.text)
+    setSelectedScript(null)
+    setView('editor')
+  }, [onScriptChange, selectedScript])
+
+  const handleDeleteSavedScript = useCallback(
+    (entryId: string) => {
+      setSavedScripts((prev) => prev.filter((entry) => entry.id !== entryId))
+      if (selectedScript?.id === entryId) {
+        setSelectedScript(null)
+        setView('savedList')
+      }
+    },
+    [selectedScript, setSavedScripts]
+  )
+
+  const handleBack = useCallback(() => {
+    if (view === 'savedDetail') {
+      setView('savedList')
+      setSelectedScript(null)
+    } else {
+      setView('editor')
+      setSelectedScript(null)
+    }
+  }, [view])
+
+  useEffect(() => {
+    if (!open || view === 'editor') return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      event.preventDefault()
+      event.stopImmediatePropagation?.()
+      event.stopPropagation()
+      handleBack()
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [open, view, handleBack])
+
+  const hasSavedScripts = savedScripts.length > 0
+
+  const headerTitle =
+    view === 'editor'
+      ? strings.script
+      : view === 'savedList'
+        ? strings.savedScripts
+        : strings.savedScriptPreview
+
+  const backTooltipLabel = useMemo(() => {
+    if (view === 'editor') return strings.close
+    return view === 'savedDetail' ? strings.backToSavedScripts : strings.backToScript
+  }, [view, strings.backToSavedScripts, strings.backToScript, strings.close])
+
+  let headerMeta: ReactNode = null
+  if (view === 'editor') {
+    const words = script.trim().split(/\s+/).length
+    const minutes = words / 150
+    const m = Math.floor(minutes)
+    const s = Math.round((minutes - m) * 60)
+    if (!(m === 0 && s === 0)) {
+      headerMeta = (
+        <div className="text-[10px] font-medium text-white/50 tracking-wide">
+          {strings.speakingTime} ~ {m > 0 ? `${m}m ` : ''}
+          {s}s
+        </div>
+      )
+    }
+  } else if (view === 'savedDetail' && selectedScript) {
+    headerMeta = (
+      <div className="text-[10px] font-medium text-white/50 tracking-wide">
+        {strings.savedAt} {formatSavedDate(selectedScript.savedAt)}
+      </div>
+    )
+  }
+
   return (
     <AnimatePresence>
       {open && (
@@ -87,19 +260,8 @@ export function SettingsDrawer(props: Props) {
           >
             <header className="flex items-center justify-between">
               <div className="flex flex-col items-start gap-0.5">
-                <div className="text-sm font-semibold text-white/90">{strings.script}</div>
-                {(() => {
-                  const words = script.trim().split(/\s+/).length
-                  const minutes = words / 150
-                  const m = Math.floor(minutes)
-                  const s = Math.round((minutes - m) * 60)
-                  if (m === 0 && s === 0) return null
-                  return (
-                    <div className="text-[10px] font-medium text-white/50 tracking-wide">
-                      {strings.speakingTime} ~ {m > 0 ? `${m}m ` : ''}{s}s
-                    </div>
-                  )
-                })()}
+                <div className="text-sm font-semibold text-white/90">{headerTitle}</div>
+                {headerMeta}
               </div>
               <div className="flex items-center gap-2">
                 <Tooltip label={strings.enableMarkdown}>
@@ -131,15 +293,21 @@ export function SettingsDrawer(props: Props) {
                     </span>
                   </button>
                 </Tooltip>
-                <Tooltip label={strings.close} shortcut="Esc" side="auto" preferSide="left" sideOffset={14}>
+                <Tooltip
+                  label={backTooltipLabel}
+                  shortcut={view === 'editor' ? 'Esc' : undefined}
+                  side={view === 'editor' ? 'auto' : 'bottom'}
+                  preferSide={view === 'editor' ? 'left' : 'bottom'}
+                  sideOffset={view === 'editor' ? 14 : 8}
+                >
                   <span className="inline-flex h-10 w-10 items-center justify-center">
                     <button
                       type="button"
-                      aria-label={strings.close}
-                      onClick={onClose}
+                      aria-label={backTooltipLabel}
+                      onClick={view === 'editor' ? onClose : handleBack}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/75 hover:bg-white/10 hover:text-white"
                     >
-                      <X className="h-4 w-4" />
+                      {view === 'editor' ? <X className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
                     </button>
                   </span>
                 </Tooltip>
@@ -147,25 +315,134 @@ export function SettingsDrawer(props: Props) {
             </header>
 
             <div ref={scrollRef} className="mt-5 flex h-[calc(100%-72px)] flex-col gap-5 overflow-hidden pb-6">
-              <section className="space-y-3">
-                <div
-                  ref={boxRef}
-                  className={cn(
-                    'w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6',
-                    'overflow-hidden focus-within:border-white/20 focus-within:bg-white/5'
-                  )}
-                >
-                  <textarea
-                    ref={textareaRef}
-                    value={script}
-                    onChange={(e) => onScriptChange(e.target.value)}
+              {view === 'editor' && (
+                <section className="space-y-3">
+                  <div
+                    ref={boxRef}
                     className={cn(
-                      'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
-                      'focus:outline-none overflow-y-auto'
+                      'w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6',
+                      'overflow-hidden focus-within:border-white/20 focus-within:bg-white/5'
                     )}
-                  />
-                </div>
-              </section>
+                  >
+                    <textarea
+                      ref={textareaRef}
+                      value={script}
+                      onChange={(e) => onScriptChange(e.target.value)}
+                      className={cn(
+                        'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
+                        'focus:outline-none overflow-y-auto'
+                      )}
+                    />
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSaveScript}
+                      disabled={!canSave}
+                      className={cn(
+                        'inline-flex flex-1 min-w-[160px] items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/85 transition',
+                        'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10',
+                        'disabled:cursor-not-allowed disabled:opacity-40'
+                      )}
+                    >
+                      <span className="relative inline-flex items-center">
+                        <span>{strings.saveScript}</span>
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'absolute -bottom-0.5 -right-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
+                            saveIndicatorVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                          )}
+                        >
+                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
+                        </span>
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenSavedScripts}
+                      className={cn(
+                        'inline-flex flex-1 min-w-[160px] items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/80 transition',
+                        'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10'
+                      )}
+                    >
+                      {strings.savedScripts}
+                    </button>
+                    
+                  </div>
+                </section>
+              )}
+              {view === 'savedList' && (
+                <section className="space-y-4">
+                  <p className="text-sm text-white/70">{strings.savedScriptsInfo}</p>
+                  {hasSavedScripts ? (
+                    <div className="space-y-3">
+                      {savedScripts.map((entry) => (
+                        <button
+                          key={entry.id}
+                          type="button"
+                          onClick={() => handleSelectSavedScript(entry)}
+                          className={cn(
+                            'w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-left text-white/85 transition',
+                            'hover:border-white/20 hover:bg-white/8 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/30'
+                          )}
+                        >
+                          <div className="text-sm font-medium">{getPreviewLabel(entry.text)}</div>
+                          <div className="text-[11px] text-white/55">
+                            {strings.savedAt} {formatSavedDate(entry.savedAt)}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-dashed border-white/10 px-4 py-6 text-center text-sm text-white/60">
+                      {strings.noSavedScripts}
+                    </div>
+                  )}
+                </section>
+              )}
+                {view === 'savedDetail' && (
+                  <section className="space-y-4">
+                    <div className="w-full rounded-2xl border border-white/10 bg-white/4 px-4 py-3 pr-6">
+                      <textarea
+                        value={selectedScript?.text ?? ''}
+                      readOnly
+                      className={cn(
+                        'tele-scroll min-h-[220px] w-full resize-none bg-transparent pr-4 text-sm text-white/85',
+                        'focus:outline-none overflow-y-auto'
+                      )}
+                      spellCheck={false}
+                    />
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="button"
+                        disabled={!selectedScript}
+                        onClick={handleReplaceCurrentScript}
+                      className={cn(
+                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/85 transition',
+                        'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10',
+                        'disabled:cursor-not-allowed disabled:opacity-40'
+                      )}
+                    >
+                      {strings.replaceCurrentScript}
+                    </button>
+                      <button
+                        type="button"
+                        disabled={!selectedScript}
+                        onClick={() => selectedScript && handleDeleteSavedScript(selectedScript.id)}
+                      className={cn(
+                        'inline-flex w-full items-center justify-center rounded-2xl border px-4 py-2 text-sm font-medium text-white/80 transition',
+                        'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/10',
+                        'disabled:cursor-not-allowed disabled:opacity-40'
+                      )}
+                    >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        {strings.deleteSavedScript}
+                      </button>
+                    </div>
+                  </section>
+                )}
             </div>
           </motion.aside>
         </>
