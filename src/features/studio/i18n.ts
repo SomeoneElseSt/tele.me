@@ -21,6 +21,18 @@ type Strings = {
   defaultScript: string
   language: string
   script: string
+  saveScript: string
+  scriptSaved: string
+  deleteSavedScript: string
+  savedScripts: string
+  noSavedScripts: string
+  savedScriptsInfo: string
+  replaceCurrentScript: string
+  backToScript: string
+  backToSavedScripts: string
+  savedAt: string
+  savedScriptPreview: string
+  emptySavedScript: string
   enableMarkdown: string
   close: string
   hidePrompter: string
