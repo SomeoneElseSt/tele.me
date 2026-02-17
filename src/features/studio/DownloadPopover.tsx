@@ -298,35 +298,50 @@ export function DownloadPopover(props: Props) {
                 </div>
               </div>
 
-              <div className="mt-3 flex items-center gap-2.5 rounded-2xl border border-white/10 px-3.5 py-2.5">
-                <HardDrive className={cn(
-                  'h-4 w-4 shrink-0 transition-colors duration-300',
-                  storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
-                )} />
-                <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-300',
-                      storagePercent >= 90 ? 'bg-red-400' : storagePercent >= 70 ? 'bg-amber-400' : 'bg-white/50'
-                    )}
-                    style={{ width: `${Math.max(storagePercent, 2)}%` }}
-                  />
-                </div>
-                <span className={cn(
-                  'text-[11px] tabular-nums font-medium shrink-0 transition-colors duration-300',
-                  storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
-                )}>{storagePercent}%</span>
-              </div>
+              <AnimatePresence initial={false}>
+                {persistVideos && (
+                  <motion.div
+                    key="storage"
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    transition={{ duration: 0.25, ease: [0.32, 0.72, 0, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <Tooltip label={strings.storageTooltip} className="max-w-xs whitespace-normal" wrapperClassName="block w-full">
+                      <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 px-3.5 py-2.5 cursor-default">
+                        <HardDrive className={cn(
+                          'h-4 w-4 shrink-0 transition-colors duration-300',
+                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                        )} />
+                        <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all duration-300',
+                              storagePercent >= 90 ? 'bg-red-400' : storagePercent >= 70 ? 'bg-amber-400' : 'bg-white/50'
+                            )}
+                            style={{ width: `${Math.max(storagePercent, 2)}%` }}
+                          />
+                        </div>
+                        <span className={cn(
+                          'text-[11px] tabular-nums font-medium shrink-0 transition-colors duration-300',
+                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                        )}>{storagePercent}%</span>
+                      </div>
+                    </Tooltip>
 
-              {storagePercent >= 90 && (
-                <div className="mt-3 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/20 px-3 py-3 text-xs">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
-                  <div className="min-w-0 flex-1 break-words">
-                    <div className="font-medium text-white/85 leading-relaxed break-words">{strings.memoryWarningTitle}</div>
-                    <div className="mt-1 text-white/65 leading-relaxed break-words">{strings.memoryWarningMessage}</div>
-                  </div>
-                </div>
-              )}
+                    {storagePercent >= 90 && (
+                      <div className="mt-3 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/20 px-3 py-3 text-xs">
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-400 mt-0.5" />
+                        <div className="min-w-0 flex-1 break-words">
+                          <div className="font-medium text-white/85 leading-relaxed break-words">{strings.memoryWarningTitle}</div>
+                          <div className="mt-1 text-white/65 leading-relaxed break-words">{strings.memoryWarningMessage}</div>
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               <div className="mt-4 flex flex-col overflow-y-auto overflow-x-hidden tele-scroll overscroll-contain pr-1 -mr-1 py-1 max-h-96">
                 <AnimatePresence initial={false}>

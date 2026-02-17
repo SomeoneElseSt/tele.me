@@ -28,6 +28,7 @@ type TooltipProps = {
   defaultOpen?: boolean
   onDefaultOpenDismiss?: () => void
   className?: string
+  wrapperClassName?: string
   interactive?: boolean
   enabled?: boolean
   forceHide?: boolean
@@ -95,6 +96,7 @@ export function Tooltip({
   defaultOpen,
   onDefaultOpenDismiss,
   className,
+  wrapperClassName,
   interactive,
   enabled: enabledProp = true,
   forceHide = false,
@@ -319,7 +321,7 @@ export function Tooltip({
     <>
       <span
         ref={anchorRef}
-        className="inline-flex"
+        className={wrapperClassName ?? 'inline-flex'}
         onMouseEnter={onOpen}
         onMouseLeave={onClose}
         onFocus={onOpen}

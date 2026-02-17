@@ -58,6 +58,7 @@ type Strings = {
   takeLabel: (index: number) => string
   downloadTakeLabel: (index: number) => string
   deleteTakeLabel: (index: number) => string
+  storageTooltip: string
   memoryWarningTitle: string
   memoryWarningMessage: string
   browserWarningTitle: string
@@ -152,6 +153,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Download take ${index}`,
     deleteTakeLabel: (index) => `Delete Take ${index}`,
+    storageTooltip: "Browser storage used by your recordings. You can't record past 90%. Delete videos to free up space.",
     memoryWarningTitle: 'Videos are stored locally',
     memoryWarningMessage: "Many recordings may use significant memory. Download and delete recordings you don't need.",
     browserWarningTitle: 'Browser Compatibility',
@@ -256,6 +258,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Toma ${index}`,
     downloadTakeLabel: (index) => `Descargar toma ${index}`,
     deleteTakeLabel: (index) => `Eliminar toma ${index}`,
+    storageTooltip: 'Almacenamiento del navegador usado por tus grabaciones. No puedes grabar más del 90%. Elimina videos para liberar espacio.',
     memoryWarningTitle: 'Los videos están almacenados localmente',
     memoryWarningMessage: 'Muchas grabaciones pueden usar mucha memoria. Descarga y elimina las grabaciones que no necesites.',
     browserWarningTitle: 'Compatibilidad del navegador',
@@ -360,6 +363,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `テイク ${index}`,
     downloadTakeLabel: (index) => `テイク ${index} をダウンロード`,
     deleteTakeLabel: (index) => `テイク ${index} を削除`,
+    storageTooltip: '録画に使用されているブラウザのストレージです。90%を超えると録画できません。動画を削除してスペースを確保してください。',
     memoryWarningTitle: 'ビデオはローカルに保存されています',
     memoryWarningMessage: '多くの録画は大量のメモリを使用する可能性があります。不要な録画をダウンロードして削除してください。',
     browserWarningTitle: 'ブラウザ互換性',
@@ -464,6 +468,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `टेक ${index}`,
     downloadTakeLabel: (index) => `टेक ${index} डाउनलोड करें`,
     deleteTakeLabel: (index) => `टेक ${index} हटाएं`,
+    storageTooltip: 'आपकी रिकॉर्डिंग द्वारा उपयोग किया गया ब्राउज़र स्टोरेज। 90% से अधिक होने पर रिकॉर्ड नहीं कर सकते। स्थान खाली करने के लिए वीडियो हटाएं।',
     memoryWarningTitle: 'वीडियो स्थानीय रूप से संग्रहीत हैं',
     memoryWarningMessage: 'कई रिकॉर्डिंग महत्वपूर्ण मेमोरी का उपयोग कर सकते हैं। जिन रिकॉर्डिंग की आवश्यकता नहीं है उन्हें डाउनलोड और हटाएं।',
     browserWarningTitle: 'ब्राउज़र अनुकूलता',
@@ -568,6 +573,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Prise ${index}`,
     downloadTakeLabel: (index) => `Télécharger la prise ${index}`,
     deleteTakeLabel: (index) => `Supprimer la prise ${index}`,
+    storageTooltip: "Stockage du navigateur utilisé par vos enregistrements. Vous ne pouvez pas enregistrer au-delà de 90%. Supprimez des vidéos pour libérer de l'espace.",
     memoryWarningTitle: 'Les vidéos sont stockées localement',
     memoryWarningMessage: "De nombreux enregistrements peuvent utiliser beaucoup de mémoire. Téléchargez et supprimez les enregistrements dont vous n'avez pas besoin.",
     browserWarningTitle: 'Compatibilité du navigateur',
@@ -672,6 +678,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Take ${index} herunterladen`,
     deleteTakeLabel: (index) => `Take ${index} löschen`,
+    storageTooltip: 'Vom Browser verwendeter Speicher für deine Aufnahmen. Über 90% ist keine Aufnahme möglich. Lösche Videos, um Speicher freizugeben.',
     memoryWarningTitle: 'Videos sind lokal gespeichert',
     memoryWarningMessage: 'Viele Aufnahmen können viel Speicher verwenden. Laden Sie Aufnahmen herunter und löschen Sie die, die Sie nicht benötigen.',
     browserWarningTitle: 'Browser-Kompatibilität',
@@ -776,6 +783,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `拍摄 ${index}`,
     downloadTakeLabel: (index) => `下载拍摄 ${index}`,
     deleteTakeLabel: (index) => `删除拍摄 ${index}`,
+    storageTooltip: '浏览器存储已被您的录制占用。超过 90% 将无法录制。删除视频以释放空间。',
     memoryWarningTitle: '视频存储在本地',
     memoryWarningMessage: '大量录制可能会占用大量内存。下载并删除不需要的录制。',
     browserWarningTitle: '浏览器兼容性',
@@ -880,6 +888,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `لقطة ${index}`,
     downloadTakeLabel: (index) => `تنزيل اللقطة ${index}`,
     deleteTakeLabel: (index) => `حذف اللقطة ${index}`,
+    storageTooltip: 'مساحة المتصفح المستخدمة بواسطة تسجيلاتك. لا يمكنك التسجيل بعد 90%. احذف مقاطع الفيديو لتحرير المساحة.',
     memoryWarningTitle: 'الفيديوهات مخزنة محلياً',
     memoryWarningMessage: 'التسجيلات الكثيرة قد تستخدم ذاكرة كبيرة. قم بتنزيل وحذف التسجيلات التي لا تحتاجها.',
     browserWarningTitle: 'توافق المتصفح',
@@ -982,6 +991,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Take ${index}`,
     downloadTakeLabel: (index) => `Baixar take ${index}`,
     deleteTakeLabel: (index) => `Excluir take ${index}`,
+    storageTooltip: 'Armazenamento do navegador usado pelas suas gravações. Não é possível gravar além de 90%. Delete vídeos para liberar espaço.',
     memoryWarningTitle: 'Os vídeos estão armazenados localmente',
     memoryWarningMessage: 'Muitas gravações podem usar memória significativa. Baixe e exclua as gravações que não precisa.',
     browserWarningTitle: 'Compatibilidade do navegador',
@@ -1085,6 +1095,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Дубль ${index}`,
     downloadTakeLabel: (index) => `Скачать дубль ${index}`,
     deleteTakeLabel: (index) => `Удалить дубль ${index}`,
+    storageTooltip: 'Хранилище браузера, используемое вашими записями. Запись невозможна после 90%. Удалите видео, чтобы освободить место.',
     memoryWarningTitle: 'Видео хранятся локально',
     memoryWarningMessage: 'Много записей могут использовать значительную память. Скачайте и удалите записи, которые вам не нужны.',
     browserWarningTitle: 'Совместимость браузера',
@@ -1188,6 +1199,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     takeLabel: (index) => `Ujęcie ${index}`,
     downloadTakeLabel: (index) => `Pobierz ujęcie ${index}`,
     deleteTakeLabel: (index) => `Usuń ujęcie ${index}`,
+    storageTooltip: 'Pamięć przeglądarki używana przez twoje nagrania. Nie możesz nagrywać powyżej 90%. Usuń filmy, aby zwolnić miejsce.',
     memoryWarningTitle: 'Wideo są przechowywane lokalnie',
     memoryWarningMessage: 'Wiele nagrań może zużywać dużo pamięci. Pobierz i usuń nagrania, których nie potrzebujesz.',
     browserWarningTitle: 'Kompatybilność przeglądarki',
