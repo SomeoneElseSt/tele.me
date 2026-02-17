@@ -36,6 +36,9 @@ const DEFAULT_MIRROR_VIDEO = true
 type TextAlign = 'left' | 'center' | 'right'
 const DEFAULT_TEXT_ALIGN: TextAlign = 'center'
 const DEFAULT_FRAME: PrompterFrame = { x: 40, y: 40, width: 440, height: 820 }
+const DEFAULT_TRIM_START_RATIO = 0.1
+const DEFAULT_TRIM_END_RATIO = 0.9
+const MIN_TRIM_SPAN = 0.5
 
 const LOCALE_STORAGE_KEY = 'teleme.me:locale'
 const TAKE_NUMBER_STORAGE_KEY = 'teleme.me:next_take_number'
@@ -510,11 +513,37 @@ export function Studio() {
   }, [])
 
   const onToggleTrim = useCallback(() => {
-    if (trimMode) { setTrimMode(false); return }
-    const safeStart = Math.min(1, videoDuration * 0.1)
-    const safeEnd = Math.max(videoDuration - 1, videoDuration * 0.9)
-    setTrimStart(safeStart)
-    setTrimEnd(safeEnd)
+    if (trimMode) {
+      setTrimMode(false)
+      return
+    }
+
+    if (videoDuration <= 0) {
+      setTrimStart(0)
+      setTrimEnd(0)
+      setTrimMode(true)
+      return
+    }
+
+    if (videoDuration <= MIN_TRIM_SPAN) {
+      setTrimStart(0)
+      setTrimEnd(videoDuration)
+      setTrimMode(true)
+      return
+    }
+
+    const maxStart = Math.max(0, videoDuration - MIN_TRIM_SPAN)
+    let start = clamp(videoDuration * DEFAULT_TRIM_START_RATIO, 0, maxStart)
+    let end = clamp(videoDuration * DEFAULT_TRIM_END_RATIO, MIN_TRIM_SPAN, videoDuration)
+
+    if (end - start < MIN_TRIM_SPAN) {
+      const midpoint = videoDuration / 2
+      start = clamp(midpoint - MIN_TRIM_SPAN / 2, 0, maxStart)
+      end = clamp(start + MIN_TRIM_SPAN, MIN_TRIM_SPAN, videoDuration)
+    }
+
+    setTrimStart(start)
+    setTrimEnd(end)
     setTrimMode(true)
   }, [trimMode, videoDuration])
 
