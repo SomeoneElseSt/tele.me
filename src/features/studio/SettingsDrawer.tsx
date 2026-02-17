@@ -16,7 +16,6 @@ type Props = {
 }
 
 const SAVED_SCRIPTS_STORAGE_KEY = 'teleme.me:saved_scripts'
-const MAX_SAVED_SCRIPTS = 10
 const PREVIEW_WORD_COUNT = 12
 
 type SavedScriptEntry = {
@@ -41,7 +40,7 @@ export function SettingsDrawer(props: Props) {
   const [view, setView] = useState<DrawerView>('editor')
   const [selectedScript, setSelectedScript] = useState<SavedScriptEntry | null>(null)
   const [savedScripts, setSavedScripts] = useLocalStorage<SavedScriptEntry[]>(SAVED_SCRIPTS_STORAGE_KEY, [])
-  const [saveIndicatorVisible, setSaveIndicatorVisible] = useState(false)
+  const [saveIndicatorKind, setSaveIndicatorKind] = useState<'success' | null>(null)
   const saveIndicatorTimeoutRef = useRef<number | null>(null)
   const dateFormatter = useMemo(
     () => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
@@ -132,6 +131,7 @@ export function SettingsDrawer(props: Props) {
 
   const handleSaveScript = useCallback(() => {
     if (!canSave) return
+
     const entry: SavedScriptEntry = {
       id:
         typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -140,17 +140,14 @@ export function SettingsDrawer(props: Props) {
       text: script,
       savedAt: Date.now()
     }
-    setSavedScripts((prev) => {
-      const next = [entry, ...prev]
-      return next.slice(0, MAX_SAVED_SCRIPTS)
-    })
+    setSavedScripts((prev) => [entry, ...prev])
 
-    setSaveIndicatorVisible(true)
+    setSaveIndicatorKind('success')
     if (saveIndicatorTimeoutRef.current != null) {
       window.clearTimeout(saveIndicatorTimeoutRef.current)
     }
     saveIndicatorTimeoutRef.current = window.setTimeout(() => {
-      setSaveIndicatorVisible(false)
+      setSaveIndicatorKind(null)
     }, 1000)
   }, [canSave, script, setSavedScripts])
 
@@ -358,7 +355,7 @@ export function SettingsDrawer(props: Props) {
                           aria-hidden="true"
                           className={cn(
                             'absolute -bottom-0.5 -right-1.5 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-500 text-white transition-all duration-200',
-                            saveIndicatorVisible ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
+                            saveIndicatorKind ? 'scale-100 opacity-100' : 'scale-0 opacity-0'
                           )}
                         >
                           <Check className="h-1.5 w-1.5" strokeWidth={3} />
