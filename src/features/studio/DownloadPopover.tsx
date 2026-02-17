@@ -246,7 +246,7 @@ export function DownloadPopover(props: Props) {
                       <AnimatePresence>
                         {confirmingClearAll && (
                           <motion.div
-                            className="absolute right-0 bottom-full mb-2 z-[80] rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5"
+                            className="absolute right-0 bottom-full mb-2 z-[80] rounded-xl border border-white/10 bg-black px-2.5 py-1.5"
                             initial={{ opacity: 0, y: 4 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 4 }}

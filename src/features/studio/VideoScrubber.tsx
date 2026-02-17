@@ -188,10 +188,10 @@ export function VideoScrubber({
                   className="absolute inset-y-0 left-0 rounded-full bg-white/30"
                   style={{ width: `${progress}%`, zIndex: 1 }}
                 />
-                {/* Thumb — z-index 2, above fill but below overlays/handles */}
+                {/* Thumb — z-index above overlays/handles so it stays visible */}
                 <div
                   className="absolute top-1/2 -translate-y-1/2 h-3.5 w-3.5 -translate-x-1/2 rounded-full bg-white shadow pointer-events-none"
-                  style={{ left: `${progress}%`, zIndex: 2 }}
+                  style={{ left: `${progress}%`, zIndex: 12 }}
                 />
 
                 {/* Trim overlays and handles */}
@@ -199,13 +199,13 @@ export function VideoScrubber({
                   <>
                     {/* Left dim overlay — taller than track to cover the thumb */}
                     <div
-                      className="absolute top-1/2 -translate-y-1/2 left-0 h-4 rounded-l-full bg-black/50 pointer-events-none"
-                      style={{ width: `${startPct}%`, zIndex: 3 }}
+                      className="absolute top-1/2 -translate-y-1/2 left-0 h-1.5 rounded-l-full bg-black/50 pointer-events-none"
+                      style={{ width: `${startPct}%`, zIndex: 2 }}
                     />
                     {/* Right dim overlay */}
                     <div
-                      className="absolute top-1/2 -translate-y-1/2 right-0 h-4 rounded-r-full bg-black/50 pointer-events-none"
-                      style={{ width: `${100 - endPct}%`, zIndex: 3 }}
+                      className="absolute top-1/2 -translate-y-1/2 right-0 h-1.5 rounded-r-full bg-black/50 pointer-events-none"
+                      style={{ width: `${100 - endPct}%`, zIndex: 2 }}
                     />
                     {/* Start handle — z-index 10, always on top */}
                     <div
