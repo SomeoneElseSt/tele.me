@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/util": "^0.12.2",
     "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",

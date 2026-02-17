@@ -501,6 +501,11 @@ export function Studio() {
     setVideoCurrentTime(time)
   }, [])
 
+  const previewVideoFrame = useCallback((time: number) => {
+    if (!videoRef.current) return
+    videoRef.current.currentTime = time
+  }, [])
+
   const onCloseVideo = useCallback(() => {
     if (videoRef.current) {
       videoRef.current.pause()
@@ -710,6 +715,7 @@ export function Studio() {
       currentTime={videoCurrentTime}
       duration={videoDuration}
       onSeek={onSeekVideo}
+      onPreviewSeek={previewVideoFrame}
       trimMode={trimMode}
       trimStart={trimStart}
       trimEnd={trimEnd}

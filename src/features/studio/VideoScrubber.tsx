@@ -9,6 +9,7 @@ type Props = {
   currentTime: number
   duration: number
   onSeek: (time: number) => void
+  onPreviewSeek?: (time: number) => void
   trimMode?: boolean
   trimStart?: number
   trimEnd?: number
@@ -18,6 +19,8 @@ type Props = {
   onExitTrim?: () => void
   inline?: boolean
 }
+
+const MIN_TRIM_DURATION = 0.5
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600)
@@ -31,6 +34,7 @@ export function VideoScrubber({
   currentTime,
   duration,
   onSeek,
+  onPreviewSeek,
   trimMode,
   trimStart,
   trimEnd,
@@ -42,6 +46,7 @@ export function VideoScrubber({
 }: Props) {
   const trackRef = useRef<HTMLDivElement | null>(null)
   const isDragging = useRef(false)
+  const handlePreviewReturnTime = useRef<number | null>(null)
   const [showTooltip, setShowTooltip] = useState(false)
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0
@@ -81,25 +86,63 @@ export function VideoScrubber({
     e.currentTarget.releasePointerCapture(e.pointerId)
   }
 
+  function beginHandlePreview() {
+    if (handlePreviewReturnTime.current != null) return
+    handlePreviewReturnTime.current = currentTime
+  }
+
+  function previewHandleAt(time: number) {
+    if (duration <= 0) return
+    beginHandlePreview()
+    if (onPreviewSeek) {
+      onPreviewSeek(time)
+      return
+    }
+    onSeek(time)
+  }
+
+  function endHandlePreview() {
+    if (handlePreviewReturnTime.current == null) return
+    const returnTime = handlePreviewReturnTime.current
+    handlePreviewReturnTime.current = null
+    onSeek(returnTime)
+  }
+
   function makeHandleHandlers(which: 'start' | 'end') {
     return {
       onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
         e.stopPropagation()
         e.currentTarget.setPointerCapture(e.pointerId)
+        beginHandlePreview()
       },
       onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
-        if (!(e.buttons & 1)) return
+        if (!(e.buttons & 1)) {
+          endHandlePreview()
+          return
+        }
         const rect = trackRef.current?.getBoundingClientRect()
-        if (!rect || !onTrimChange) return
-        const t = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)) * duration
+        if (!rect || !onTrimChange || duration <= 0) return
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+        const t = ratio * duration
         if (which === 'start') {
-          onTrimChange(Math.min(t, (trimEnd ?? duration) - 0.5), trimEnd ?? duration)
+          const end = trimEnd ?? duration
+          const nextStart = Math.min(t, end - MIN_TRIM_DURATION)
+          onTrimChange(nextStart, end)
+          previewHandleAt(nextStart)
         } else {
-          onTrimChange(trimStart ?? 0, Math.max(t, (trimStart ?? 0) + 0.5))
+          const start = trimStart ?? 0
+          const nextEnd = Math.max(t, start + MIN_TRIM_DURATION)
+          onTrimChange(start, nextEnd)
+          previewHandleAt(nextEnd)
         }
       },
       onPointerUp(e: React.PointerEvent<HTMLDivElement>) {
         e.currentTarget.releasePointerCapture(e.pointerId)
+        endHandlePreview()
+      },
+      onPointerCancel(e: React.PointerEvent<HTMLDivElement>) {
+        e.currentTarget.releasePointerCapture(e.pointerId)
+        endHandlePreview()
       },
     }
   }
