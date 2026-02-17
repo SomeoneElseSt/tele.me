@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, useLayoutEffect, Fragment } from 'react'
 import type { ComponentType, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, BetweenHorizontalStart, Check, ExternalLink, Eye, MonitorUp, Move, Pause, Play, SlidersHorizontal, X } from 'lucide-react'
+import { AlignCenter, AlignLeft, AlignRight, ArrowDown, ArrowUp, BetweenHorizontalStart, Check, Eye, MonitorUp, Move, Pause, Play, PictureInPicture, SlidersHorizontal, X } from 'lucide-react'
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip, TooltipProvider } from '../../components/Tooltip'
@@ -2228,7 +2228,7 @@ export function FloatingPrompter(props: Props) {
                         )}
                         disabled={isSafari}
                       >
-                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                        {isPip ? <MonitorUp className="h-4 w-4" /> : <PictureInPicture className="h-4 w-4" />}
                       </button>
                     </Tooltip>
                   )
@@ -2560,7 +2560,7 @@ export function FloatingPrompter(props: Props) {
                         )}
                         disabled={isSafari}
                       >
-                        {isPip ? <MonitorUp className="h-4 w-4" /> : <ExternalLink className="h-4 w-4" />}
+                        {isPip ? <MonitorUp className="h-4 w-4" /> : <PictureInPicture className="h-4 w-4" />}
                       </button>
                     </Tooltip>
                   )
