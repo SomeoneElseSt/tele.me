@@ -48,6 +48,7 @@ type Props = {
 
 const GRIP_HIT_SIZE_PX = 32
 const GRIP_INSET_PX = 10
+const GRIP_FIXED_EDGE_WIDTH_PX = 14 
 const GRIP_VISUAL_SIZE_PX = 38
 const SCROLLBAR_BOTTOM_GUTTER_PX = GRIP_INSET_PX + GRIP_VISUAL_SIZE_PX + 6
 const CONTROLS_BAR_GAP_PX = 10
@@ -1827,7 +1828,7 @@ export function FloatingPrompter(props: Props) {
 
   const minWidth = Math.max(PROMPTER_MIN_WIDTH, PROMPTER_CONTROLS_MIN_WIDTH)
   const resize = usePointerResize({
-    enabled: open && !fixedToTop && !isPip,
+    enabled: open && !isPip,
     getOrigin: () => ({ width: frame.width, height: frame.height }),
     onResize: (next) =>
       onFrameChange({
@@ -2574,18 +2575,13 @@ export function FloatingPrompter(props: Props) {
             </div>
           )}
 
-          {!fixedToTop && (
+          {!isPip && (
             <div
-              className={cn(
-                'grip-hit absolute z-20 touch-none',
-                !isPip && 'cursor-nwse-resize'
-              )}
-              style={{
-                right: GRIP_INSET_PX,
-                bottom: GRIP_INSET_PX,
-                width: GRIP_HIT_SIZE_PX,
-                height: GRIP_HIT_SIZE_PX
-              }}
+              className="grip-hit absolute z-20 touch-none cursor-nwse-resize"
+              style={fixedToTop
+                ? { right: 0, bottom: 0, width: GRIP_FIXED_EDGE_WIDTH_PX, height: PROMPTER_HEADER_HEIGHT_PX }
+                : { right: GRIP_INSET_PX, bottom: GRIP_INSET_PX, width: GRIP_HIT_SIZE_PX, height: GRIP_HIT_SIZE_PX }
+              }
               onPointerDown={onResizePointerDown}
             />
           )}
