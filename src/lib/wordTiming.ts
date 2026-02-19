@@ -14,14 +14,14 @@ export type WordTiming = {
 /**
  * Punctuation pause multipliers (base values in ms)
  */
-const COMMA_PAUSE_MS = 300
-const PERIOD_PAUSE_MS = 500
-const LINE_BREAK_PAUSE_MS = 500
+const COMMA_PAUSE_MS = 500
+const PERIOD_PAUSE_MS = 900
+const LINE_BREAK_PAUSE_MS = 600
 
 /**
  * Default WPM for scaling punctuation pauses
  */
-const DEFAULT_WPM = 150
+const DEFAULT_WPM = 300
 
 /**
  * Duration variance control (0.0 - 2.0)
@@ -37,7 +37,8 @@ const DEFAULT_WPM = 150
  * - 1-syllable word: 267ms (var=1.0), 356ms (var=0.5), 178ms (var=1.5)
  * - 3-syllable word: 800ms (var=1.0), 711ms (var=0.5), 889ms (var=1.5)
  */
-const DURATION_VARIANCE = 0.5 
+const DURATION_VARIANCE = 1.0
+const MIN_MS_PER_SYLLABLE = 180
 
 /**
  * Check if a word has punctuation at its position in the original script
@@ -74,9 +75,10 @@ function hasPunctuationAtPosition(
     return { hasPunctuation: false, punctuationType: null }
   }
 
-  // Use the word index to determine which occurrence this is
-  const wordIndexInList = words.findIndex(w => w.startIdx === wordInfo.startIdx)
-  const scriptPosition = matches[Math.min(wordIndexInList, matches.length - 1)]
+  // Count how many times this exact word appeared before this instance (nth occurrence of this word)
+  const globalIdx = words.findIndex(w => w.startIdx === wordInfo.startIdx)
+  const nthOccurrence = words.slice(0, globalIdx).filter(w => w.word === wordText).length
+  const scriptPosition = matches[Math.min(nthOccurrence, matches.length - 1)]
 
   if (scriptPosition === undefined) {
     return { hasPunctuation: false, punctuationType: null }
@@ -144,8 +146,8 @@ export function calculateWordTimings(
     const adjustedRatio = Math.pow(syllableRatio, DURATION_VARIANCE)
     const adjustedSyllables = adjustedRatio * avgSyllables
 
-    // Calculate base duration for this word
-    const baseDuration = adjustedSyllables * msPerSyllable
+    // Proportional floor: longer words stay proportionally longer even at high WPM
+    const baseDuration = Math.max(syllableCount * MIN_MS_PER_SYLLABLE, adjustedSyllables * msPerSyllable)
 
     // Check for punctuation
     const { hasPunctuation, punctuationType } = hasPunctuationAtPosition(script, wordInfo, words)
