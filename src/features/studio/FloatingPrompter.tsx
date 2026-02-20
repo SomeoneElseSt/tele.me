@@ -139,6 +139,9 @@ function toNumber(value: string) {
   return parsed
 }
 
+// Tokenizer: bold spans, italic spans, runs of non-* text, or a lone * (unmatched)
+const INLINE_TOKEN_RE = /\B\*\*[^*]+\*\*\B|\B\*[^*]+\*\B|[^*]+|\*/g
+
 function renderInlineMarkdown(
   text: string,
   startWordIdx: number,
@@ -147,7 +150,6 @@ function renderInlineMarkdown(
   onWordClick?: (wordIdx: number) => void,
   isVoiceActive?: boolean
 ): { nodes: ReactNode[]; endWordIdx: number } {
-  const parts = text.split(/(\B\*\*[^*]+\*\*\B|\B__[^_]+__\B|\B\*[^*]+\*\B|\B_[^_]+_\B)/g)
   let wordIdx = startWordIdx
   const nodes: ReactNode[] = []
 
@@ -156,95 +158,41 @@ function renderInlineMarkdown(
     return isPip ? 'text-[#666]' : 'opacity-40'
   }
 
-  for (let idx = 0; idx < parts.length; idx++) {
-    const part = parts[idx]
-    if (!part) continue
+  const renderWords = (raw: string, key: string) =>
+    raw.split(/(\s+)/).map((token, i) => {
+      if (/\s+/.test(token)) return <Fragment key={`${key}-sp-${i}`}>{token}</Fragment>
+      if (!/\w/.test(token)) {
+        const prevIdx = wordIdx - 1
+        return <span key={`${key}-p-${i}`} className={prevIdx >= 0 ? getWordClass(prevIdx) : ''}>{token}</span>
+      }
+      const currentIdx = wordIdx++
+      return (
+        <span
+          key={`${key}-w-${i}`}
+          data-word-idx={currentIdx}
+          className={getWordClass(currentIdx)}
+          onClick={(e) => {
+            if (isVoiceActive && onWordClick) {
+              e.stopPropagation()
+              onWordClick(currentIdx)
+            }
+          }}
+          style={isVoiceActive ? { cursor: 'pointer' } : undefined}
+        >
+          {token}
+        </span>
+      )
+    })
 
-    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
-      const innerText = part.slice(2, -2)
-      const words = innerText.split(/(\s+)/)
-      const innerNodes = words.map((word, i) => {
-        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
-        if (!/\w/.test(word)) return <span key={`w-${idx}-${i}`} className={wordIdx > 0 ? getWordClass(wordIdx - 1) : ''}>{word}</span>
-        const currentIdx = wordIdx++
-        return (
-          <span
-            key={`w-${idx}-${i}`}
-            data-word-idx={currentIdx}
-            className={getWordClass(currentIdx)}
-            onClick={(e) => {
-              if (isVoiceActive && onWordClick) {
-                e.stopPropagation()
-                onWordClick(currentIdx)
-              }
-            }}
-            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
-          >
-            {word}
-          </span>
-        )
-      })
-      nodes.push(
-        <strong key={`bold-${idx}`} className="font-semibold text-white/95">
-          {innerNodes}
-        </strong>
-      )
-    } else if ((part.startsWith('*') && part.endsWith('*')) || (part.startsWith('_') && part.endsWith('_'))) {
-      const innerText = part.slice(1, -1)
-      const words = innerText.split(/(\s+)/)
-      const innerNodes = words.map((word, i) => {
-        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
-        if (!/\w/.test(word)) return <span key={`w-${idx}-${i}`} className={wordIdx > 0 ? getWordClass(wordIdx - 1) : ''}>{word}</span>
-        const currentIdx = wordIdx++
-        return (
-          <span
-            key={`w-${idx}-${i}`}
-            data-word-idx={currentIdx}
-            className={getWordClass(currentIdx)}
-            onClick={(e) => {
-              if (isVoiceActive && onWordClick) {
-                e.stopPropagation()
-                onWordClick(currentIdx)
-              }
-            }}
-            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
-          >
-            {word}
-          </span>
-        )
-      })
-      nodes.push(
-        <em key={`em-${idx}`} className="text-white/90">
-          {innerNodes}
-        </em>
-      )
+  const tokens = [...text.matchAll(INLINE_TOKEN_RE)]
+  for (let idx = 0; idx < tokens.length; idx++) {
+    const token = tokens[idx]?.[0] ?? ''
+    if (token.startsWith('**') && token.endsWith('**')) {
+      nodes.push(<strong key={`bold-${idx}`} className="font-semibold text-white/95">{renderWords(token.slice(2, -2), `bold-${idx}`)}</strong>)
+    } else if (token.startsWith('*') && token.endsWith('*') && token.length > 1) {
+      nodes.push(<em key={`em-${idx}`} className="text-white/90">{renderWords(token.slice(1, -1), `em-${idx}`)}</em>)
     } else {
-      const words = part.split(/(\s+)/)
-      const innerNodes = words.map((word, i) => {
-        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
-        if (!/\w/.test(word)) {
-          const prevIdx = wordIdx - 1
-          return <span key={`w-${idx}-${i}`} className={prevIdx >= 0 ? getWordClass(prevIdx) : ''}>{word}</span>
-        }
-        const currentIdx = wordIdx++
-        return (
-          <span
-            key={`w-${idx}-${i}`}
-            data-word-idx={currentIdx}
-            className={getWordClass(currentIdx)}
-            onClick={(e) => {
-              if (isVoiceActive && onWordClick) {
-                e.stopPropagation()
-                onWordClick(currentIdx)
-              }
-            }}
-            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
-          >
-            {word}
-          </span>
-        )
-      })
-      nodes.push(<span key={`text-${idx}`}>{innerNodes}</span>)
+      nodes.push(<span key={`text-${idx}`}>{renderWords(token, `text-${idx}`)}</span>)
     }
   }
 
