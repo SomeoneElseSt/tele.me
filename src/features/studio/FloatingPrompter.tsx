@@ -1408,7 +1408,14 @@ export function FloatingPrompter(props: Props) {
         }
       }
     } else {
-      // console.log('[FloatingPrompter] Reached end of script')
+      setSpokenWordIndices(prev => {
+        const next = new Set(prev)
+        const completedLine = scriptLinesRef.current[currentLineIdx]
+        if (completedLine) {
+          completedLine.forEach(idx => next.add(idx))
+        }
+        return next
+      })
     }
   }, [scrollToLine, initializeLineState])
 
