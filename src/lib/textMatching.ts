@@ -28,15 +28,12 @@ export type WordInfo = {
 export function normalizeText(text: string): string {
   let normalized = text.toLowerCase()
 
-  // Strip markdown syntax
-  normalized = normalized.replace(/`[^`]+`/g, (match) => match.slice(1, -1))
-  normalized = normalized.replace(/\*\*([^*]+)\*\*/g, '$1')
-  normalized = normalized.replace(/__([^_]+)__/g, '$1')
-  normalized = normalized.replace(/\*([^*]+)\*/g, '$1')
-  normalized = normalized.replace(/_([^_]+)_/g, '$1')
+  // Strip markdown syntax (same boundary rules as the renderer)
+  normalized = normalized.replace(/\B\*\*([^*]+)\*\*\B/g, '$1')
+  normalized = normalized.replace(/\B__([^_]+)__\B/g, '$1')
+  normalized = normalized.replace(/\B\*([^*]+)\*\B/g, '$1')
+  normalized = normalized.replace(/\B_([^_]+)_\B/g, '$1')
   normalized = normalized.replace(/#{1,6}\s+/g, '')
-  normalized = normalized.replace(/^\s*[-*+]\s+/gm, '')
-  normalized = normalized.replace(/^\s*\d+\.\s+/gm, '')
 
   // Remove punctuation
   normalized = normalized.replace(PUNCTUATION_REGEX, '')

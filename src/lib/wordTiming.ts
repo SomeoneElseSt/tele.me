@@ -62,7 +62,8 @@ function hasPunctuationAtPosition(
   // We'll search for punctuation immediately after where this word should be
 
   // Find all occurrences of the word in the normalized script
-  const regex = new RegExp(`\\b${wordText}\\b`, 'gi')
+  const escapedWord = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`\\b${escapedWord}\\b`, 'gi')
   const matches: number[] = []
   let match
 

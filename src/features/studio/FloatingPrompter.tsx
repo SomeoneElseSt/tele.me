@@ -147,7 +147,7 @@ function renderInlineMarkdown(
   onWordClick?: (wordIdx: number) => void,
   isVoiceActive?: boolean
 ): { nodes: ReactNode[]; endWordIdx: number } {
-  const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|\*[^*]+\*|_[^_]+_)/g)
+  const parts = text.split(/(\B\*\*[^*]+\*\*\B|\B__[^_]+__\B|\B\*[^*]+\*\B|\B_[^_]+_\B)/g)
   let wordIdx = startWordIdx
   const nodes: ReactNode[] = []
 
@@ -160,42 +160,12 @@ function renderInlineMarkdown(
     const part = parts[idx]
     if (!part) continue
 
-    if (part.startsWith('`') && part.endsWith('`')) {
-      const innerText = part.slice(1, -1)
-      const words = innerText.split(/(\s+)/)
-      const innerNodes = words.map((word, i) => {
-        if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
-        const currentIdx = wordIdx++
-        return (
-          <span
-            key={`w-${idx}-${i}`}
-            data-word-idx={currentIdx}
-            className={getWordClass(currentIdx)}
-            onClick={(e) => {
-              if (isVoiceActive && onWordClick) {
-                e.stopPropagation()
-                onWordClick(currentIdx)
-              }
-            }}
-            style={isVoiceActive ? { cursor: 'pointer' } : undefined}
-          >
-            {word}
-          </span>
-        )
-      })
-      nodes.push(
-        <code
-          key={`code-${idx}`}
-          className="rounded-md bg-white/10 px-1.5 py-0.5 text-[0.9em] text-white/90"
-        >
-          {innerNodes}
-        </code>
-      )
-    } else if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
+    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
       const innerText = part.slice(2, -2)
       const words = innerText.split(/(\s+)/)
       const innerNodes = words.map((word, i) => {
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        if (!/\w/.test(word)) return <span key={`w-${idx}-${i}`} className={wordIdx > 0 ? getWordClass(wordIdx - 1) : ''}>{word}</span>
         const currentIdx = wordIdx++
         return (
           <span
@@ -224,6 +194,7 @@ function renderInlineMarkdown(
       const words = innerText.split(/(\s+)/)
       const innerNodes = words.map((word, i) => {
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        if (!/\w/.test(word)) return <span key={`w-${idx}-${i}`} className={wordIdx > 0 ? getWordClass(wordIdx - 1) : ''}>{word}</span>
         const currentIdx = wordIdx++
         return (
           <span
@@ -251,6 +222,10 @@ function renderInlineMarkdown(
       const words = part.split(/(\s+)/)
       const innerNodes = words.map((word, i) => {
         if (/\s+/.test(word)) return <Fragment key={`sp-${idx}-${i}`}>{word}</Fragment>
+        if (!/\w/.test(word)) {
+          const prevIdx = wordIdx - 1
+          return <span key={`w-${idx}-${i}`} className={prevIdx >= 0 ? getWordClass(prevIdx) : ''}>{word}</span>
+        }
         const currentIdx = wordIdx++
         return (
           <span
@@ -351,56 +326,10 @@ function renderMarkdownBlocks(
       continue
     }
 
-    const ulMatch = /^\s*[-*+]\s+/.test(line)
-    if (ulMatch) {
-      const items: ReactNode[] = []
-      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i] ?? '')) {
-        const itemText = (lines[i] ?? '').replace(/^\s*[-*+]\s+/, '')
-        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
-        wordIdx = result.endWordIdx
-        items.push(
-          <li key={`ul-${i}`}>
-            {result.nodes}
-          </li>
-        )
-        i += 1
-      }
-      blocks.push(
-        <ul key={`ul-block-${i}`} className="list-disc pl-6 text-white/92">
-          {items}
-        </ul>
-      )
-      continue
-    }
-
-    const olMatch = /^\s*\d+\.\s+/.test(line)
-    if (olMatch) {
-      const items: ReactNode[] = []
-      while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i] ?? '')) {
-        const itemText = (lines[i] ?? '').replace(/^\s*\d+\.\s+/, '')
-        const result = renderInlineMarkdown(itemText, wordIdx, spokenIndices, isPip, onWordClick, isVoiceActive)
-        wordIdx = result.endWordIdx
-        items.push(
-          <li key={`ol-${i}`}>
-            {result.nodes}
-          </li>
-        )
-        i += 1
-      }
-      blocks.push(
-        <ol key={`ol-block-${i}`} className="list-decimal pl-6 text-white/92">
-          {items}
-        </ol>
-      )
-      continue
-    }
-
     const paragraphLines: string[] = []
     while (i < lines.length && (lines[i] ?? '').trim() !== '') {
       const currentLine = lines[i] ?? ''
       if (/^(#{1,6})\s+/.test(currentLine)) break
-      if (/^\s*[-*+]\s+/.test(currentLine)) break
-      if (/^\s*\d+\.\s+/.test(currentLine)) break
       paragraphLines.push(currentLine)
       i += 1
     }
