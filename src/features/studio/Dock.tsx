@@ -22,6 +22,10 @@ type Props = {
   micId?: string
   onCameraIdChange: (value?: string) => void
   onMicIdChange: (value?: string) => void
+  cameraEnabled: boolean
+  onCameraEnabledChange: (value: boolean) => void
+  micEnabled: boolean
+  onMicEnabledChange: (value: boolean) => void
   mirrorVideo: boolean
   onMirrorVideoChange: (value: boolean) => void
   prompterOpen: boolean
@@ -95,6 +99,10 @@ export function Dock({
   micId,
   onCameraIdChange,
   onMicIdChange,
+  cameraEnabled,
+  onCameraEnabledChange,
+  micEnabled,
+  onMicEnabledChange,
   mirrorVideo,
   onMirrorVideoChange,
   prompterOpen,
@@ -582,6 +590,10 @@ export function Dock({
                   micId={micId}
                   onCameraIdChange={onCameraIdChange}
                   onMicIdChange={onMicIdChange}
+                  cameraEnabled={cameraEnabled}
+                  onCameraEnabledChange={onCameraEnabledChange}
+                  micEnabled={micEnabled}
+                  onMicEnabledChange={onMicEnabledChange}
                   mirrorVideo={mirrorVideo}
                   onMirrorVideoChange={onMirrorVideoChange}
                 />

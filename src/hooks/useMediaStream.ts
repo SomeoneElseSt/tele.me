@@ -3,11 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 type UseMediaStreamArgs = {
   audioDeviceId?: string
   videoDeviceId?: string
+  audioEnabled?: boolean
+  videoEnabled?: boolean
   facingMode?: 'user' | 'environment'
   braveBlockedMessage?: string
 }
 
-export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, braveBlockedMessage }: UseMediaStreamArgs) {
+export function useMediaStream({ audioDeviceId, videoDeviceId, audioEnabled = true, videoEnabled = true, facingMode, braveBlockedMessage }: UseMediaStreamArgs) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [error, setError] = useState<string | undefined>(undefined)
   const [isBraveBlocked, setIsBraveBlocked] = useState(false)
@@ -43,6 +45,12 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, brave
       setIsBraveBlocked(false)
       return
     }
+    if (!audioEnabled && !videoEnabled) {
+      stop()
+      setReady(true)
+      return
+    }
+
     setReady(false)
     setError(undefined)
     setIsBraveBlocked(false)
@@ -51,25 +59,19 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, brave
     // Add a tiny delay to prevent UI jitter if getUserMedia fails instantly
     await new Promise((resolve) => setTimeout(resolve, 100))
 
-    const constraints: MediaStreamConstraints = {
-      audio: audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true,
-      video: videoDeviceId
-        ? {
-          deviceId: { exact: videoDeviceId },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
+    const audioConstraint: MediaStreamConstraints['audio'] = !audioEnabled
+      ? false
+      : audioDeviceId ? { deviceId: { exact: audioDeviceId } } : true
+
+    const videoConstraint: MediaStreamConstraints['video'] = !videoEnabled
+      ? false
+      : videoDeviceId
+        ? { deviceId: { exact: videoDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
         : facingMode
-          ? {
-            facingMode,
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-          : {
-            width: { ideal: 1920 },
-            height: { ideal: 1080 }
-          }
-    }
+          ? { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }
+          : { width: { ideal: 1920 }, height: { ideal: 1080 } }
+
+    const constraints: MediaStreamConstraints = { audio: audioConstraint, video: videoConstraint }
 
     const next = await navigator.mediaDevices.getUserMedia(constraints).catch((err: unknown) => {
       let message = err instanceof Error ? err.message : 'Failed to start camera.'
@@ -98,13 +100,13 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, facingMode, brave
 
     setStream(next)
     setReady(true)
-  }, [audioDeviceId, facingMode, stop, supported, videoDeviceId])
+  }, [audioDeviceId, audioEnabled, facingMode, stop, supported, videoDeviceId, videoEnabled])
 
   useEffect(() => {
     void start()
     return () => stop()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [audioDeviceId, videoDeviceId, facingMode])
+  }, [audioDeviceId, videoDeviceId, audioEnabled, videoEnabled, facingMode])
 
   return { stream, supported, ready, error: displayError, start, stop }
 }

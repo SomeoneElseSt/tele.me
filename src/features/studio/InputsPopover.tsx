@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { Camera, FlipHorizontal, Mic, X } from 'lucide-react'
+import { Camera, CameraOff, FlipHorizontal, Mic, MicOff, X } from 'lucide-react'
 import { useEffect, useRef, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
@@ -20,6 +20,10 @@ type Props = {
   micId?: string
   onCameraIdChange: (value?: string) => void
   onMicIdChange: (value?: string) => void
+  cameraEnabled: boolean
+  onCameraEnabledChange: (value: boolean) => void
+  micEnabled: boolean
+  onMicEnabledChange: (value: boolean) => void
   mirrorVideo: boolean
   onMirrorVideoChange: (value: boolean) => void
 }
@@ -43,6 +47,10 @@ export function InputsPopover(props: Props) {
     micId,
     onCameraIdChange,
     onMicIdChange,
+    cameraEnabled,
+    onCameraEnabledChange,
+    micEnabled,
+    onMicEnabledChange,
     mirrorVideo,
     onMirrorVideoChange
   } = props
@@ -115,46 +123,116 @@ export function InputsPopover(props: Props) {
                 </div>
 
                 <div className="mt-4 space-y-3">
-                  <div className="relative">
-                    <select
-                      value={toSelectValue(cameraId)}
-                      onChange={(e) => onCameraIdChange(e.target.value || undefined)}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <select
+                        value={toSelectValue(cameraId)}
+                        onChange={(e) => onCameraIdChange(e.target.value || undefined)}
+                        className={cn(
+                          'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 text-sm text-white/85 transition-all outline-none',
+                          'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                        )}
+                      >
+                        {cameras.length === 0 && <option value="">{strings.noCameras}</option>}
+                        {cameras.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onCameraEnabledChange(!cameraEnabled)}
                       className={cn(
-                        'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 pr-10 text-sm text-white/85 transition-all outline-none',
-                        'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition-all outline-none',
+                        cameraEnabled
+                          ? 'border-white/20 bg-white/12 text-white'
+                          : 'border-white/10 bg-white/6 text-white/40 hover:bg-white/10 hover:text-white/70'
                       )}
                     >
-                      {cameras.length === 0 && <option value="">{strings.noCameras}</option>}
-                      {cameras.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                      <Camera className="h-4 w-4" />
-                    </div>
+                      <AnimatePresence mode="wait" initial={false}>
+                        {cameraEnabled ? (
+                          <motion.span
+                            key="on"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.7 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex"
+                          >
+                            <Camera className="h-4 w-4" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="off"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.7 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex"
+                          >
+                            <CameraOff className="h-4 w-4" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
                   </div>
 
-                  <div className="relative">
-                    <select
-                      value={toSelectValue(micId)}
-                      onChange={(e) => onMicIdChange(e.target.value || undefined)}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <select
+                        value={toSelectValue(micId)}
+                        onChange={(e) => onMicIdChange(e.target.value || undefined)}
+                        className={cn(
+                          'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 text-sm text-white/85 transition-all outline-none',
+                          'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                        )}
+                      >
+                        {mics.length === 0 && <option value="">{strings.noMics}</option>}
+                        {mics.map((d) => (
+                          <option key={d.id} value={d.id}>
+                            {d.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onMicEnabledChange(!micEnabled)}
                       className={cn(
-                        'h-11 w-full appearance-none rounded-2xl border bg-white/6 px-4 pr-10 text-sm text-white/85 transition-all outline-none',
-                        'border-white/10 hover:border-white/20 hover:bg-white/10 focus:bg-white/12 focus:border-white/25 focus:ring-2 focus:ring-white/30'
+                        'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border transition-all outline-none',
+                        micEnabled
+                          ? 'border-white/20 bg-white/12 text-white'
+                          : 'border-white/10 bg-white/6 text-white/40 hover:bg-white/10 hover:text-white/70'
                       )}
                     >
-                      {mics.length === 0 && <option value="">{strings.noMics}</option>}
-                      {mics.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-white/50">
-                      <Mic className="h-4 w-4" />
-                    </div>
+                      <AnimatePresence mode="wait" initial={false}>
+                        {micEnabled ? (
+                          <motion.span
+                            key="on"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.7 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex"
+                          >
+                            <Mic className="h-4 w-4" />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="off"
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.7 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex"
+                          >
+                            <MicOff className="h-4 w-4" />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </button>
                   </div>
 
                   <button
