@@ -1556,7 +1556,7 @@ export function FloatingPrompter(props: Props) {
   }, [])
 
   const speechRecognition = useSpeechRecognition({
-    enabled: open && playing && autoScrollEnabled,
+    enabled: false,
     locale,
     onTranscript: handleTranscript,
     onError: handleError
