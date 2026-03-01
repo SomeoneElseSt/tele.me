@@ -521,6 +521,39 @@ export function Studio() {
     setTrimming(false)
   }, [])
 
+  // Keyboard Lock (Chrome/Edge): lock Escape while in fullscreen so the browser
+  // doesn't intercept it — our hotkey handler closes the video instead.
+  useEffect(() => {
+    const keyboard = (navigator as { keyboard?: { lock: (keys: string[]) => Promise<void>; unlock: () => void } }).keyboard
+    if (!keyboard) return
+
+    const handleFullscreenChange = () => {
+      if (document.fullscreenElement) {
+        keyboard.lock(['Escape']).catch(() => {})
+      } else {
+        keyboard.unlock()
+      }
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+      keyboard.unlock()
+    }
+  }, [])
+
+  // Fallback (Safari/other): browser exits fullscreen on Escape natively.
+  // Close the video immediately after fullscreen exits if playback was active.
+  useEffect(() => {
+    const hasKeyboardLock = 'keyboard' in navigator && 'lock' in (navigator as { keyboard?: { lock?: unknown } }).keyboard!
+    if (hasKeyboardLock) return
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && playingTakeId) onCloseVideo()
+    }
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  }, [playingTakeId, onCloseVideo])
+
   const onToggleTrim = useCallback(() => {
     if (trimMode) {
       setTrimMode(false)
