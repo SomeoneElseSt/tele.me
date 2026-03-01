@@ -521,6 +521,9 @@ export function Studio() {
     setTrimming(false)
   }, [])
 
+  // Track whether Keyboard Lock API actually works (Vivaldi exposes it but it's broken)
+  const keyboardLockWorking = useRef(false)
+
   // Keyboard Lock (Chrome/Edge): lock Escape while in fullscreen so the browser
   // doesn't intercept it — our hotkey handler closes the video instead.
   useEffect(() => {
@@ -529,7 +532,10 @@ export function Studio() {
 
     const handleFullscreenChange = () => {
       if (document.fullscreenElement) {
-        keyboard.lock(['Escape']).catch(() => {})
+        keyboard.lock(['Escape']).then(
+          () => { keyboardLockWorking.current = true },
+          () => { keyboardLockWorking.current = false },
+        )
       } else {
         keyboard.unlock()
       }
@@ -541,13 +547,11 @@ export function Studio() {
     }
   }, [])
 
-  // Fallback (Safari/other): browser exits fullscreen on Escape natively.
+  // Fallback (Safari/Vivaldi/other): browser exits fullscreen on Escape natively.
   // Close the video immediately after fullscreen exits if playback was active.
   useEffect(() => {
-    const hasKeyboardLock = 'keyboard' in navigator && 'lock' in (navigator as { keyboard?: { lock?: unknown } }).keyboard!
-    if (hasKeyboardLock) return
-
     const handleFullscreenChange = () => {
+      if (keyboardLockWorking.current) return
       if (!document.fullscreenElement && playingTakeId) onCloseVideo()
     }
     document.addEventListener('fullscreenchange', handleFullscreenChange)
