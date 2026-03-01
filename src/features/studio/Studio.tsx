@@ -9,6 +9,7 @@ import { useMediaStream } from '../../hooks/useMediaStream'
 import { useRecorder } from '../../hooks/useRecorder'
 import { useMirroredStream } from '../../hooks/useMirroredStream'
 import { useLocalStorage } from '../../hooks/useLocalStorage'
+import { useAudioSilenceDetection } from '../../hooks/useAudioSilenceDetection'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { clamp } from '../../hooks/geometry'
 import { formatMs } from '../recording/format'
@@ -273,6 +274,7 @@ export function Studio() {
 
   const recordingStream = useMirroredStream(stream, mirrorVideo)
   const recorder = useRecorder(recordingStream)
+  const { isSilent } = useAudioSilenceDetection(stream, recorder.status === 'recording')
 
   useEffect(() => {
     const isMissing = audioDeviceId && audioInputs.length > 0 && !audioInputs.some((d) => d.deviceId === audioDeviceId)
@@ -944,6 +946,7 @@ export function Studio() {
           storagePercent={storagePercent}
           recordDisabledReason={recordDisabledReason}
           error={error}
+          warning={isSilent ? strings.audioSilentWarningMessage : undefined}
           trimMode={trimMode}
           onToggleTrim={onToggleTrim}
           topSlot={playbackScrubber}

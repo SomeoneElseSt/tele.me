@@ -108,6 +108,8 @@ type Strings = {
   speakingTime: string
   trimVideo: string
   exitTrim: string
+  audioSilentWarningTitle: string
+  audioSilentWarningMessage: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
@@ -227,6 +229,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Speaking Time',
     trimVideo: 'Trim video',
     exitTrim: 'Exit trim',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   es: {
     defaultScript:
@@ -344,6 +348,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Tiempo de habla',
     trimVideo: 'Recortar video',
     exitTrim: 'Salir de recorte',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   ja: {
     defaultScript:
@@ -461,6 +467,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: '発話時間',
     trimVideo: 'ビデオをトリミング',
     exitTrim: 'トリミング終了',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   hi: {
     defaultScript:
@@ -578,6 +586,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'बोलने का समय',
     trimVideo: 'वीडियो ट्रिम करें',
     exitTrim: 'ट्रिम से बाहर निकलें',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   fr: {
     defaultScript:
@@ -695,6 +705,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Temps de parole',
     trimVideo: 'Rogner la vidéo',
     exitTrim: 'Quitter rogner',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   de: {
     defaultScript:
@@ -812,6 +824,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Sprechzeit',
     trimVideo: 'Video trimmen',
     exitTrim: 'Trimmen beenden',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   zh: {
     defaultScript:
@@ -929,6 +943,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: '演讲时间',
     trimVideo: '修剪视频',
     exitTrim: '退出修剪',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   ar: {
     defaultScript:
@@ -1046,6 +1062,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'وقت التحدث',
     trimVideo: 'قص الفيديو',
     exitTrim: 'خروج القص',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   pt: {
     defaultScript:
@@ -1161,6 +1179,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Tempo de fala',
     trimVideo: 'Aparar vídeo',
     exitTrim: 'Sair do corte',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   ru: {
     defaultScript:
@@ -1277,6 +1297,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Время речи',
     trimVideo: 'Обрезать видео',
     exitTrim: 'Выход из обрезки',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
   pl: {
     defaultScript:
@@ -1393,6 +1415,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     speakingTime: 'Czas mówienia',
     trimVideo: 'Przytnij wideo',
     exitTrim: 'Wyjdź z przycinania',
+    audioSilentWarningTitle: 'No audio detected',
+    audioSilentWarningMessage: 'Your microphone appears to be silent. This can happen when browser permissions expire. Try reloading the page to fix it.',
   },
 }
 
