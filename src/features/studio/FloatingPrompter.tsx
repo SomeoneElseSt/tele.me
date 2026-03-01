@@ -1017,81 +1017,75 @@ export function FloatingPrompter(props: Props) {
     prevIsEditingRef.current = isEditing
   })
 
+  const scrollCursorIntoView = useCallback(() => {
+    const textarea = textareaRef.current
+    const scrollParent = scrollerRef.current
+    const content = contentRef.current
+    if (!textarea || !scrollParent || !content) return
+
+    const cursor = textarea.selectionStart
+    lastCursorPositionRef.current = cursor
+
+    const style = window.getComputedStyle(textarea)
+    const doc = textarea.ownerDocument
+    const mirrorDiv = doc.createElement('div')
+
+    const props = [
+      'boxSizing', 'width', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
+      'borderTopWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderRightWidth',
+      'fontFamily', 'fontSize', 'fontStyle', 'fontWeight', 'letterSpacing', 'lineHeight',
+      'textAlign', 'textIndent', 'textTransform', 'whiteSpace', 'wordBreak', 'wordSpacing', 'overflowWrap'
+    ]
+
+    props.forEach((p: any) => {
+      // @ts-ignore
+      mirrorDiv.style[p] = style[p]
+    })
+
+    mirrorDiv.style.position = 'absolute'
+    mirrorDiv.style.visibility = 'hidden'
+    mirrorDiv.style.height = 'auto'
+    mirrorDiv.style.top = '-9999px'
+    mirrorDiv.style.left = '-9999px'
+
+    mirrorDiv.textContent = textarea.value.substring(0, cursor)
+    const span = doc.createElement('span')
+    span.textContent = '|'
+    mirrorDiv.appendChild(span)
+
+    doc.body.appendChild(mirrorDiv)
+    const cursorTop = span.offsetTop
+    doc.body.removeChild(mirrorDiv)
+
+    const contentPaddingTop = parseFloat(window.getComputedStyle(content).paddingTop) || 0
+    const viewportHeight = scrollParent.clientHeight
+    const lineHeight = parseFloat(style.lineHeight) || 20
+
+    const absoluteCursorPosition = cursorTop + contentPaddingTop
+    const targetScrollTop = absoluteCursorPosition - (viewportHeight / 2) + (lineHeight / 2)
+
+    const maxScroll = Math.max(0, content.scrollHeight - scrollParent.clientHeight)
+    const clampedScrollY = Math.max(0, Math.min(targetScrollTop, maxScroll))
+
+    virtualScrollYRef.current = clampedScrollY
+    content.style.transform = `translateY(-${clampedScrollY}px)`
+  }, [])
+
   useLayoutEffect(() => {
-    if (isEditing && textareaRef.current) {
-      const textarea = textareaRef.current
-      const scrollParent = scrollerRef.current
-      const content = contentRef.current
-      const justEnteredEditMode = !prevIsEditingRef.current && isEditing
-      const currentCursor = textarea.selectionStart
+    if (!isEditing || !textareaRef.current) return
 
-      // Only focus and set selection when entering edit mode
-      if (justEnteredEditMode) {
-        textarea.focus()
-        if (cursorPositionRef.current !== null) {
-          textarea.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current)
-        }
-        lastCursorPositionRef.current = currentCursor
-      }
+    const textarea = textareaRef.current
+    const justEnteredEditMode = !prevIsEditingRef.current && isEditing
 
-      // Only update scroll when cursor position changes (not on every script change)
-      const cursorMoved = currentCursor !== lastCursorPositionRef.current
-      if (scrollParent && content && (justEnteredEditMode || cursorMoved)) {
-        lastCursorPositionRef.current = currentCursor
-
-        const cursor = textarea.selectionStart
-        const style = window.getComputedStyle(textarea)
-
-        // Use textarea's document (handles both normal and PiP mode)
-        const doc = textarea.ownerDocument
-        const mirrorDiv = doc.createElement('div')
-
-        const props = [
-          'boxSizing', 'width', 'paddingTop', 'paddingBottom', 'paddingLeft', 'paddingRight',
-          'borderTopWidth', 'borderBottomWidth', 'borderLeftWidth', 'borderRightWidth',
-          'fontFamily', 'fontSize', 'fontStyle', 'fontWeight', 'letterSpacing', 'lineHeight',
-          'textAlign', 'textIndent', 'textTransform', 'whiteSpace', 'wordBreak', 'wordSpacing', 'overflowWrap'
-        ]
-
-        props.forEach((p: any) => {
-          // @ts-ignore
-          mirrorDiv.style[p] = style[p]
-        })
-
-        mirrorDiv.style.position = 'absolute'
-        mirrorDiv.style.visibility = 'hidden'
-        mirrorDiv.style.height = 'auto'
-        mirrorDiv.style.top = '-9999px'
-        mirrorDiv.style.left = '-9999px'
-
-        mirrorDiv.textContent = textarea.value.substring(0, cursor)
-        const span = doc.createElement('span')
-        span.textContent = '|'
-        mirrorDiv.appendChild(span)
-
-        doc.body.appendChild(mirrorDiv)
-        const cursorTop = span.offsetTop
-        doc.body.removeChild(mirrorDiv)
-
-        // Adjust scroll to center the cursor using virtual scroll system
-        const contentPaddingTop = parseFloat(window.getComputedStyle(content).paddingTop) || 0
-        const viewportHeight = scrollParent.clientHeight
-        const lineHeight = parseFloat(style.lineHeight) || 20
-
-        // Calculate absolute position: cursor position within textarea + content's top padding
-        const absoluteCursorPosition = cursorTop + contentPaddingTop
-        const targetScrollTop = absoluteCursorPosition - (viewportHeight / 2) + (lineHeight / 2)
-
-        // Clamp to valid range
-        const maxScroll = Math.max(0, content.scrollHeight - scrollParent.clientHeight)
-        const clampedScrollY = Math.max(0, Math.min(targetScrollTop, maxScroll))
-
-        // Update virtual scroll and apply transform
-        virtualScrollYRef.current = clampedScrollY
-        content.style.transform = `translateY(-${clampedScrollY}px)`
+    if (justEnteredEditMode) {
+      textarea.focus()
+      if (cursorPositionRef.current !== null) {
+        textarea.setSelectionRange(cursorPositionRef.current, cursorPositionRef.current)
       }
     }
-  }, [isEditing, script])
+
+    scrollCursorIntoView()
+  }, [isEditing, script, scrollCursorIntoView])
 
   // Allow editing even while playing (removed auto-exit)
   // useEffect(() => {
@@ -2175,6 +2169,7 @@ export function FloatingPrompter(props: Props) {
                       placeholder=""
                       spellCheck={false}
                       ref={textareaRef}
+                      onSelect={() => scrollCursorIntoView()}
                       onKeyDown={(e) => {
                         // Prevent space from triggering play/pause while editing, unless modifier key is held
                         if (e.key === ' ' && !e.metaKey && !e.ctrlKey) {
