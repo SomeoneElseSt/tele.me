@@ -21,7 +21,7 @@ import { VideoScrubber } from './VideoScrubber'
 import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
-import { trimVideo } from '../../lib/videoTrim'
+import { remuxVideo, trimVideo } from '../../lib/videoTrim'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -206,6 +206,7 @@ export function Studio() {
   const [trimStart, setTrimStart] = useState(0)
   const [trimEnd, setTrimEnd] = useState(0)
   const [trimming, setTrimming] = useState(false)
+  const [processingTakeIds, setProcessingTakeIds] = useState<Set<string>>(new Set())
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const lastProcessedUrlRef = useRef<string | null>(null)
 
@@ -647,31 +648,46 @@ export function Studio() {
     if (url === lastProcessedUrlRef.current) return
     lastProcessedUrlRef.current = url
 
+    const createdAt = Date.now()
+    const takeNumber = incrementTakeNumber() ?? 1
+    const takeId = `take-${createdAt}`
+    const newTake = { id: takeId, url, createdAt, mimeType, takeNumber }
+
     setTakes((prev) => {
       if (prev.some(take => take.url === url)) return prev
-
-      const createdAt = Date.now()
-      const takeNumber = incrementTakeNumber() ?? 1
-      const newTake = { id: `take-${createdAt}`, url, createdAt, mimeType, takeNumber }
-
-      // Save to IndexedDB if persistent storage is enabled
-      if (persistVideos) {
-        // Fetch the blob and save it
-        fetch(url)
-          .then(response => response.blob())
-          .then(blob => videoStorage.saveVideo({
-            id: newTake.id,
-            blob,
-            createdAt: newTake.createdAt,
-            mimeType: newTake.mimeType,
-            takeNumber: newTake.takeNumber
-          }))
-          .then(() => refreshStorageQuota())
-          .catch(error => console.error('Failed to save video to storage:', error))
-      }
-
       return [newTake, ...prev]
     })
+
+    // Mark as processing and remux in background
+    setProcessingTakeIds((prev) => new Set(prev).add(takeId))
+
+    fetch(url)
+      .then(response => response.blob())
+      .then(blob => remuxVideo(blob, mimeType))
+      .then(remuxedBlob => {
+        const remuxedUrl = URL.createObjectURL(remuxedBlob)
+        setTakes((prev) => prev.map(t => t.id === takeId ? { ...t, url: remuxedUrl } : t))
+
+        if (persistVideos) {
+          videoStorage.saveVideo({
+            id: takeId,
+            blob: remuxedBlob,
+            createdAt,
+            mimeType,
+            takeNumber
+          })
+            .then(() => refreshStorageQuota())
+            .catch(error => console.error('Failed to save video to storage:', error))
+        }
+      })
+      .catch(error => console.error('[Studio] Remux failed, using original:', error))
+      .finally(() => {
+        setProcessingTakeIds((prev) => {
+          const next = new Set(prev)
+          next.delete(takeId)
+          return next
+        })
+      })
   }, [recorder.url, recorder.mimeType, incrementTakeNumber, persistVideos, refreshStorageQuota])
 
   const onToggleFullscreen = useCallback(() => {
@@ -987,6 +1003,7 @@ export function Studio() {
           trimMode={trimMode}
           onToggleTrim={onToggleTrim}
           topSlot={playbackScrubber}
+          processingTakeIds={processingTakeIds}
         />
 
         <SettingsDrawer

@@ -51,6 +51,7 @@ type Props = {
   trimMode: boolean
   onToggleTrim: () => void
   topSlot?: ReactNode
+  processingTakeIds?: Set<string>
 }
 
 type DockButtonProps = {
@@ -129,6 +130,7 @@ export function Dock({
   trimMode,
   onToggleTrim,
   topSlot,
+  processingTakeIds,
 }: Props) {
   const { strings } = useI18n()
   const [inputsOpen, setInputsOpen] = useState(false)
@@ -645,6 +647,7 @@ export function Dock({
                   onPersistVideosChange={onPersistVideosChange}
                   isLoadingVideos={isLoadingVideos}
                   storagePercent={storagePercent}
+                  processingTakeIds={processingTakeIds}
                 />
               </div>
             </>

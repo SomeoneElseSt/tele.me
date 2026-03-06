@@ -66,10 +66,10 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, audioEnabled = tr
     const videoConstraint: MediaStreamConstraints['video'] = !videoEnabled
       ? false
       : videoDeviceId
-        ? { deviceId: { exact: videoDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+        ? { deviceId: { exact: videoDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
         : facingMode
-          ? { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } }
-          : { width: { ideal: 1920 }, height: { ideal: 1080 } }
+          ? { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
+          : { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
 
     const constraints: MediaStreamConstraints = { audio: audioConstraint, video: videoConstraint }
 
@@ -96,6 +96,12 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, audioEnabled = tr
     if (!mountedRef.current) {
       next.getTracks().forEach((t) => t.stop())
       return
+    }
+
+    const videoTrack = next.getVideoTracks()[0]
+    if (videoTrack) {
+      const settings = videoTrack.getSettings()
+      console.log(`[MediaStream] video track settings: frameRate=${settings.frameRate}, width=${settings.width}, height=${settings.height}`)
     }
 
     setStream(next)

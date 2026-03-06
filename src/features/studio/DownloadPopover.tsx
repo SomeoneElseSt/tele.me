@@ -49,6 +49,7 @@ type Props = {
   onPersistVideosChange: (enabled: boolean) => void
   isLoadingVideos?: boolean
   storagePercent: number
+  processingTakeIds?: Set<string>
 }
 
 const POPOVER_WIDTH = 300
@@ -71,7 +72,7 @@ function getFileExtension(mimeType?: string): string {
 }
 
 export function DownloadPopover(props: Props) {
-  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake, persistVideos, onPersistVideosChange, isLoadingVideos, storagePercent } = props
+  const { open, anchorEl, takes, onClose, onDeleteTake, onClearAll, onPlayTake, persistVideos, onPersistVideosChange, isLoadingVideos, storagePercent, processingTakeIds } = props
   const { strings, locale } = useI18n()
   const [confirmingTakeId, setConfirmingTakeId] = useState<string | null>(null)
   const [confirmingClearAll, setConfirmingClearAll] = useState(false)
@@ -312,20 +313,20 @@ export function DownloadPopover(props: Props) {
                       <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 px-4 py-3 cursor-default">
                         <HardDrive className={cn(
                           'h-4 w-4 shrink-0 transition-colors duration-300',
-                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-orange-300' : 'text-white/70'
                         )} />
                         <div className="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden">
                           <div
                             className={cn(
                               'h-full rounded-full transition-all duration-300',
-                              storagePercent >= 90 ? 'bg-red-400' : storagePercent >= 70 ? 'bg-amber-400' : 'bg-white/50'
+                              storagePercent >= 90 ? 'bg-red-400' : storagePercent >= 70 ? 'bg-orange-300' : 'bg-white/50'
                             )}
                             style={{ width: `${Math.max(storagePercent, 2)}%` }}
                           />
                         </div>
                         <span className={cn(
                           'text-[11px] tabular-nums font-medium shrink-0 transition-colors duration-300',
-                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-amber-400' : 'text-white/70'
+                          storagePercent >= 90 ? 'text-red-400' : storagePercent >= 70 ? 'text-orange-300' : 'text-white/70'
                         )}>{storagePercent}%</span>
                       </div>
                     </Tooltip>
@@ -362,6 +363,7 @@ export function DownloadPopover(props: Props) {
                     takes.map((take) => {
                       const extension = getFileExtension(take.mimeType)
                       const filename = formatFilename(take.createdAt, extension)
+                      const isProcessing = processingTakeIds?.has(take.id) ?? false
 
                       const handleDownload = async (e: React.MouseEvent<HTMLAnchorElement>) => {
                         e.preventDefault()
@@ -409,10 +411,16 @@ export function DownloadPopover(props: Props) {
                             )}
                           >
                             <button
-                              onClick={() => onPlayTake(take.id)}
-                              className="inline-flex items-center gap-2 hover:text-white transition-colors"
+                              onClick={() => { if (!isProcessing) onPlayTake(take.id) }}
+                              disabled={isProcessing}
+                              className={cn(
+                                'inline-flex items-center gap-2 transition-colors',
+                                isProcessing ? 'cursor-default opacity-60' : 'hover:text-white'
+                              )}
                             >
-                              <Play className="h-4 w-4 text-white/60" />
+                              {isProcessing
+                                ? <Loader2 className="h-4 w-4 text-white/60 animate-spin" />
+                                : <Play className="h-4 w-4 text-white/60" />}
                               <span>{strings.takeLabel(take.takeNumber)}</span>
                             </button>
                             <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
