@@ -58,6 +58,7 @@ const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
 const CONFIRM_SWAP_DELAY_MS = 140
+const PROCESSING_TOOLTIP = 'Video is being processed, please wait a moment'
 
 
 function formatTime(value: number, locale: string) {
@@ -405,6 +406,11 @@ export function DownloadPopover(props: Props) {
                           }}
                           className="flex items-center gap-2 shrink-0 overflow-hidden"
                         >
+                          <Tooltip
+                            label={PROCESSING_TOOLTIP}
+                            enabled={isProcessing}
+                            wrapperClassName="flex items-center gap-2 w-full"
+                          >
                           <div
                             className={cn(
                               'flex flex-1 items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3 text-sm text-white/85'
@@ -427,11 +433,12 @@ export function DownloadPopover(props: Props) {
                           </div>
                           <a
                             href={take.url}
-                            onClick={handleDownload}
+                            onClick={isProcessing ? (e) => e.preventDefault() : handleDownload}
                             aria-label={strings.downloadTakeLabel(take.takeNumber)}
                             className={cn(
                               'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/80',
-                              'hover:bg-white/8 transition-colors'
+                              'transition-colors',
+                              isProcessing ? 'cursor-default opacity-60' : 'hover:bg-white/8'
                             )}
                           >
                             <Download className="h-4 w-4" />
@@ -445,17 +452,20 @@ export function DownloadPopover(props: Props) {
                                   deleteButtonRefs.current.delete(take.id)
                                 }
                               }}
-                              onClick={() => handleConfirmButtonClick(take.id, isConfirming)}
+                              onClick={() => { if (!isProcessing) handleConfirmButtonClick(take.id, isConfirming) }}
+                              disabled={isProcessing}
                               aria-label={strings.deleteTakeLabel(take.takeNumber)}
                               className={cn(
                                 'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/70',
-                                'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400 transition-colors',
+                                'transition-colors',
+                                isProcessing ? 'cursor-default opacity-60' : 'hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400',
                                 isConfirming && 'bg-red-500/20 border-red-500/30 text-red-400'
                               )}
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
                           </div>
+                          </Tooltip>
                         </motion.div>
                       )
                     })
