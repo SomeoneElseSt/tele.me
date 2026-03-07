@@ -58,7 +58,7 @@ const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
 const CONFIRM_SWAP_DELAY_MS = 140
-const PROCESSING_TOOLTIP = 'Video is being processed, please wait a moment'
+const PROCESSING_TOOLTIP = 'Video is being saved, please wait a moment'
 
 
 function formatTime(value: number, locale: string) {
