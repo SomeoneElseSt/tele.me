@@ -58,7 +58,6 @@ const MARGIN_PX = 12
 const REMOVE_FADE_MS = 180
 const ENTER_DELAY_MS = 20
 const CONFIRM_SWAP_DELAY_MS = 140
-const PROCESSING_TOOLTIP = 'Video is being saved, please wait a moment'
 
 
 function formatTime(value: number, locale: string) {
@@ -407,7 +406,7 @@ export function DownloadPopover(props: Props) {
                           className="flex items-center gap-2 shrink-0 overflow-hidden"
                         >
                           <Tooltip
-                            label={PROCESSING_TOOLTIP}
+                            label={strings.processingVideoTooltip}
                             enabled={isProcessing}
                             wrapperClassName="flex items-center gap-2 w-full"
                           >

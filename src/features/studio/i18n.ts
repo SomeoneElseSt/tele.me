@@ -109,6 +109,7 @@ type Strings = {
   trimVideo: string
   exitTrim: string
   audioSilentWarningMessage: string
+  processingVideoTooltip: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
@@ -229,6 +230,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Trim video',
     exitTrim: 'Exit trim',
     audioSilentWarningMessage: "It seems no audio is coming through. Try speaking up, and if this message doesn't go away, reload your browser.",
+    processingVideoTooltip: 'Video is being processed, please wait a moment',
   },
   es: {
     defaultScript:
@@ -347,6 +349,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Recortar video',
     exitTrim: 'Salir de recorte',
     audioSilentWarningMessage: 'Parece que no llega ningún audio. Intenta hablar más fuerte y, si este mensaje no desaparece, recarga el navegador.',
+    processingVideoTooltip: 'El video se está procesando, por favor espere un momento',
   },
   ja: {
     defaultScript:
@@ -465,6 +468,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'ビデオをトリミング',
     exitTrim: 'トリミング終了',
     audioSilentWarningMessage: 'オーディオが入力されていないようです。もう少し大きな声で話してみてください。このメッセージが消えない場合は、ブラウザを再読み込みしてください。',
+    processingVideoTooltip: '動画を処理中です。少々お待ちください',
   },
   hi: {
     defaultScript:
@@ -583,6 +587,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'वीडियो ट्रिम करें',
     exitTrim: 'ट्रिम से बाहर निकलें',
     audioSilentWarningMessage: 'लगता है कोई ऑडियो नहीं आ रहा है। ज़ोर से बोलने की कोशिश करें, और अगर यह संदेश नहीं जाता, तो ब्राउज़र रीलोड करें।',
+    processingVideoTooltip: 'वीडियो प्रसंस्करण हो रहा है, कृपया एक क्षण प्रतीक्षा करें',
   },
   fr: {
     defaultScript:
@@ -701,6 +706,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Rogner la vidéo',
     exitTrim: 'Quitter rogner',
     audioSilentWarningMessage: "Il semble qu'aucun audio ne passe. Essayez de parler plus fort, et si ce message ne disparaît pas, rechargez votre navigateur.",
+    processingVideoTooltip: 'La vidéo est en cours de traitement, veuillez patienter un instant',
   },
   de: {
     defaultScript:
@@ -819,6 +825,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Video trimmen',
     exitTrim: 'Trimmen beenden',
     audioSilentWarningMessage: 'Es scheint kein Audio durchzukommen. Sprechen Sie bitte lauter, und wenn diese Meldung nicht verschwindet, laden Sie Ihren Browser neu.',
+    processingVideoTooltip: 'Das Video wird verarbeitet, bitte warten Sie einen Moment',
   },
   zh: {
     defaultScript:
@@ -937,6 +944,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: '修剪视频',
     exitTrim: '退出修剪',
     audioSilentWarningMessage: '似乎没有音频传入。请尝试大声说话，如果此提示仍未消失，请重新加载浏览器。',
+    processingVideoTooltip: '视频正在处理中，请稍候',
   },
   ar: {
     defaultScript:
@@ -1055,6 +1063,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'قص الفيديو',
     exitTrim: 'خروج القص',
     audioSilentWarningMessage: 'يبدو أنه لا يصل أي صوت. حاول التحدث بصوت أعلى، وإذا لم تختفِ هذه الرسالة، أعد تحميل المتصفح.',
+    processingVideoTooltip: 'يتم معالجة الفيديو، يرجى الانتظار لحظة',
   },
   pt: {
     defaultScript:
@@ -1171,6 +1180,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Aparar vídeo',
     exitTrim: 'Sair do corte',
     audioSilentWarningMessage: 'Parece que nenhum áudio está chegando. Tente falar mais alto e, se esta mensagem não desaparecer, recarregue o navegador.',
+    processingVideoTooltip: 'O vídeo está sendo processado, por favor aguarde um momento',
   },
   ru: {
     defaultScript:
@@ -1288,6 +1298,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Обрезать видео',
     exitTrim: 'Выход из обрезки',
     audioSilentWarningMessage: 'Похоже, звук не поступает. Попробуйте говорить громче, и если это сообщение не исчезнет, перезагрузите браузер.',
+    processingVideoTooltip: 'Видео обрабатывается, пожалуйста, подождите немного',
   },
   pl: {
     defaultScript:
@@ -1405,6 +1416,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     trimVideo: 'Przytnij wideo',
     exitTrim: 'Wyjdź z przycinania',
     audioSilentWarningMessage: 'Wygląda na to, że żaden dźwięk nie dociera. Spróbuj mówić głośniej, a jeśli ta wiadomość nie zniknie, przeładuj przeglądarkę.',
+    processingVideoTooltip: 'Wideo jest przetwarzane, proszę chwilę poczekać',
   },
 }
 
