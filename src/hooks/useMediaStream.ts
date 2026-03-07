@@ -66,10 +66,10 @@ export function useMediaStream({ audioDeviceId, videoDeviceId, audioEnabled = tr
     const videoConstraint: MediaStreamConstraints['video'] = !videoEnabled
       ? false
       : videoDeviceId
-        ? { deviceId: { exact: videoDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
+        ? { deviceId: { exact: videoDeviceId }, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } }
         : facingMode
-          ? { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
-          : { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 30, max: 30 } }
+          ? { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } }
+          : { width: { ideal: 1920 }, height: { ideal: 1080 }, frameRate: { ideal: 60, max: 60 } }
 
     const constraints: MediaStreamConstraints = { audio: audioConstraint, video: videoConstraint }
 
