@@ -1,7 +1,6 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile } from '@ffmpeg/util'
 import { FFMPEG_CORE_JS_URL, FFMPEG_CORE_WASM_URL, FFMPEG_WORKER_URL } from './ffmpegCoreAssets'
-import { injectFullFrameRateIntent } from './mp4FullFrameRate'
 
 let ffmpegInstance: FFmpeg | null = null
 let jobId = 0
@@ -80,19 +79,18 @@ export function trimVideo(
 
     await ffmpeg.writeFile(inputFile, await fetchFile(blob))
     await ffmpeg.exec([
+      '-ss', String(startSec),
       '-i', inputFile,
-      '-ss', String(startSec), '-to', String(endSec),
+      '-t', String(endSec - startSec),
       '-map', '0:v:0', '-map', '0:a:0',
-      '-c', 'copy',
-      '-use_editlist', '0',
+      '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-r', '30',
+      '-c:a', 'aac',
       '-movflags', '+faststart',
       outputFile,
     ])
 
     const data = await ffmpeg.readFile(outputFile)
-    const raw = data as Uint8Array
-    const patched = mimeType.includes('mp4') ? injectFullFrameRateIntent(raw) : raw
-    const result = new Blob([patched.slice()], { type: mimeType })
+    const result = new Blob([(data as Uint8Array).slice()], { type: mimeType })
 
     await ffmpeg.deleteFile(inputFile)
     await ffmpeg.deleteFile(outputFile)
