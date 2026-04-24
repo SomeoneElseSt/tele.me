@@ -1984,51 +1984,6 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip
-                  enabled={!isPip}
-                  label={
-                    !autoScrollEnabled
-                      ? strings.autoScroll
-                      : playing
-                        ? strings.autoScrolling
-                        : strings.autoScrollStartPlaying
-                  }
-                  shortcut="V"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onAutoScrollChange(!autoScrollEnabled)}
-                    aria-label={
-                      !autoScrollEnabled
-                        ? strings.autoScroll
-                        : playing
-                          ? strings.autoScrolling
-                          : strings.autoScrollStartPlaying
-                    }
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
-                      'hover:bg-white/10 hover:text-white',
-                      autoScrollEnabled && (isPip ? 'border-white/12 bg-white/6 text-white/90' : 'border-white/18 bg-white/10 text-white')
-                    )}
-                  >
-                    <div className="relative">
-                      <BetweenHorizontalStart className="h-4 w-4" />
-                      {/* Active badge (green check when playing) */}
-                      {autoScrollEnabled && playing && (
-                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-400">
-                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
-                        </div>
-                      )}
-                      {/* Paused badge (yellow pause when enabled but not playing) */}
-                      {autoScrollEnabled && !playing && (
-                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-400">
-                          <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
@@ -2333,51 +2288,6 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
-                <Tooltip
-                  enabled={!isPip}
-                  label={
-                    !autoScrollEnabled
-                      ? strings.autoScroll
-                      : playing
-                        ? strings.autoScrolling
-                        : strings.autoScrollStartPlaying
-                  }
-                  shortcut="V"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onAutoScrollChange(!autoScrollEnabled)}
-                    aria-label={
-                      !autoScrollEnabled
-                        ? strings.autoScroll
-                        : playing
-                          ? strings.autoScrolling
-                          : strings.autoScrollStartPlaying
-                    }
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className={cn(
-                      'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
-                      'hover:bg-white/10 hover:text-white',
-                      autoScrollEnabled && 'border-white/18 bg-white/10 text-white'
-                    )}
-                  >
-                    <div className="relative">
-                      <BetweenHorizontalStart className="h-4 w-4" />
-                      {/* Active badge (green check when playing) */}
-                      {autoScrollEnabled && playing && (
-                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-emerald-400">
-                          <Check className="h-1.5 w-1.5" strokeWidth={3} />
-                        </div>
-                      )}
-                      {/* Paused badge (yellow pause when enabled but not playing) */}
-                      {autoScrollEnabled && !playing && (
-                        <div className="absolute -bottom-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-yellow-400">
-                          <Pause className={VOICE_FOLLOW_INDICATOR_ICON_SIZE} />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                </Tooltip>
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"

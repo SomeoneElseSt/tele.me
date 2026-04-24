@@ -736,20 +736,8 @@ export function Studio() {
           hotkeys.r = () => onToggleRecord()
           hotkeys.space = () => onTogglePrompter()
           hotkeys.t = () => onToggleDrawer()
-          hotkeys.h = () => {
-            tooltip.clear()
-            if (prompterIsPip) return
-            if (prompterOpen) {
-              handleClosePrompter()
-              return
-            }
-            setPrompterOpen(true)
-          }
           hotkeys.m = () => {
             setMarkdownEnabled((prev) => !prev)
-          }
-          hotkeys.v = () => {
-            setAutoScrollEnabled((prev) => !prev)
           }
           hotkeys.f = () => onToggleFullscreen()
           hotkeys.escape = () => {
