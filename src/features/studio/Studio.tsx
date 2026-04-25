@@ -748,9 +748,6 @@ export function Studio() {
           hotkeys.m = () => {
             setMarkdownEnabled((prev) => !prev)
           }
-          hotkeys.v = () => {
-            setAutoScrollEnabled((prev) => !prev)
-          }
           hotkeys.f = () => onToggleFullscreen()
           hotkeys.escape = () => {
             tooltip.clear()
