@@ -76,7 +76,6 @@ Utilizes `localStorage` for ephemeral settings (speed, alignment) and browser-ba
 
 ## Future Features
 
-- **Voice-Sync Scrolling**: Automated scrolling that follows your voice in real-time using the Web Speech API. 
 - **Remote Control**: Scan a QR code with your smartphone to turn it into a wireless remote for the prompter via P2P WebRTC.
 
 ---
