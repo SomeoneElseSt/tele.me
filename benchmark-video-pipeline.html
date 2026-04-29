@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Pipeline Benchmark</title>
+  <meta charset="utf-8">
+  <style>
+    body { 
+      font-family: 'Monaco', 'Courier New', monospace; 
+      padding: 20px; 
+      max-width: 1200px; 
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    h1 { color: #4a9eff; }
+    h2 { color: #ffa500; margin-top: 30px; }
+    button { 
+      padding: 12px 24px; 
+      margin: 8px; 
+      font-size: 16px; 
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button:hover { background: #3a8eef; }
+    button:disabled { background: #555; cursor: not-allowed; }
+    .controls { margin: 20px 0; padding: 20px; background: #252525; border-radius: 8px; }
+    .results { margin: 20px 0; }
+    .test-result { 
+      margin: 15px 0; 
+      padding: 15px; 
+      background: #2a2a2a; 
+      border-left: 4px solid #4a9eff;
+      border-radius: 4px;
+    }
+    .timing { 
+      font-weight: bold; 
+      color: #4a9eff; 
+      font-size: 18px;
+    }
+    .error { 
+      color: #ff6b6b; 
+      border-left-color: #ff6b6b;
+    }
+    .success { 
+      border-left-color: #51cf66;
+    }
+    .warning {
+      border-left-color: #ffa500;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      background: #2a2a2a;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #404040;
+    }
+    th {
+      background: #353535;
+      color: #4a9eff;
+      font-weight: bold;
+    }
+    .metric { color: #ffa500; font-weight: bold; }
+    code { 
+      background: #1a1a1a; 
+      padding: 2px 6px; 
+      border-radius: 3px;
+      color: #51cf66;
+    }
+    .step { color: #888; font-size: 14px; margin: 5px 0; }
+    .progress { 
+      width: 100%; 
+      height: 4px; 
+      background: #404040; 
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #4a9eff;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔬 Video Pipeline Performance Benchmark</h1>
+  
+  <div class="controls">
+    <h2>Recording Duration</h2>
+    <label>
+      <input type="radio" name="duration" value="3" checked> 3 seconds (quick test)
+    </label>
+    <label>
+      <input type="radio" name="duration" value="10"> 10 seconds (typical)
+    </label>
+    <label>
+      <input type="radio" name="duration" value="30"> 30 seconds (realistic)
+    </label>
+    
+    <h2>Tests to Run</h2>
+    <button onclick="runFullBenchmark()" id="fullBtn">Run Full Benchmark</button>
+    <button onclick="testCurrentPipeline()" id="currentBtn">Test Current Pipeline Only</button>
+    <button onclick="testBinaryFixOnly()" id="binaryBtn">Test Binary Fix Only</button>
+    <button onclick="testCodecCopy()" id="codecBtn">Test Codec Copy</button>
+  </div>
+
+  <div id="progress" style="display:none;">
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="step" id="progressText"></div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <script type="module">
+    import { injectFullFrameRateIntent } from './src/lib/mp4FullFrameRate.ts';
+    import { FFmpeg } from '@ffmpeg/ffmpeg';
+    import { fetchFile } from '@ffmpeg/util';
+    import { FFMPEG_CORE_JS_URL, FFMPEG_CORE_WASM_URL, FFMPEG_WORKER_URL } from './src/lib/ffmpegCoreAssets.ts';
+
+    let ffmpegInstance = null;
+
+    async function getFFmpeg() {
+      if (ffmpegInstance) return ffmpegInstance;
+      
+      updateProgress(10, 'Loading FFmpeg WASM...');
+      const startLoad = performance.now();
+      
+      const ffmpeg = new FFmpeg();
+      await ffmpeg.load({
+        coreURL: FFMPEG_CORE_JS_URL,
+        wasmURL: FFMPEG_CORE_WASM_URL,
+        workerURL: FFMPEG_WORKER_URL,
+      });
+      
+      const loadTime = performance.now() - startLoad;
+      console.log(`FFmpeg loaded in ${loadTime.toFixed(0)}ms`);
+      
+      ffmpegInstance = ffmpeg;
+      return ffmpeg;
+    }
+
+    function updateProgress(percent, text) {
+      document.getElementById('progress').style.display = 'block';
+      document.getElementById('progressBar').style.width = percent + '%';
+      document.getElementById('progressText').textContent = text;
+    }
+
+    function hideProgress() {
+      document.getElementById('progress').style.display = 'none';
+    }
+
+    function addResult(html, className = '') {
+      const div = document.createElement('div');
+      div.className = 'test-result ' + className;
+      div.innerHTML = html;
+      document.getElementById('results').appendChild(div);
+      return div;
+    }
+
+    function clearResults() {
+      document.getElementById('results').innerHTML = '<h2>Benchmark Results</h2>';
+    }
+
+    async function recordTestVideo() {
+      const duration = parseInt(document.querySelector('input[name="duration"]:checked').value);
+      
+      updateProgress(20, `Starting ${duration}s recording...`);
+      
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 1920, height: 1080, frameRate: 60 }, 
+        audio: true 
+      });
+      
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+      
+      recorder.ondataavailable = e => chunks.push(e.data);
+      
+      const recordingStartTime = performance.now();
+      
+      await new Promise((resolve) => {
+        recorder.onstop = resolve;
+        recorder.start(250); // Same timeslice as app
+        
+        setTimeout(() => {
+          recorder.stop();
+          stream.getTracks().forEach(t => t.stop());
+        }, duration * 1000);
+      });
+      
+      const recordingTime = performance.now() - recordingStartTime;
+      
+      const blob = new Blob(chunks, { type: recorder.mimeType });
+      const sizeMB = (blob.size / 1024 / 1024).toFixed(2);
+      
+      console.log(`Recorded ${sizeMB}MB in ${recordingTime.toFixed(0)}ms`);
+      
+      return { blob, mimeType: recorder.mimeType, sizeMB, recordingTime };
+    }
+
+    window.testCurrentPipeline = async function() {
+      clearResults();
+      disableButtons(true);
+      
+      try {
+        // Record
+        const { blob, mimeType, sizeMB } = await recordTestVideo();
+        
+        addResult(`
+          <strong>📹 Recording Complete</strong><br>
+          Size: ${sizeMB}MB | Format: ${mimeType}
+        `, 'success');
+        
+        // Current pipeline: FFmpeg re-encode
+        updateProgress(40, 'Running FFmpeg re-encode (current method)...');
+        
+        const ffmpeg = await getFFmpeg();
+        const inputFile = 'test_input.mp4';
+        const outputFile = 'test_output.mp4';
+        
+        await ffmpeg.writeFile(inputFile, await fetchFile(blob));
+        
+        const encodeStart = performance.now();
+        
+        await ffmpeg.exec([
+          '-i', inputFile,
+          '-map', '0:v:0', '-map', '0:a:0',
+          '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-r', '30',
+          '-c:a', 'copy',
+          '-movflags', '+faststart',
+          outputFile,
+        ]);
+        
+        const encodeTime = performance.now() - encodeStart;
+        
+        const data = await ffmpeg.readFile(outputFile);
+        const outputBlob = new Blob([data], { type: mimeType });
+        const outputSizeMB = (outputBlob.size / 1024 / 1024).toFixed(2);
+        
+        await ffmpeg.deleteFile(inputFile);
+        await ffmpeg.deleteFile(outputFile);
+        
+        updateProgress(100, 'Complete!');
+        
+        addResult(`
+          <strong>⚡ CURRENT PIPELINE (FFmpeg Re-encode)</strong><br>
+          <span class="timing">${(encodeTime / 1000).toFixed(2)}s</span> total processing time<br>
+          Output: ${outputSizeMB}MB | Size change: ${((outputBlob.size - blob.size) / 1024 / 1024).toFixed(2)}MB
+        `, 'success');
+        
+        const url = URL.createObjectURL(outputBlob);
+        addResult(`
+          <a href="${url}" download="current-pipeline-test.mp4" style="color: #4a9eff;">⬇️ Download Result</a>
+        `);
+        
+      } catch (err) {
+        addResult(`<strong>❌ Error:</strong> ${err.message}`, 'error');
+      } finally {
+        hideProgress();
+        disableButtons(false);
+      }
+    };
+
+    window.testBinaryFixOnly = async function() {
+      clearResults();
+      disableButtons(true);
+      
+      try {
+        const { blob, mimeType, sizeMB } = await recordTestVideo();
+        
+        addResult(`
+          <strong>📹 Recording Complete</strong><br>
+          Size: ${sizeMB}MB | Format: ${mimeType}
+        `, 'success');
+        
+        // Binary fix
+        updateProgress(60, 'Applying binary timestamp fix...');
+        
+        const fixStart = performance.now();
+        const arrayBuffer = await blob.arrayBuffer();
+        const fixed = injectFullFrameRateIntent(new Uint8Array(arrayBuffer));
+        const fixedBlob = new Blob([fixed], { type: mimeType });
+        const fixTime = performance.now() - fixStart;
+        
+        const fixedSizeMB = (fixedBlob.size / 1024 / 1024).toFixed(2);
+        
+        updateProgress(100, 'Complete!');
+        
+        addResult(`
+          <strong>⚡ BINARY FIX ONLY</strong><br>
+          <span class="timing">${fixTime.toFixed(0)}ms</span> total processing time<br>
+          Output: ${fixedSizeMB}MB | Size change: ${((fixedBlob.size - blob.size) / 1024).toFixed(1)}KB
+        `, 'success');
+        
+        const url = URL.createObjectURL(fixedBlob);
+        addResult(`
+          <a href="${url}" download="binary-fix-test.mp4" style="color: #4a9eff;">⬇️ Download Result</a><br>
+          <small style="color: #888;">Test in QuickTime and video editors to verify compatibility</small>
+        `);
+        
+      } catch (err) {
+        addResult(`<strong>❌ Error:</strong> ${err.message}`, 'error');
+      } finally {
+        hideProgress();
+        disableButtons(false);
+      }
+    };
+
+    window.testCodecCopy = async function() {
+      clearResults();
+      disableButtons(true);
+      
+      try {
+        const { blob, mimeType, sizeMB } = await recordTestVideo();
+        
+        addResult(`
+          <strong>📹 Recording Complete</strong><br>
+          Size: ${sizeMB}MB | Format: ${mimeType}
+        `, 'success');
+        
+        // Codec copy
+        updateProgress(60, 'Running FFmpeg with codec copy...');
+        
+        const ffmpeg = await getFFmpeg();
+        const inputFile = 'test_input.mp4';
+        const outputFile = 'test_output.mp4';
+        
+        await ffmpeg.writeFile(inputFile, await fetchFile(blob));
+        
+        const copyStart = performance.now();
+        
+        await ffmpeg.exec([
+          '-i', inputFile,
+          '-c:v', 'copy',  // No re-encode!
+          '-c:a', 'copy',
+          '-movflags', '+faststart',
+          outputFile,
+        ]);
+        
+        const copyTime = performance.now() - copyStart;
+        
+        const data = await ffmpeg.readFile(outputFile);
+        const outputBlob = new Blob([data], { type: mimeType });
+        const outputSizeMB = (outputBlob.size / 1024 / 1024).toFixed(2);
+        
+        await ffmpeg.deleteFile(inputFile);
+        await ffmpeg.deleteFile(outputFile);
+        
+        updateProgress(100, 'Complete!');
+        
+        addResult(`
+          <strong>⚡ CODEC COPY (No Re-encode)</strong><br>
+          <span class="timing">${copyTime.toFixed(0)}ms</span> total processing time<br>
+          Output: ${outputSizeMB}MB | Size change: ${((outputBlob.size - blob.size) / 1024 / 1024).toFixed(2)}MB
+        `, 'success');
+        
+        const url = URL.createObjectURL(outputBlob);
+        addResult(`
+          <a href="${url}" download="codec-copy-test.mp4" style="color: #4a9eff;">⬇️ Download Result</a><br>
+          <small style="color: #888;">Test in video editors to verify trimming works</small>
+        `);
+        
+      } catch (err) {
+        addResult(`<strong>❌ Error:</strong> ${err.message}`, 'error');
+      } finally {
+        hideProgress();
+        disableButtons(false);
+      }
+    };
+
+    window.runFullBenchmark = async function() {
+      clearResults();
+      disableButtons(true);
+      
+      const results = {};
+      
+      try {
+        // Record once
+        const { blob, mimeType, sizeMB } = await recordTestVideo();
+        
+        addResult(`
+          <strong>📹 Recording Complete</strong><br>
+          Size: ${sizeMB}MB | Format: ${mimeType}
+        `, 'success');
+        
+        // Test 1: Current pipeline (FFmpeg re-encode)
+        updateProgress(30, 'Test 1/3: Current pipeline (FFmpeg re-encode)...');
+        const ffmpeg = await getFFmpeg();
+        
+        await ffmpeg.writeFile('input.mp4', await fetchFile(blob));
+        
+        const encodeStart = performance.now();
+        await ffmpeg.exec([
+          '-i', 'input.mp4',
+          '-map', '0:v:0', '-map', '0:a:0',
+          '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '18', '-r', '30',
+          '-c:a', 'copy',
+          '-movflags', '+faststart',
+          'output_reenc.mp4',
+        ]);
+        results.reencodeTime = performance.now() - encodeStart;
+        
+        const reencData = await ffmpeg.readFile('output_reenc.mp4');
+        results.reencodeSize = reencData.byteLength;
+        await ffmpeg.deleteFile('output_reenc.mp4');
+        
+        // Test 2: Binary fix
+        updateProgress(60, 'Test 2/3: Binary timestamp fix...');
+        const fixStart = performance.now();
+        const arrayBuffer = await blob.arrayBuffer();
+        const fixed = injectFullFrameRateIntent(new Uint8Array(arrayBuffer));
+        results.binaryFixTime = performance.now() - fixStart;
+        results.binaryFixSize = fixed.byteLength;
+        
+        // Test 3: Codec copy
+        updateProgress(80, 'Test 3/3: Codec copy...');
+        await ffmpeg.writeFile('input2.mp4', await fetchFile(blob));
+        
+        const copyStart = performance.now();
+        await ffmpeg.exec([
+          '-i', 'input2.mp4',
+          '-c:v', 'copy',
+          '-c:a', 'copy',
+          '-movflags', '+faststart',
+          'output_copy.mp4',
+        ]);
+        results.codecCopyTime = performance.now() - copyStart;
+        
+        const copyData = await ffmpeg.readFile('output_copy.mp4');
+        results.codecCopySize = copyData.byteLength;
+        
+        await ffmpeg.deleteFile('input.mp4');
+        await ffmpeg.deleteFile('input2.mp4');
+        await ffmpeg.deleteFile('output_copy.mp4');
+        
+        updateProgress(100, 'Benchmark complete!');
+        
+        // Display comparison
+        addResult(`
+          <h3>📊 Performance Comparison</h3>
+          <table>
+            <tr>
+              <th>Method</th>
+              <th>Time</th>
+              <th>Speedup vs Current</th>
+              <th>Output Size</th>
+            </tr>
+            <tr>
+              <td><strong>Current (FFmpeg Re-encode)</strong></td>
+              <td class="timing">${(results.reencodeTime / 1000).toFixed(2)}s</td>
+              <td>-</td>
+              <td>${(results.reencodeSize / 1024 / 1024).toFixed(2)}MB</td>
+            </tr>
+            <tr>
+              <td><strong>Binary Fix Only</strong></td>
+              <td class="timing">${results.binaryFixTime.toFixed(0)}ms</td>
+              <td class="metric">${(results.reencodeTime / results.binaryFixTime).toFixed(1)}x faster</td>
+              <td>${(results.binaryFixSize / 1024 / 1024).toFixed(2)}MB</td>
+            </tr>
+            <tr>
+              <td><strong>Codec Copy (FFmpeg)</strong></td>
+              <td class="timing">${results.codecCopyTime.toFixed(0)}ms</td>
+              <td class="metric">${(results.reencodeTime / results.codecCopyTime).toFixed(1)}x faster</td>
+              <td>${(results.codecCopySize / 1024 / 1024).toFixed(2)}MB</td>
+            </tr>
+          </table>
+        `, 'success');
+        
+        addResult(`
+          <h3>💡 Key Findings</h3>
+          <p><strong>Binary fix is <span class="metric">${(results.reencodeTime / results.binaryFixTime).toFixed(0)}x faster</span> than current re-encoding</strong></p>
+          <p>Processing time: ${(results.reencodeTime / 1000).toFixed(2)}s → ${results.binaryFixTime.toFixed(0)}ms</p>
+          <p><em>Next step: Test QuickTime and video editor compatibility with binary-fixed videos</em></p>
+        `, 'warning');
+        
+      } catch (err) {
+        addResult(`<strong>❌ Error:</strong> ${err.message}`, 'error');
+        console.error(err);
+      } finally {
+        hideProgress();
+        disableButtons(false);
+      }
+    };
+
+    function disableButtons(disabled) {
+      document.querySelectorAll('button').forEach(btn => btn.disabled = disabled);
+    }
+  </script>
+</body>
+</html>
