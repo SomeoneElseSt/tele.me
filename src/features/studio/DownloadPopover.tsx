@@ -56,6 +56,7 @@ type Props = {
 
 const POPOVER_WIDTH = 344
 const DURATION_CAP_MINUTES = 60
+const MIN_DURATION_DISPLAY_SECONDS = 1
 const GAP_PX = 12
 const MARGIN_PX = 12
 const CONFIRM_SWAP_DELAY_MS = 140
@@ -74,7 +75,7 @@ function getFileExtension(mimeType?: string): string {
 
 function formatTakeDuration(seconds: number): string {
   const total = Math.max(0, seconds)
-  const wholeSeconds = Math.floor(total)
+  const wholeSeconds = Math.max(MIN_DURATION_DISPLAY_SECONDS, Math.floor(total))
   const minutes = Math.floor(wholeSeconds / 60)
   const secs = wholeSeconds % 60
   if (minutes >= DURATION_CAP_MINUTES) {
