@@ -23,7 +23,7 @@ See `package.json` scripts:
 
 ### Important caveats
 
-- **esbuild build scripts**: pnpm v10 blocks lifecycle scripts by default. The `pnpm.onlyBuiltDependencies` field in `package.json` allows esbuild's postinstall to run (required for Vite). If this field is missing, run `pnpm install` after adding it, or the dev server will fail.
+- **esbuild build scripts**: pnpm v10 blocks lifecycle scripts by default. The `pnpm.onlyBuiltDependencies` field in `package.json` allows esbuild's postinstall to run (required for Vite). The repo owner's local machine has `ignore-scripts=false` in their global pnpm config which bypasses this, but cloud VMs and CI need the explicit allowlist in `package.json`.
 - **No automated test suite**: The project has no unit/integration tests. Validation is manual (browser-based).
 - **FFmpeg WASM**: The `@ffmpeg/ffmpeg` and `@ffmpeg/util` packages are excluded from Vite's dependency optimization (`optimizeDeps.exclude` in `vite.config.ts`). A vendored copy of ffmpeg-core lives in `public/ffmpeg/`.
 - **Browser APIs required for full testing**: Camera/mic access (MediaRecorder), Document Picture-in-Picture API, and IndexedDB are used but only available in a real browser context.
