@@ -275,7 +275,8 @@ export function Studio() {
 
   const recordingStream = useMirroredStream(stream, mirrorVideo)
   const recorder = useRecorder(recordingStream)
-  const { isSilent } = useAudioSilenceDetection(stream, recorder.status === 'recording')
+  const isRecording = recorder.status === 'recording'
+  const { isSilent } = useAudioSilenceDetection(stream, isRecording)
 
   useEffect(() => {
     const isMissing = audioDeviceId && audioInputs.length > 0 && !audioInputs.some((d) => d.deviceId === audioDeviceId)
@@ -388,7 +389,7 @@ export function Studio() {
   const elapsedLabel = useMemo(() => formatMs(recorder.elapsedMs), [recorder.elapsedMs])
 
   const onToggleRecord = useCallback(() => {
-    if (recorder.status === 'recording') {
+    if (isRecording) {
       recorder.stop()
       return
     }
@@ -965,11 +966,12 @@ export function Studio() {
           wpm={wpm}
           onWpmChange={setWpm}
           forceCloseControls={forceCloseControls}
+          isRecording={isRecording}
         />
 
         <Dock
           canRecord={canRecord}
-          recording={recorder.status === 'recording'}
+          recording={isRecording}
           elapsedLabel={elapsedLabel}
           takes={takes}
           onToggleRecord={onToggleRecord}

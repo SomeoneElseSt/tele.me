@@ -10,6 +10,7 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
+import { PrompterBarCountdown } from './PrompterBarCountdown'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
@@ -44,6 +45,7 @@ type Props = {
   wpm: number
   onWpmChange: (value: number) => void
   forceCloseControls?: boolean
+  isRecording: boolean
 }
 
 const GRIP_HIT_SIZE_PX = 32
@@ -823,7 +825,8 @@ export function FloatingPrompter(props: Props) {
     onAutoScrollChange,
     wpm,
     onWpmChange,
-    forceCloseControls
+    forceCloseControls,
+    isRecording
   } = props
 
   const tooltip = useTooltipController()
@@ -2000,6 +2003,12 @@ export function FloatingPrompter(props: Props) {
                     <ArrowUp className="h-4 w-4" />
                   </button>
                 </Tooltip>
+                <PrompterBarCountdown
+                  disabled={isPip}
+                  expandPopoverDown={!fixedToTop || isPip}
+                  open={open}
+                  isRecording={isRecording}
+                />
                 <Tooltip enabled={!isPip} label={strings.controls} shortcut="C">
                   <button
                     type="button"
@@ -2304,6 +2313,12 @@ export function FloatingPrompter(props: Props) {
                     <ArrowDown className="h-4 w-4" />
                   </button>
                 </Tooltip>
+                <PrompterBarCountdown
+                  disabled={isPip}
+                  expandPopoverDown={false}
+                  open={open}
+                  isRecording={isRecording}
+                />
                 <Tooltip enabled={!isPip} label={strings.controls} shortcut="C">
                   <button
                     type="button"

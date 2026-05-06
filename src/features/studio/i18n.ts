@@ -110,6 +110,14 @@ type Strings = {
   exitTrim: string
   audioSilentWarningMessage: string
   processingVideoTooltip: string
+  prompterCountdown: string
+  prompterCountdownMinutes: string
+  prompterCountdownSeconds: string
+  prompterCountdownSet: string
+  prompterCountdownStart: string
+  prompterCountdownPause: string
+  prompterCountdownReset: string
+  prompterCountdownEditDuration: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
@@ -231,6 +239,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Exit trim',
     audioSilentWarningMessage: "It seems no audio is coming through. Try speaking up, and if this message doesn't go away, reload your browser.",
     processingVideoTooltip: 'Video is being processed, please wait a moment',
+    prompterCountdown: 'Take countdown',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Sec',
+    prompterCountdownSet: 'Set duration',
+    prompterCountdownStart: 'Start countdown',
+    prompterCountdownPause: 'Pause countdown',
+    prompterCountdownReset: 'Reset countdown',
+    prompterCountdownEditDuration: 'Change duration',
   },
   es: {
     defaultScript:
@@ -350,6 +366,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Salir de recorte',
     audioSilentWarningMessage: 'Parece que no llega ningún audio. Intenta hablar más fuerte y, si este mensaje no desaparece, recarga el navegador.',
     processingVideoTooltip: 'El video se está procesando, por favor espere un momento',
+    prompterCountdown: 'Cuenta atrás',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Seg',
+    prompterCountdownSet: 'Establecer',
+    prompterCountdownStart: 'Iniciar',
+    prompterCountdownPause: 'Pausar',
+    prompterCountdownReset: 'Reiniciar',
+    prompterCountdownEditDuration: 'Cambiar duración',
   },
   ja: {
     defaultScript:
@@ -469,6 +493,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'トリミング終了',
     audioSilentWarningMessage: 'オーディオが入力されていないようです。もう少し大きな声で話してみてください。このメッセージが消えない場合は、ブラウザを再読み込みしてください。',
     processingVideoTooltip: '動画を処理中です。少々お待ちください',
+    prompterCountdown: 'テイク用タイマー',
+    prompterCountdownMinutes: '分',
+    prompterCountdownSeconds: '秒',
+    prompterCountdownSet: '設定',
+    prompterCountdownStart: '開始',
+    prompterCountdownPause: '一時停止',
+    prompterCountdownReset: 'リセット',
+    prompterCountdownEditDuration: '時間を変更',
   },
   hi: {
     defaultScript:
@@ -588,6 +620,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'ट्रिम से बाहर निकलें',
     audioSilentWarningMessage: 'लगता है कोई ऑडियो नहीं आ रहा है। ज़ोर से बोलने की कोशिश करें, और अगर यह संदेश नहीं जाता, तो ब्राउज़र रीलोड करें।',
     processingVideoTooltip: 'वीडियो प्रसंस्करण हो रहा है, कृपया एक क्षण प्रतीक्षा करें',
+    prompterCountdown: 'टेक काउंटडाउन',
+    prompterCountdownMinutes: 'मिन',
+    prompterCountdownSeconds: 'से',
+    prompterCountdownSet: 'सेट करें',
+    prompterCountdownStart: 'शुरू',
+    prompterCountdownPause: 'रोकें',
+    prompterCountdownReset: 'रीसेट',
+    prompterCountdownEditDuration: 'अवधि बदलें',
   },
   fr: {
     defaultScript:
@@ -707,6 +747,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Quitter rogner',
     audioSilentWarningMessage: "Il semble qu'aucun audio ne passe. Essayez de parler plus fort, et si ce message ne disparaît pas, rechargez votre navigateur.",
     processingVideoTooltip: 'La vidéo est en cours de traitement, veuillez patienter un instant',
+    prompterCountdown: 'Compte à rebours',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Sec',
+    prompterCountdownSet: 'Définir',
+    prompterCountdownStart: 'Démarrer',
+    prompterCountdownPause: 'Pause',
+    prompterCountdownReset: 'Réinitialiser',
+    prompterCountdownEditDuration: 'Modifier la durée',
   },
   de: {
     defaultScript:
@@ -826,6 +874,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Trimmen beenden',
     audioSilentWarningMessage: 'Es scheint kein Audio durchzukommen. Sprechen Sie bitte lauter, und wenn diese Meldung nicht verschwindet, laden Sie Ihren Browser neu.',
     processingVideoTooltip: 'Das Video wird verarbeitet, bitte warten Sie einen Moment',
+    prompterCountdown: 'Aufnahme-Timer',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Sek',
+    prompterCountdownSet: 'Speichern',
+    prompterCountdownStart: 'Start',
+    prompterCountdownPause: 'Pause',
+    prompterCountdownReset: 'Zurücksetzen',
+    prompterCountdownEditDuration: 'Dauer ändern',
   },
   zh: {
     defaultScript:
@@ -945,6 +1001,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: '退出修剪',
     audioSilentWarningMessage: '似乎没有音频传入。请尝试大声说话，如果此提示仍未消失，请重新加载浏览器。',
     processingVideoTooltip: '视频正在处理中，请稍候',
+    prompterCountdown: '拍摄倒计时',
+    prompterCountdownMinutes: '分',
+    prompterCountdownSeconds: '秒',
+    prompterCountdownSet: '设置时长',
+    prompterCountdownStart: '开始',
+    prompterCountdownPause: '暂停',
+    prompterCountdownReset: '重置',
+    prompterCountdownEditDuration: '修改时长',
   },
   ar: {
     defaultScript:
@@ -1064,6 +1128,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'خروج القص',
     audioSilentWarningMessage: 'يبدو أنه لا يصل أي صوت. حاول التحدث بصوت أعلى، وإذا لم تختفِ هذه الرسالة، أعد تحميل المتصفح.',
     processingVideoTooltip: 'يتم معالجة الفيديو، يرجى الانتظار لحظة',
+    prompterCountdown: 'عد تنازلي',
+    prompterCountdownMinutes: 'د',
+    prompterCountdownSeconds: 'ث',
+    prompterCountdownSet: 'تعيين',
+    prompterCountdownStart: 'بدء',
+    prompterCountdownPause: 'إيقاف مؤقت',
+    prompterCountdownReset: 'إعادة ضبط',
+    prompterCountdownEditDuration: 'تغيير المدة',
   },
   pt: {
     defaultScript:
@@ -1181,6 +1253,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Sair do corte',
     audioSilentWarningMessage: 'Parece que nenhum áudio está chegando. Tente falar mais alto e, se esta mensagem não desaparecer, recarregue o navegador.',
     processingVideoTooltip: 'O vídeo está sendo processado, por favor aguarde um momento',
+    prompterCountdown: 'Contagem regressiva',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Seg',
+    prompterCountdownSet: 'Definir',
+    prompterCountdownStart: 'Iniciar',
+    prompterCountdownPause: 'Pausar',
+    prompterCountdownReset: 'Repor',
+    prompterCountdownEditDuration: 'Alterar duração',
   },
   ru: {
     defaultScript:
@@ -1299,6 +1379,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Выход из обрезки',
     audioSilentWarningMessage: 'Похоже, звук не поступает. Попробуйте говорить громче, и если это сообщение не исчезнет, перезагрузите браузер.',
     processingVideoTooltip: 'Видео обрабатывается, пожалуйста, подождите немного',
+    prompterCountdown: 'Таймер дубля',
+    prompterCountdownMinutes: 'Мин',
+    prompterCountdownSeconds: 'Сек',
+    prompterCountdownSet: 'Задать',
+    prompterCountdownStart: 'Старт',
+    prompterCountdownPause: 'Пауза',
+    prompterCountdownReset: 'Сброс',
+    prompterCountdownEditDuration: 'Изменить длительность',
   },
   pl: {
     defaultScript:
@@ -1417,6 +1505,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Wyjdź z przycinania',
     audioSilentWarningMessage: 'Wygląda na to, że żaden dźwięk nie dociera. Spróbuj mówić głośniej, a jeśli ta wiadomość nie zniknie, przeładuj przeglądarkę.',
     processingVideoTooltip: 'Wideo jest przetwarzane, proszę chwilę poczekać',
+    prompterCountdown: 'Odliczanie',
+    prompterCountdownMinutes: 'Min',
+    prompterCountdownSeconds: 'Sek',
+    prompterCountdownSet: 'Ustaw',
+    prompterCountdownStart: 'Start',
+    prompterCountdownPause: 'Pauza',
+    prompterCountdownReset: 'Reset',
+    prompterCountdownEditDuration: 'Zmień czas',
   },
 }
 
