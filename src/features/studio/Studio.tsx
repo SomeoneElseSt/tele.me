@@ -196,7 +196,7 @@ export function Studio() {
     return clampFrame(getCenteredFrame(DEFAULT_FRAME))
   })
 
-  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number }[]>([])
+  const [takes, setTakes] = useState<{ id: string; url: string; createdAt: number; mimeType?: string; takeNumber: number; durationSeconds?: number }[]>([])
   const takesRef = useRef(takes)
   const [playingTakeId, setPlayingTakeId] = useState<string | null>(null)
   const [videoPlaying, setVideoPlaying] = useState(false)
@@ -356,7 +356,8 @@ export function Studio() {
           url: URL.createObjectURL(video.blob),
           createdAt: video.createdAt,
           mimeType: video.mimeType,
-          takeNumber: video.takeNumber
+          takeNumber: video.takeNumber,
+          durationSeconds: video.durationSeconds
         }))
         setTakes(videosWithUrls)
       } catch (error) {
@@ -476,7 +477,8 @@ export function Studio() {
             blob,
             createdAt: take.createdAt,
             mimeType: take.mimeType,
-            takeNumber: take.takeNumber
+            takeNumber: take.takeNumber,
+            durationSeconds: take.durationSeconds
           })
         } catch (error) {
           console.error('Failed to save video to storage:', error)
@@ -606,13 +608,14 @@ export function Studio() {
       const blob = await fetch(take.url).then(r => r.blob())
       console.log('[Studio] Fetched blob, size=', blob.size)
       const trimmed = await trimVideo(blob, trimStart, trimEnd, take.mimeType)
+      const trimmedDurationSeconds = Math.max(0, trimEnd - trimStart)
       if (persistVideos) {
         console.log('[Studio] Saving trimmed blob to IndexedDB')
-        await videoStorage.updateVideo(take.id, trimmed)
+        await videoStorage.updateVideo(take.id, trimmed, trimmedDurationSeconds)
       }
       const newUrl = URL.createObjectURL(trimmed)
       URL.revokeObjectURL(take.url)
-      setTakes(prev => prev.map(t => t.id === take.id ? { ...t, url: newUrl } : t))
+      setTakes(prev => prev.map(t => t.id === take.id ? { ...t, url: newUrl, durationSeconds: trimmedDurationSeconds } : t))
       setTrimMode(false)
       setVideoCurrentTime(0)
       setVideoDuration(0)
@@ -651,7 +654,11 @@ export function Studio() {
     const createdAt = Date.now()
     const takeNumber = incrementTakeNumber() ?? 1
     const takeId = `take-${createdAt}`
-    const newTake = { id: takeId, url, createdAt, mimeType, takeNumber }
+    const durationSeconds =
+      recorder.recordingDurationMs != null
+        ? Math.max(0, recorder.recordingDurationMs / 1000)
+        : undefined
+    const newTake = { id: takeId, url, createdAt, mimeType, takeNumber, durationSeconds }
 
     setTakes((prev) => {
       if (prev.some(take => take.url === url)) return prev
@@ -674,7 +681,8 @@ export function Studio() {
             blob: remuxedBlob,
             createdAt,
             mimeType,
-            takeNumber
+            takeNumber,
+            durationSeconds
           })
             .then(() => refreshStorageQuota())
             .catch(error => console.error('Failed to save video to storage:', error))
@@ -688,7 +696,7 @@ export function Studio() {
           return next
         })
       })
-  }, [recorder.url, recorder.mimeType, incrementTakeNumber, persistVideos, refreshStorageQuota])
+  }, [recorder.url, recorder.mimeType, recorder.recordingDurationMs, incrementTakeNumber, persistVideos, refreshStorageQuota])
 
   const onToggleFullscreen = useCallback(() => {
     if (typeof document === 'undefined') return

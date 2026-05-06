@@ -14,10 +14,8 @@ export type StoredVideo = {
     createdAt: number
     mimeType?: string
     takeNumber: number
-}
-
-type VideoMetadata = Omit<StoredVideo, 'blob'> & {
-    size: number
+    /** Total length in seconds only (minutes/seconds for UI are derived from this). */
+    durationSeconds?: number
 }
 
 /**
@@ -179,14 +177,18 @@ export async function deleteVideo(id: string): Promise<void> {
 /**
  * Update an existing video blob in IndexedDB (in-place replacement)
  */
-export async function updateVideo(id: string, newBlob: Blob): Promise<void> {
+export async function updateVideo(id: string, newBlob: Blob, durationSeconds?: number): Promise<void> {
     const db = await openDB()
     const existing = await new Promise<StoredVideo>((resolve, reject) => {
         const req = db.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).get(id)
         req.onsuccess = () => resolve(req.result as StoredVideo)
         req.onerror = () => reject(req.error)
     })
-    const updated: StoredVideo = { ...existing, blob: newBlob }
+    const updated: StoredVideo = {
+        ...existing,
+        blob: newBlob,
+        ...(durationSeconds !== undefined ? { durationSeconds } : {})
+    }
     await new Promise<void>((resolve, reject) => {
         const req = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME).put(updated)
         req.onsuccess = () => resolve()

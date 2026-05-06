@@ -4,6 +4,8 @@ type RecorderState = {
   status: 'idle' | 'recording' | 'stopped' | 'error'
   error?: string
   elapsedMs: number
+  /** Wall-clock recording length for the last completed recording (ms). Cleared on reset / next start. */
+  recordingDurationMs?: number
   blob?: Blob
   url?: string
   mimeType?: string
@@ -55,7 +57,7 @@ export function useRecorder(stream: MediaStream | null) {
     // Don't revoke URL here - let takes manage their own URLs
     chunksRef.current = []
     startTsRef.current = null
-    setState((prev) => ({ ...prev, status: 'idle', elapsedMs: 0, url: undefined, blob: undefined }))
+    setState((prev) => ({ ...prev, status: 'idle', elapsedMs: 0, recordingDurationMs: undefined, url: undefined, blob: undefined }))
   }, [])
 
   const stopTimer = useCallback(() => {
@@ -98,7 +100,18 @@ export function useRecorder(stream: MediaStream | null) {
       stopTimer()
       const blob = new Blob(chunksRef.current, { type: recorder.mimeType })
       const url = URL.createObjectURL(blob)
-      setState((prev) => ({ ...prev, status: 'stopped', elapsedMs: 0, blob, url, mimeType: recorder.mimeType }))
+      const recordingDurationMs =
+        startTsRef.current != null ? Math.max(0, performance.now() - startTsRef.current) : undefined
+      startTsRef.current = null
+      setState((prev) => ({
+        ...prev,
+        status: 'stopped',
+        elapsedMs: 0,
+        recordingDurationMs,
+        blob,
+        url,
+        mimeType: recorder.mimeType
+      }))
     }
 
     recorder.start(DATA_TIMESLICE_MS)

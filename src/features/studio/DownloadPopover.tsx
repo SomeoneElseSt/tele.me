@@ -35,6 +35,8 @@ export type DownloadTake = {
   createdAt: number
   mimeType?: string
   takeNumber: number
+  /** Total length in seconds (UI shows e.g. `1m 12s` from this; no separate minutes field). */
+  durationSeconds?: number
 }
 
 type Props = {
@@ -52,11 +54,10 @@ type Props = {
   processingTakeIds?: Set<string>
 }
 
-const POPOVER_WIDTH = 300
+const POPOVER_WIDTH = 344
+const DURATION_CAP_MINUTES = 60
 const GAP_PX = 12
 const MARGIN_PX = 12
-const REMOVE_FADE_MS = 180
-const ENTER_DELAY_MS = 20
 const CONFIRM_SWAP_DELAY_MS = 140
 
 
@@ -69,6 +70,17 @@ function getFileExtension(mimeType?: string): string {
   if (mimeType.includes('mp4')) return 'mp4'
   if (mimeType.includes('webm')) return 'webm'
   return 'webm'
+}
+
+function formatTakeDuration(seconds: number): string {
+  const total = Math.max(0, seconds)
+  const wholeSeconds = Math.floor(total)
+  const minutes = Math.floor(wholeSeconds / 60)
+  const secs = wholeSeconds % 60
+  if (minutes >= DURATION_CAP_MINUTES) {
+    return `60+m ${secs}s`
+  }
+  return `${minutes}m ${secs}s`
 }
 
 export function DownloadPopover(props: Props) {
@@ -137,7 +149,6 @@ export function DownloadPopover(props: Props) {
   const confirmButtonEl = confirmingTakeId ? deleteButtonRefs.current.get(confirmingTakeId) : null
   const confirmRect = confirmButtonEl?.getBoundingClientRect()
   const trayRect = trayRef.current?.getBoundingClientRect()
-  const shouldShowLeft = confirmRect ? (window.innerWidth - confirmRect.right < 120) : false
 
   const confirmTop = confirmRect && trayRect ? confirmRect.top - trayRect.top : 0
   const confirmLeft = confirmRect && trayRect ? confirmRect.left - trayRect.left : 0
@@ -428,7 +439,12 @@ export function DownloadPopover(props: Props) {
                                 : <Play className="h-4 w-4 text-white/60" />}
                               <span>{strings.takeLabel(take.takeNumber)}</span>
                             </button>
-                            <span className="text-xs text-white/55">{formatTime(take.createdAt, locale)}</span>
+                            <div className="flex shrink-0 items-center gap-2 text-xs tabular-nums">
+                              {take.durationSeconds != null && (
+                                <span className="text-white/55">{formatTakeDuration(take.durationSeconds)}</span>
+                              )}
+                              <span className="text-white/55">{formatTime(take.createdAt, locale)}</span>
+                            </div>
                           </div>
                           <a
                             href={take.url}
