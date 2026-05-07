@@ -15,6 +15,13 @@ type Props = {
   open: boolean
   /** Whether the studio recorder is running; passed through for future UX. The timer is not blocked when false. */
   isRecording: boolean
+  /** Lifted to FloatingPrompter so state survives PiP window transitions. */
+  budgetMs: number | null
+  onBudgetMsChange: (ms: number | null) => void
+  remainingMs: number
+  onRemainingMsChange: (ms: number | ((prev: number) => number)) => void
+  wantsRun: boolean
+  onWantsRunChange: (run: boolean) => void
 }
 
 const TICK_MS = 100
@@ -44,11 +51,19 @@ function parseTotalSeconds(minStr: string, secStr: string): number | null {
   return total
 }
 
-export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isRecording }: Props) {
+export function PrompterBarCountdown({
+  disabled,
+  expandPopoverDown,
+  open,
+  isRecording,
+  budgetMs,
+  onBudgetMsChange,
+  remainingMs,
+  onRemainingMsChange,
+  wantsRun,
+  onWantsRunChange,
+}: Props) {
   const { strings } = useI18n()
-  const [budgetMs, setBudgetMs] = useState<number | null>(null)
-  const [remainingMs, setRemainingMs] = useState(0)
-  const [wantsRun, setWantsRun] = useState(false)
   const [panel, setPanel] = useState<null | 'setup' | 'actions'>(null)
   const [minutesInput, setMinutesInput] = useState('5')
   const [secondsInput, setSecondsInput] = useState('0')
@@ -60,15 +75,22 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   configuredRef.current = configured
 
   /** Narrow chip + hourglass until icon exit completes; then widen and show digits. */
-  const [chipExpanded, setChipExpanded] = useState(false)
-  const [hourglassInChip, setHourglassInChip] = useState(true)
+  const [chipExpanded, setChipExpanded] = useState(() => configured)
+  const [hourglassInChip, setHourglassInChip] = useState(() => !configured)
+  const prevConfiguredRef = useRef(configured)
 
   useEffect(() => {
+    const wasConfigured = prevConfiguredRef.current
+    prevConfiguredRef.current = configured
+
     if (!configured) {
       setChipExpanded(false)
       setHourglassInChip(true)
       return
     }
+    // Skip animation if already configured at mount or on re-render without a state change
+    if (wasConfigured) return
+
     setChipExpanded(false)
     setHourglassInChip(true)
     let raf1 = 0
@@ -101,27 +123,27 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   useEffect(() => {
     if (!open || !wantsRun) return
     const id = window.setInterval(() => {
-      setRemainingMs((prev) => {
+      onRemainingMsChange((prev) => {
         if (prev <= 0) return 0
         return Math.max(0, prev - TICK_MS)
       })
     }, TICK_MS)
     return () => window.clearInterval(id)
-  }, [open, wantsRun])
+  }, [open, wantsRun, onRemainingMsChange])
 
   useEffect(() => {
     if (remainingMs > 0) return
     if (!wantsRun) return
-    setWantsRun(false)
-  }, [remainingMs, wantsRun])
+    onWantsRunChange(false)
+  }, [remainingMs, wantsRun, onWantsRunChange])
 
   const applyDuration = () => {
     const totalSec = parseTotalSeconds(minutesInput, secondsInput)
     if (totalSec == null) return
     const ms = totalSec * 1000
-    setBudgetMs(ms)
-    setRemainingMs(ms)
-    setWantsRun(false)
+    onBudgetMsChange(ms)
+    onRemainingMsChange(ms)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
@@ -145,20 +167,20 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
 
   const onPlay = () => {
     if (!configured || budgetMs == null) return
-    setRemainingMs((prev) => (prev <= 0 ? budgetMs : prev))
-    setWantsRun(true)
+    onRemainingMsChange((prev) => (prev <= 0 ? budgetMs : prev))
+    onWantsRunChange(true)
     setPanel(null)
   }
 
   const onPause = () => {
-    setWantsRun(false)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
   const onReset = () => {
     if (budgetMs == null) return
-    setRemainingMs(budgetMs)
-    setWantsRun(false)
+    onRemainingMsChange(budgetMs)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
@@ -216,7 +238,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
             ) : chipExpanded ? (
               <motion.span
                 key="timer-digits"
-                className="text-[13px] font-semibold tracking-tight tabular-nums"
+                className="text-[13px] tracking-tight tabular-nums"
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.96 }}
@@ -234,7 +256,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
           <motion.div
             ref={popoverRef}
             className={cn(
-              'absolute left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-white/10 bg-black/90 px-2.5 py-1.5 shadow-glow backdrop-blur',
+              'absolute left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-white/10 bg-black/90 p-1.5 shadow-glow backdrop-blur',
               expandPopoverDown ? 'top-full mt-2' : 'bottom-full mb-2'
             )}
             initial={{ opacity: 0, y: expandPopoverDown ? -4 : 4 }}
@@ -244,8 +266,8 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
             onPointerDown={(e) => e.stopPropagation()}
           >
             {panel === 'setup' && (
-              <div className="flex flex-col gap-2 px-1 py-0.5">
-                <div className="flex items-end gap-2">
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-end gap-1.5">
                   <label className="flex flex-col gap-0.5 text-[10px] font-medium uppercase tracking-wider text-white/45">
                     {strings.prompterTimerMinutes}
                     <input
@@ -279,12 +301,12 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
               </div>
             )}
             {panel === 'actions' && configured && (
-              <div className="flex items-center gap-1.5 px-0.5">
+              <div className="flex items-center gap-1">
                 <Tooltip label={strings.prompterTimerStart}>
                   <button
                     type="button"
                     onClick={onPlay}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterTimerStart}
                   >
                     <Play className="h-3.5 w-3.5" />
@@ -294,7 +316,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={onPause}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterTimerPause}
                   >
                     <Pause className="h-3.5 w-3.5" />
@@ -304,7 +326,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={onReset}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterTimerReset}
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
@@ -314,7 +336,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={openSetupFromActions}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterTimerEditDuration}
                   >
                     <Pencil className="h-3.5 w-3.5" />

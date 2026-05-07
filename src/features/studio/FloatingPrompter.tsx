@@ -834,6 +834,11 @@ export function FloatingPrompter(props: Props) {
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
   const [isPip, setIsPip] = useState(false)
+
+  // Timer state lifted here so it survives PiP transitions (portal re-mounts into a different window)
+  const [timerBudgetMs, setTimerBudgetMs] = useState<number | null>(null)
+  const [timerRemainingMs, setTimerRemainingMs] = useState(0)
+  const [timerWantsRun, setTimerWantsRun] = useState(false)
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
@@ -1996,6 +2001,12 @@ export function FloatingPrompter(props: Props) {
                   expandPopoverDown={!fixedToTop || isPip}
                   open={open}
                   isRecording={isRecording}
+                  budgetMs={timerBudgetMs}
+                  onBudgetMsChange={setTimerBudgetMs}
+                  remainingMs={timerRemainingMs}
+                  onRemainingMsChange={setTimerRemainingMs}
+                  wantsRun={timerWantsRun}
+                  onWantsRunChange={setTimerWantsRun}
                 />
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
@@ -2306,6 +2317,12 @@ export function FloatingPrompter(props: Props) {
                   expandPopoverDown={false}
                   open={open}
                   isRecording={isRecording}
+                  budgetMs={timerBudgetMs}
+                  onBudgetMsChange={setTimerBudgetMs}
+                  remainingMs={timerRemainingMs}
+                  onRemainingMsChange={setTimerRemainingMs}
+                  wantsRun={timerWantsRun}
+                  onWantsRunChange={setTimerWantsRun}
                 />
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button
