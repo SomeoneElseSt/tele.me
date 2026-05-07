@@ -65,6 +65,7 @@ export function PrompterBarCountdown({
 }: Props) {
   const { strings } = useI18n()
   const [panel, setPanel] = useState<null | 'setup' | 'actions'>(null)
+  const [suppressActionTooltips, setSuppressActionTooltips] = useState(false)
   const [minutesInput, setMinutesInput] = useState('5')
   const [secondsInput, setSecondsInput] = useState('0')
   const anchorRef = useRef<HTMLDivElement>(null)
@@ -165,16 +166,24 @@ export function PrompterBarCountdown({
     setPanel((p) => (p === 'actions' ? null : 'actions'))
   }
 
+  const closePanelAfterTooltip = () => {
+    setSuppressActionTooltips(true)
+    requestAnimationFrame(() => {
+      setPanel(null)
+      setSuppressActionTooltips(false)
+    })
+  }
+
   const onPlay = () => {
     if (!configured || budgetMs == null) return
     onRemainingMsChange((prev) => (prev <= 0 ? budgetMs : prev))
     onWantsRunChange(true)
-    setPanel(null)
+    closePanelAfterTooltip()
   }
 
   const onPause = () => {
     onWantsRunChange(false)
-    setPanel(null)
+    closePanelAfterTooltip()
   }
 
   const onReset = () => {
@@ -256,7 +265,7 @@ export function PrompterBarCountdown({
           <motion.div
             ref={popoverRef}
             className={cn(
-              'absolute left-1/2 z-[80] -translate-x-1/2 rounded-xl border border-white/10 bg-black/90 p-1.5 shadow-glow backdrop-blur',
+              'absolute left-0 z-[80] rounded-xl border border-white/10 bg-black/90 p-1.5 shadow-glow backdrop-blur',
               expandPopoverDown ? 'top-full mt-2' : 'bottom-full mb-2'
             )}
             initial={{ opacity: 0, y: expandPopoverDown ? -4 : 4 }}
@@ -302,24 +311,38 @@ export function PrompterBarCountdown({
             )}
             {panel === 'actions' && configured && (
               <div className="flex items-center gap-1">
-                <Tooltip label={strings.prompterTimerStart}>
+                <Tooltip enabled={!suppressActionTooltips} label={wantsRun ? strings.prompterTimerPause : strings.prompterTimerStart}>
                   <button
                     type="button"
-                    onClick={onPlay}
+                    onClick={wantsRun ? onPause : onPlay}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
-                    aria-label={strings.prompterTimerStart}
+                    aria-label={wantsRun ? strings.prompterTimerPause : strings.prompterTimerStart}
                   >
-                    <Play className="h-3.5 w-3.5" />
-                  </button>
-                </Tooltip>
-                <Tooltip label={strings.prompterTimerPause}>
-                  <button
-                    type="button"
-                    onClick={onPause}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
-                    aria-label={strings.prompterTimerPause}
-                  >
-                    <Pause className="h-3.5 w-3.5" />
+                    <AnimatePresence mode="wait" initial={false}>
+                      {wantsRun ? (
+                        <motion.span
+                          key="pause"
+                          initial={{ opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.7 }}
+                          transition={{ duration: 0.12, ease: 'easeOut' }}
+                          className="inline-flex"
+                        >
+                          <Pause className="h-3.5 w-3.5" />
+                        </motion.span>
+                      ) : (
+                        <motion.span
+                          key="play"
+                          initial={{ opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.7 }}
+                          transition={{ duration: 0.12, ease: 'easeOut' }}
+                          className="inline-flex"
+                        >
+                          <Play className="h-3.5 w-3.5" />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </button>
                 </Tooltip>
                 <Tooltip label={strings.prompterTimerReset}>
