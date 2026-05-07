@@ -5,17 +5,14 @@ import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { useI18n } from './i18n'
 
-/** Dispatched from Studio when the user presses T (timer) while the prompter is open. */
+/** Dispatched from Studio when the user presses T while the prompter is open. */
 export const PROMPTER_TIMER_HOTKEY_EVENT = 'teleme:prompter-timer-hotkey'
 
 type Props = {
-  disabled: boolean
   /** When true, the bar is at the top of the prompter and the popover opens downward. */
   expandPopoverDown: boolean
   open: boolean
-  /** Whether the studio recorder is running; passed through for future UX. The timer is not blocked when false. */
-  isRecording: boolean
-  /** Lifted to FloatingPrompter so state survives PiP window transitions. */
+  // Lifted to FloatingPrompter so state survives PiP window transitions
   budgetMs: number | null
   onBudgetMsChange: (ms: number | null) => void
   remainingMs: number
@@ -27,13 +24,8 @@ type Props = {
 const TICK_MS = 100
 const MAX_TOTAL_SEC = 99 * 60 + 59
 
-/** Spring matches InputsPopover / locale dropdown — smooth width when the chip grows. */
 const TIMER_BUTTON_LAYOUT_SPRING = { type: 'spring' as const, stiffness: 520, damping: 38, mass: 0.7 }
-
-/** Hourglass fades out quickly before the chip widens. */
 const TIMER_ICON_EXIT_TRANSITION = { duration: 0.12, ease: 'easeOut' as const }
-
-/** Digits fade in after expansion starts; ~DownloadPopover tray ease. */
 const TIMER_CHIP_CONTENT_TRANSITION = { duration: 0.15, ease: 'easeOut' as const }
 
 function formatCountdownMs(ms: number) {
@@ -44,18 +36,16 @@ function formatCountdownMs(ms: number) {
 }
 
 function parseTotalSeconds(minStr: string, secStr: string): number | null {
-  const min = Math.max(0, Math.min(99, Math.floor(Number(minStr) || 0)))
-  const sec = Math.max(0, Math.min(59, Math.floor(Number(secStr) || 0)))
+  const min = Math.max(0, Math.floor(Number(minStr) || 0))
+  const sec = Math.max(0, Math.floor(Number(secStr) || 0))
   const total = min * 60 + sec
   if (total < 1 || total > MAX_TOTAL_SEC) return null
   return total
 }
 
 export function PrompterBarCountdown({
-  disabled,
   expandPopoverDown,
   open,
-  isRecording,
   budgetMs,
   onBudgetMsChange,
   remainingMs,
@@ -75,7 +65,6 @@ export function PrompterBarCountdown({
   const configured = budgetMs != null && budgetMs > 0
   configuredRef.current = configured
 
-  /** Narrow chip + hourglass until icon exit completes; then widen and show digits. */
   const [chipExpanded, setChipExpanded] = useState(() => configured)
   const [hourglassInChip, setHourglassInChip] = useState(() => !configured)
   const prevConfiguredRef = useRef(configured)
@@ -89,7 +78,6 @@ export function PrompterBarCountdown({
       setHourglassInChip(true)
       return
     }
-    // Skip animation if already configured at mount or on re-render without a state change
     if (wasConfigured) return
 
     setChipExpanded(false)
@@ -97,9 +85,7 @@ export function PrompterBarCountdown({
     let raf1 = 0
     let raf2 = 0
     raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        setHourglassInChip(false)
-      })
+      raf2 = requestAnimationFrame(() => setHourglassInChip(false))
     })
     return () => {
       cancelAnimationFrame(raf1)
@@ -124,19 +110,27 @@ export function PrompterBarCountdown({
   useEffect(() => {
     if (!open || !wantsRun) return
     const id = window.setInterval(() => {
-      onRemainingMsChange((prev) => {
-        if (prev <= 0) return 0
-        return Math.max(0, prev - TICK_MS)
-      })
+      onRemainingMsChange((prev) => (prev <= 0 ? 0 : Math.max(0, prev - TICK_MS)))
     }, TICK_MS)
     return () => window.clearInterval(id)
   }, [open, wantsRun, onRemainingMsChange])
 
   useEffect(() => {
-    if (remainingMs > 0) return
-    if (!wantsRun) return
+    if (remainingMs > 0 || !wantsRun) return
     onWantsRunChange(false)
   }, [remainingMs, wantsRun, onWantsRunChange])
+
+  useEffect(() => {
+    if (!open) return
+    const onGlobalTimerHotkey = () => {
+      setPanel((p) => {
+        const target = configured ? 'actions' : 'setup'
+        return p === target ? null : target
+      })
+    }
+    window.addEventListener(PROMPTER_TIMER_HOTKEY_EVENT, onGlobalTimerHotkey)
+    return () => window.removeEventListener(PROMPTER_TIMER_HOTKEY_EVENT, onGlobalTimerHotkey)
+  }, [open, configured])
 
   const applyDuration = () => {
     const totalSec = parseTotalSeconds(minutesInput, secondsInput)
@@ -158,7 +152,6 @@ export function PrompterBarCountdown({
   }
 
   const onMainClick = () => {
-    if (disabled) return
     if (!configured) {
       setPanel((p) => (p === 'setup' ? null : 'setup'))
       return
@@ -175,7 +168,7 @@ export function PrompterBarCountdown({
   }
 
   const onPlay = () => {
-    if (!configured || budgetMs == null) return
+    if (budgetMs == null) return
     onRemainingMsChange((prev) => (prev <= 0 ? budgetMs : prev))
     onWantsRunChange(true)
     closePanelAfterTooltip()
@@ -193,22 +186,11 @@ export function PrompterBarCountdown({
     setPanel(null)
   }
 
-  useEffect(() => {
-    if (!open || disabled) return
-    const onGlobalTimerHotkey = () => {
-      if (!configured) {
-        setPanel((p) => (p === 'setup' ? null : 'setup'))
-        return
-      }
-      setPanel((p) => (p === 'actions' ? null : 'actions'))
-    }
-    window.addEventListener(PROMPTER_TIMER_HOTKEY_EVENT, onGlobalTimerHotkey)
-    return () => window.removeEventListener(PROMPTER_TIMER_HOTKEY_EVENT, onGlobalTimerHotkey)
-  }, [open, disabled, configured])
+  const ACTION_BTN = 'inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25'
 
   return (
-    <div ref={anchorRef} className="relative" data-recording={isRecording ? 'true' : 'false'}>
-      <Tooltip enabled={!disabled} label={strings.prompterTimer} shortcut="T">
+    <div ref={anchorRef} className="relative">
+      <Tooltip label={strings.prompterTimer} shortcut="T">
         <motion.button
           type="button"
           layout
@@ -221,9 +203,7 @@ export function PrompterBarCountdown({
               ? 'inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-2.5 text-white/85 outline-none tabular-nums'
               : 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
             'hover:bg-white/10 hover:text-white',
-            disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
           )}
-          disabled={disabled}
         >
           <AnimatePresence
             mode="wait"
@@ -261,7 +241,7 @@ export function PrompterBarCountdown({
       </Tooltip>
 
       <AnimatePresence>
-        {panel && !disabled && (
+        {panel && (
           <motion.div
             ref={popoverRef}
             className={cn(
@@ -315,53 +295,30 @@ export function PrompterBarCountdown({
                   <button
                     type="button"
                     onClick={wantsRun ? onPause : onPlay}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                    className={ACTION_BTN}
                     aria-label={wantsRun ? strings.prompterTimerPause : strings.prompterTimerStart}
                   >
                     <AnimatePresence mode="wait" initial={false}>
-                      {wantsRun ? (
-                        <motion.span
-                          key="pause"
-                          initial={{ opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.7 }}
-                          transition={{ duration: 0.12, ease: 'easeOut' }}
-                          className="inline-flex"
-                        >
-                          <Pause className="h-3.5 w-3.5" />
-                        </motion.span>
-                      ) : (
-                        <motion.span
-                          key="play"
-                          initial={{ opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.7 }}
-                          transition={{ duration: 0.12, ease: 'easeOut' }}
-                          className="inline-flex"
-                        >
-                          <Play className="h-3.5 w-3.5" />
-                        </motion.span>
-                      )}
+                      <motion.span
+                        key={wantsRun ? 'pause' : 'play'}
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.7 }}
+                        transition={{ duration: 0.12, ease: 'easeOut' }}
+                        className="inline-flex"
+                      >
+                        {wantsRun ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                      </motion.span>
                     </AnimatePresence>
                   </button>
                 </Tooltip>
                 <Tooltip label={strings.prompterTimerReset}>
-                  <button
-                    type="button"
-                    onClick={onReset}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
-                    aria-label={strings.prompterTimerReset}
-                  >
+                  <button type="button" onClick={onReset} className={ACTION_BTN} aria-label={strings.prompterTimerReset}>
                     <RotateCcw className="h-3.5 w-3.5" />
                   </button>
                 </Tooltip>
                 <Tooltip label={strings.prompterTimerEditDuration}>
-                  <button
-                    type="button"
-                    onClick={openSetupFromActions}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
-                    aria-label={strings.prompterTimerEditDuration}
-                  >
+                  <button type="button" onClick={openSetupFromActions} className={ACTION_BTN} aria-label={strings.prompterTimerEditDuration}>
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                 </Tooltip>

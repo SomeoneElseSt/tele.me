@@ -45,8 +45,6 @@ type Props = {
   wpm: number
   onWpmChange: (value: number) => void
   forceCloseControls?: boolean
-  /** Whether the studio recorder is running; forwarded to the prompter timer for future use. */
-  isRecording: boolean
 }
 
 const GRIP_HIT_SIZE_PX = 32
@@ -827,7 +825,6 @@ export function FloatingPrompter(props: Props) {
     wpm,
     onWpmChange,
     forceCloseControls,
-    isRecording
   } = props
 
   const tooltip = useTooltipController()
@@ -1997,10 +1994,8 @@ export function FloatingPrompter(props: Props) {
                   </Tooltip>
                 )}
                 <PrompterBarCountdown
-                  disabled={false}
                   expandPopoverDown={!fixedToTop || isPip}
                   open={open}
-                  isRecording={isRecording}
                   budgetMs={timerBudgetMs}
                   onBudgetMsChange={setTimerBudgetMs}
                   remainingMs={timerRemainingMs}
@@ -2313,10 +2308,8 @@ export function FloatingPrompter(props: Props) {
                   </Tooltip>
                 )}
                 <PrompterBarCountdown
-                  disabled={false}
                   expandPopoverDown={false}
                   open={open}
-                  isRecording={isRecording}
                   budgetMs={timerBudgetMs}
                   onBudgetMsChange={setTimerBudgetMs}
                   remainingMs={timerRemainingMs}

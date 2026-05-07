@@ -971,7 +971,6 @@ export function Studio() {
           wpm={wpm}
           onWpmChange={setWpm}
           forceCloseControls={forceCloseControls}
-          isRecording={isRecording}
         />
 
         <Dock
