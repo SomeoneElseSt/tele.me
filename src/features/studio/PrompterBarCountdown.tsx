@@ -190,7 +190,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                 <button
                   type="button"
                   onClick={applyDuration}
-                  className="rounded-lg border border-white/12 bg-white/10 py-1.5 text-xs font-medium text-white outline-none hover:bg-white/14 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
+                  className="rounded-lg border border-transparent bg-white/10 py-1.5 text-xs font-medium text-white outline-none hover:border-white/25 hover:bg-white/14 focus-visible:border-white/25 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/20"
                 >
                   {strings.prompterCountdownSet}
                 </button>
