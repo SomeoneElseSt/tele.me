@@ -10,6 +10,7 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
+import { PrompterBarCountdown, PROMPTER_TIMER_HOTKEY_EVENT } from './PrompterBarCountdown'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
@@ -823,13 +824,18 @@ export function FloatingPrompter(props: Props) {
     onAutoScrollChange,
     wpm,
     onWpmChange,
-    forceCloseControls
+    forceCloseControls,
   } = props
 
   const tooltip = useTooltipController()
   const { strings } = useI18n()
   const [quickOpen, setQuickOpen] = useState(false)
   const [isPip, setIsPip] = useState(false)
+
+  // Timer state lifted here so it survives PiP transitions (portal re-mounts into a different window)
+  const [timerBudgetMs, setTimerBudgetMs] = useState<number | null>(null)
+  const [timerRemainingMs, setTimerRemainingMs] = useState(0)
+  const [timerWantsRun, setTimerWantsRun] = useState(false)
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
@@ -994,6 +1000,9 @@ export function FloatingPrompter(props: Props) {
             props.onControlsOpenChange?.(next)
             return next
           })
+        } else if (e.code === 'KeyT') {
+          if (isTypingTarget) return
+          window.dispatchEvent(new CustomEvent(PROMPTER_TIMER_HOTKEY_EVENT))
         }
       }
       pipWindowRef.current.addEventListener('keydown', handleKeyDown)
@@ -1917,7 +1926,7 @@ export function FloatingPrompter(props: Props) {
     <AnimatePresence>
       {open && (
         <motion.div
-          key={isPip ? 'pip' : 'normal'}
+          key="floating-prompter"
           className={cn(
             'fixed z-30 overflow-hidden flex flex-col pointer-events-auto',
             isPip
@@ -1984,6 +1993,16 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <PrompterBarCountdown
+                  expandPopoverDown={!fixedToTop || isPip}
+                  open={open}
+                  budgetMs={timerBudgetMs}
+                  onBudgetMsChange={setTimerBudgetMs}
+                  remainingMs={timerRemainingMs}
+                  onRemainingMsChange={setTimerRemainingMs}
+                  wantsRun={timerWantsRun}
+                  onWantsRunChange={setTimerWantsRun}
+                />
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
@@ -2288,6 +2307,16 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <PrompterBarCountdown
+                  expandPopoverDown={false}
+                  open={open}
+                  budgetMs={timerBudgetMs}
+                  onBudgetMsChange={setTimerBudgetMs}
+                  remainingMs={timerRemainingMs}
+                  onRemainingMsChange={setTimerRemainingMs}
+                  wantsRun={timerWantsRun}
+                  onWantsRunChange={setTimerWantsRun}
+                />
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"

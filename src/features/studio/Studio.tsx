@@ -22,6 +22,7 @@ import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
 import { remuxVideo, trimVideo } from '../../lib/videoTrim'
+import { PROMPTER_TIMER_HOTKEY_EVENT } from './PrompterBarCountdown'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -275,7 +276,8 @@ export function Studio() {
 
   const recordingStream = useMirroredStream(stream, mirrorVideo)
   const recorder = useRecorder(recordingStream)
-  const { isSilent } = useAudioSilenceDetection(stream, recorder.status === 'recording')
+  const isRecording = recorder.status === 'recording'
+  const { isSilent } = useAudioSilenceDetection(stream, isRecording)
 
   useEffect(() => {
     const isMissing = audioDeviceId && audioInputs.length > 0 && !audioInputs.some((d) => d.deviceId === audioDeviceId)
@@ -388,7 +390,7 @@ export function Studio() {
   const elapsedLabel = useMemo(() => formatMs(recorder.elapsedMs), [recorder.elapsedMs])
 
   const onToggleRecord = useCallback(() => {
-    if (recorder.status === 'recording') {
+    if (isRecording) {
       recorder.stop()
       return
     }
@@ -743,7 +745,11 @@ export function Studio() {
         } else {
           hotkeys.r = () => onToggleRecord()
           hotkeys.space = () => onTogglePrompter()
-          hotkeys.t = () => onToggleDrawer()
+          hotkeys.e = () => onToggleDrawer()
+          hotkeys.t = () => {
+            if (!prompterOpen) return
+            window.dispatchEvent(new CustomEvent(PROMPTER_TIMER_HOTKEY_EVENT))
+          }
           hotkeys.h = () => {
             tooltip.clear()
             if (prompterIsPip) return
@@ -969,7 +975,7 @@ export function Studio() {
 
         <Dock
           canRecord={canRecord}
-          recording={recorder.status === 'recording'}
+          recording={isRecording}
           elapsedLabel={elapsedLabel}
           takes={takes}
           onToggleRecord={onToggleRecord}

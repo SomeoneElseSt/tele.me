@@ -110,13 +110,22 @@ type Strings = {
   exitTrim: string
   audioSilentWarningMessage: string
   processingVideoTooltip: string
+  prompterTimer: string
+  prompterTimerMinutes: string
+  prompterTimerSeconds: string
+  prompterTimerSet: string
+  prompterTimerStart: string
+  prompterTimerPause: string
+  prompterTimerReset: string
+  prompterTimerEditDuration: string
 }
 
 export const STRINGS: Record<LocaleCode, Strings> = {
   en: {
     defaultScript:
       'Your script goes here.\n\n' +
-      'T: edit text\n' +
+      'E: edit text\n' +
+      'T: prompter timer\n' +
       'R: record/stop recording\n' +
       'D: show and download videos\n' +
       'Space: play/pause\n' +
@@ -203,7 +212,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Pop Out',
     popInPrompter: 'Pop In',
-    pipEditHint: 'To edit text, go back to the website and open the text editor panel (T).',
+    pipEditHint: 'To edit text, go back to the website and open the text editor panel (E).',
     popOutOnlyChrome: 'Pop out mode is not possible on Safari. Use Chrome for better compatibility.',
     allowCameraAccess: 'Allow camera access',
     braveBlockedMessage: 'Brave blocked camera access. Click the Shields icon or the Lock icon in the address bar to reset permissions and disable Fingerprinting Protection for this site. Use Chrome for better compatibility.',
@@ -213,7 +222,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Auto-scroll speed',
     autoScrollSpeedTooltip: 'Words per minute when auto-scrolling',
     shortcutsMenu:
-      'T: edit text\n' +
+      'E: edit text\n' +
+      'T: prompter timer\n' +
       'R: record/stop recording\n' +
       'D: show and download videos\n' +
       'Space: play/pause\n' +
@@ -231,11 +241,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Exit trim',
     audioSilentWarningMessage: "It seems no audio is coming through. Try speaking up, and if this message doesn't go away, reload your browser.",
     processingVideoTooltip: 'Video is being processed, please wait a moment',
+    prompterTimer: 'Timer',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Sec',
+    prompterTimerSet: 'Set duration',
+    prompterTimerStart: 'Start timer',
+    prompterTimerPause: 'Pause timer',
+    prompterTimerReset: 'Reset timer',
+    prompterTimerEditDuration: 'Change duration',
   },
   es: {
     defaultScript:
       'Tu guion va aquí.\n\n' +
-      'T: editar texto\n' +
+      'E: editar texto\n' +
+      'T: temporizador del teleprompter\n' +
       'R: grabar/detener grabación\n' +
       'D: mostrar y descargar videos\n' +
       'Espacio: reproducir/pausar\n' +
@@ -322,7 +341,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Sacar',
     popInPrompter: 'Integrar',
-    pipEditHint: 'Para editar el texto, regresa al sitio web y abre el panel del editor de texto (T).',
+    pipEditHint: 'Para editar el texto, regresa al sitio web y abre el panel del editor de texto (E).',
     popOutOnlyChrome: 'El modo de ventana emergente no es posible en Safari. Usa Chrome para una mejor compatibilidad.',
     allowCameraAccess: 'Permitir acceso a la cámara',
     braveBlockedMessage: 'Brave bloqueó el acceso a la cámara. Haz clic en el icono de Shields o en el icono del candado en la barra de direcciones para restablecer los permisos y desactivar la protección contra huellas digitales para este sitio. Usa Chrome para una mejor compatibilidad.',
@@ -332,7 +351,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Velocidad de desplazamiento automático',
     autoScrollSpeedTooltip: 'Palabras por minuto en desplazamiento automático',
     shortcutsMenu:
-      'T: editar texto\n' +
+      'E: editar texto\n' +
+      'T: temporizador del teleprompter\n' +
       'R: grabar/detener grabación\n' +
       'D: mostrar y descargar videos\n' +
       'Espacio: reproducir/pausar\n' +
@@ -350,11 +370,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Salir de recorte',
     audioSilentWarningMessage: 'Parece que no llega ningún audio. Intenta hablar más fuerte y, si este mensaje no desaparece, recarga el navegador.',
     processingVideoTooltip: 'El video se está procesando, por favor espere un momento',
+    prompterTimer: 'Temporizador',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Seg',
+    prompterTimerSet: 'Establecer',
+    prompterTimerStart: 'Iniciar temporizador',
+    prompterTimerPause: 'Pausar temporizador',
+    prompterTimerReset: 'Reiniciar temporizador',
+    prompterTimerEditDuration: 'Cambiar duración',
   },
   ja: {
     defaultScript:
       'ここにスクリプトを書きます。\n\n' +
-      'T: テキストを編集\n' +
+      'E: テキストを編集\n' +
+      'T: プロンプターのタイマー\n' +
       'R: 録画/録画停止\n' +
       'D: 動画を表示してダウンロード\n' +
       'スペース: 再生/一時停止\n' +
@@ -441,7 +470,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: '別ウィンドウ',
     popInPrompter: '元に戻す',
-    pipEditHint: 'テキストを編集するには、ウェブサイトに戻ってテキストエディタパネル (T) を開いてください。',
+    pipEditHint: 'テキストを編集するには、ウェブサイトに戻ってテキストエディタパネル (E) を開いてください。',
     popOutOnlyChrome: 'Safariではポップアウトモードは利用できません。互換性を高めるためにChromeを使用してください。',
     allowCameraAccess: 'カメラへのアクセスを許可',
     braveBlockedMessage: 'Braveがカメラへのアクセスをブロックしました。アドレスバーのShieldsアイコンまたは鍵アイコンをクリックして権限をリセットし、このサイトのフィンガープリント保護を無効にしてください。互換性を高めるためにChromeを使用してください。',
@@ -451,7 +480,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: '自動スクロール速度',
     autoScrollSpeedTooltip: '自動スクロール時の単語毎分数',
     shortcutsMenu:
-      'T: テキストを編集\n' +
+      'E: テキストを編集\n' +
+      'T: プロンプターのタイマー\n' +
       'R: 録画/録画停止\n' +
       'D: 動画を表示してダウンロード\n' +
       'スペース: 再生/一時停止\n' +
@@ -469,11 +499,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'トリミング終了',
     audioSilentWarningMessage: 'オーディオが入力されていないようです。もう少し大きな声で話してみてください。このメッセージが消えない場合は、ブラウザを再読み込みしてください。',
     processingVideoTooltip: '動画を処理中です。少々お待ちください',
+    prompterTimer: 'タイマー',
+    prompterTimerMinutes: '分',
+    prompterTimerSeconds: '秒',
+    prompterTimerSet: '設定',
+    prompterTimerStart: 'タイマーを開始',
+    prompterTimerPause: 'タイマーを一時停止',
+    prompterTimerReset: 'タイマーをリセット',
+    prompterTimerEditDuration: '時間を変更',
   },
   hi: {
     defaultScript:
       'आपकी स्क्रिप्ट यहाँ जाती है।\n\n' +
-      'T: टेक्स्ट संपादित करें\n' +
+      'E: टेक्स्ट संपादित करें\n' +
+      'T: प्रॉम्पटर टाइमर\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
       'D: वीडियो दिखाएँ और डाउनलोड करें\n' +
       'स्पेस: चलाएँ/रोकें\n' +
@@ -560,7 +599,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'बाहर निकालें',
     popInPrompter: 'वापस लाएं',
-    pipEditHint: 'टेक्स्ट को एडिट करने के लिए, वेबसाइट पर वापस जाएं और टेक्स्ट एडिटर पैनल (T) खोलें।',
+    pipEditHint: 'टेक्स्ट को एडिट करने के लिए, वेबसाइट पर वापस जाएं और टेक्स्ट एडिटर पैनल (E) खोलें।',
     popOutOnlyChrome: 'Safari पर पॉप आउट मोड संभव नहीं है। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
     allowCameraAccess: 'कैमरा एक्सेस की अनुमति दें',
     braveBlockedMessage: 'Brave ने कैमरा एक्सेस को ब्लॉक कर दिया है। अनुमतियों को रीसेट करने और इस साइट के लिए फ़िंगरप्रिंटिंग सुरक्षा को अक्षम करने के लिए एड्रेस बार में शील्ड्स आइकन या लॉक आइकन पर क्लिक करें। बेहतर अनुकूलता के लिए Chrome का उपयोग करें।',
@@ -570,7 +609,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'स्वचालित स्क्रॉल गति',
     autoScrollSpeedTooltip: 'स्वचालित स्क्रॉलिंग के दौरान शब्द प्रति मिनट',
     shortcutsMenu:
-      'T: टेक्स्ट संपादित करें\n' +
+      'E: टेक्स्ट संपादित करें\n' +
+      'T: प्रॉम्पटर टाइमर\n' +
       'R: रिकॉर्ड/रिकॉर्डिंग बंद करें\n' +
       'D: वीडियो दिखाएँ और डाउनलोड करें\n' +
       'स्पेस: चलाएँ/रोकें\n' +
@@ -588,11 +628,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'ट्रिम से बाहर निकलें',
     audioSilentWarningMessage: 'लगता है कोई ऑडियो नहीं आ रहा है। ज़ोर से बोलने की कोशिश करें, और अगर यह संदेश नहीं जाता, तो ब्राउज़र रीलोड करें।',
     processingVideoTooltip: 'वीडियो प्रसंस्करण हो रहा है, कृपया एक क्षण प्रतीक्षा करें',
+    prompterTimer: 'टाइमर',
+    prompterTimerMinutes: 'मिन',
+    prompterTimerSeconds: 'से',
+    prompterTimerSet: 'सेट करें',
+    prompterTimerStart: 'टाइमर शुरू करें',
+    prompterTimerPause: 'टाइमर रोकें',
+    prompterTimerReset: 'टाइमर रीसेट करें',
+    prompterTimerEditDuration: 'अवधि बदलें',
   },
   fr: {
     defaultScript:
       'Votre script va ici.\n\n' +
-      'T : éditer le texte du prompteur\n' +
+      'E : éditer le texte du prompteur\n' +
+      'T : minuterie du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
       'D : afficher et télécharger les vidéos\n' +
       'Espace : lecture/pause\n' +
@@ -679,7 +728,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Détacher',
     popInPrompter: 'Attacher',
-    pipEditHint: "Pour modifier le texte, retournez sur le site web et ouvrez le panneau de l'éditeur de texte (T).",
+    pipEditHint: "Pour modifier le texte, retournez sur le site web et ouvrez le panneau de l'éditeur de texte (E).",
     popOutOnlyChrome: 'Le mode fenêtre surgissante n’est pas possible sur Safari. Utilisez Chrome pour une meilleure compatibilité.',
     allowCameraAccess: "Autoriser l'accès à la caméra",
     braveBlockedMessage: "Brave a bloqué l'accès à la caméra. Cliquez sur l'icône Shields ou sur l'icône du cadenas dans la barre d'adresse pour réinitialiser les permissions et désactiver la protection contre le fingerprinting pour ce site. Utilisez Chrome pour une meilleure compatibilité.",
@@ -689,7 +738,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Vitesse de défilement automatique',
     autoScrollSpeedTooltip: 'Mots par minute en défilement automatique',
     shortcutsMenu:
-      'T : éditer le texte du prompteur\n' +
+      'E : éditer le texte du prompteur\n' +
+      'T : minuterie du prompteur\n' +
       'R : enregistrer/arrêter l\'enregistrement\n' +
       'D : afficher et télécharger les vidéos\n' +
       'Espace : lecture/pause\n' +
@@ -707,11 +757,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Quitter rogner',
     audioSilentWarningMessage: "Il semble qu'aucun audio ne passe. Essayez de parler plus fort, et si ce message ne disparaît pas, rechargez votre navigateur.",
     processingVideoTooltip: 'La vidéo est en cours de traitement, veuillez patienter un instant',
+    prompterTimer: 'Minuteur',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Sec',
+    prompterTimerSet: 'Définir',
+    prompterTimerStart: 'Démarrer le minuteur',
+    prompterTimerPause: 'Pause du minuteur',
+    prompterTimerReset: 'Réinitialiser le minuteur',
+    prompterTimerEditDuration: 'Modifier la durée',
   },
   de: {
     defaultScript:
       'Ihr Skript kommt hierher.\n\n' +
-      'T: Text bearbeiten\n' +
+      'E: Text bearbeiten\n' +
+      'T: Teleprompter-Timer\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
       'D: Videos anzeigen und herunterladen\n' +
       'Leertaste: abspielen/pausieren\n' +
@@ -798,7 +857,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Auslagern',
     popInPrompter: 'Einlagern',
-    pipEditHint: 'Um den SKript zu bearbeiten, gehen Sie zurück zur Website und öffnen Sie das Texteditor-Panel (T).',
+    pipEditHint: 'Um das Skript zu bearbeiten, gehen Sie zurück zur Website und öffnen Sie das Texteditor-Panel (E).',
     popOutOnlyChrome: 'Der Pop-out-Modus ist in Safari nicht möglich. Verwenden Sie Chrome für eine bessere Kompatibilität.',
     allowCameraAccess: 'Kamerazugriff erlauben',
     braveBlockedMessage: 'Brave hat den Kamerazugriff blockiert. Klicken Sie auf das Shields-Symbol oder das Schloss-Symbol in der Adressleiste, um die Berechtigungen zurückzusetzen und den Fingerprinting-Schutz für diese Website zu deaktivieren. Verwenden Sie Chrome für eine bessere Kompatibilität.',
@@ -808,7 +867,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Geschwindigkeit des automatischen Scrollens',
     autoScrollSpeedTooltip: 'Wörter pro Minute beim automatischen Scrollen',
     shortcutsMenu:
-      'T: Text bearbeiten\n' +
+      'E: Text bearbeiten\n' +
+      'T: Teleprompter-Timer\n' +
       'R: aufnehmen/Aufnahme stoppen\n' +
       'D: Videos anzeigen und herunterladen\n' +
       'Leertaste: abspielen/pausieren\n' +
@@ -826,11 +886,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Trimmen beenden',
     audioSilentWarningMessage: 'Es scheint kein Audio durchzukommen. Sprechen Sie bitte lauter, und wenn diese Meldung nicht verschwindet, laden Sie Ihren Browser neu.',
     processingVideoTooltip: 'Das Video wird verarbeitet, bitte warten Sie einen Moment',
+    prompterTimer: 'Timer',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Sek',
+    prompterTimerSet: 'Speichern',
+    prompterTimerStart: 'Timer starten',
+    prompterTimerPause: 'Timer pausieren',
+    prompterTimerReset: 'Timer zurücksetzen',
+    prompterTimerEditDuration: 'Dauer ändern',
   },
   zh: {
     defaultScript:
       '你的脚本写在这里。\n\n' +
-      'T：编辑文本\n' +
+      'E：编辑文本\n' +
+      'T：提词器计时器\n' +
       'R：录制/停止录制\n' +
       'D：显示并下载视频\n' +
       '空格：播放/暂停\n' +
@@ -917,7 +986,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: '弹出',
     popInPrompter: '收回',
-    pipEditHint: '要编辑文本，请返回网站并打开文本编辑器面板 (T)。',
+    pipEditHint: '要编辑文本，请返回网站并打开文本编辑器面板 (E)。',
     popOutOnlyChrome: 'Safari 上不支持弹出模式。为了获得更好的兼容性，请使用 Chrome。',
     allowCameraAccess: '允许访问摄像头',
     braveBlockedMessage: 'Brave 已阻止访问摄像头。点击地址栏中的 Shields 图标或锁形图标以重置权限，并禁用此网站的指纹识别保护。为了获得更好的兼容性，请使用 Chrome。',
@@ -927,7 +996,8 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: '自动滚动速度',
     autoScrollSpeedTooltip: '自动滚动时的每分钟字数',
     shortcutsMenu:
-      'T：编辑文本\n' +
+      'E：编辑文本\n' +
+      'T：提词器计时器\n' +
       'R：录制/停止录制\n' +
       'D：显示并下载视频\n' +
       '空格：播放/暂停\n' +
@@ -945,11 +1015,20 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: '退出修剪',
     audioSilentWarningMessage: '似乎没有音频传入。请尝试大声说话，如果此提示仍未消失，请重新加载浏览器。',
     processingVideoTooltip: '视频正在处理中，请稍候',
+    prompterTimer: '计时器',
+    prompterTimerMinutes: '分',
+    prompterTimerSeconds: '秒',
+    prompterTimerSet: '设置时长',
+    prompterTimerStart: '开始计时',
+    prompterTimerPause: '暂停计时',
+    prompterTimerReset: '重置计时',
+    prompterTimerEditDuration: '修改时长',
   },
   ar: {
     defaultScript:
       'ضع النص هنا.\n\n' +
-      'T: تعديل النص\n' +
+      'E: تعديل النص\n' +
+      'T: مؤقت التلقين\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
       'D: عرض وتنزيل الفيديوهات\n' +
       'مسافة: تشغيل/إيقاف\n' +
@@ -1036,7 +1115,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'نافذة منفصلة',
     popInPrompter: 'إعادة',
-    pipEditHint: 'لتعديل النص، ارجع إلى الموقع وافتح لوحة محرر النصوص (T).',
+    pipEditHint: 'لتعديل النص، ارجع إلى الموقع وافتح لوحة محرر النصوص (E).',
     popOutOnlyChrome: 'وضع النافذة المنبثقة غير ممكن على Safari. استخدم Chrome لتوافق أفضل.',
     allowCameraAccess: 'السماح بالوصول إلى الكاميرا',
     braveBlockedMessage: 'حظر Brave الوصول إلى الكاميرا. انقر فوق أيقونة Shields أو أيقونة القفل في شريط العناوين لإعادة تعيين الأذونات وتعطيل حماية البصمة الرقمية لهذا الموقع. استخدم Chrome لتوافق أفضل.',
@@ -1047,12 +1126,13 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeedTooltip: 'كلمات في الدقيقة أثناء التمرير التلقائي',
     shortcutsMenu:
       'مسافة: تشغيل/إيقاف\n' +
+      'E: تعديل النص\n' +
+      'T: مؤقت التلقين\n' +
       'R: تسجيل/إيقاف التسجيل\n' +
       'D: عرض وتنزيل الفيديوهات\n' +
       'C: عناصر التحكم بالتلقين\n' +
       'H: إظهار/إخفاء التلقين\n' +
       'I: التحكم بالمدخلات\n' +
-      'T: تعديل النص\n' +
       'M: تمكين Markdown\n' +
       'V: التمرير التلقائي\n' +
       'F: ملء الشاشة\n' +
@@ -1064,17 +1144,27 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'خروج القص',
     audioSilentWarningMessage: 'يبدو أنه لا يصل أي صوت. حاول التحدث بصوت أعلى، وإذا لم تختفِ هذه الرسالة، أعد تحميل المتصفح.',
     processingVideoTooltip: 'يتم معالجة الفيديو، يرجى الانتظار لحظة',
+    prompterTimer: 'مؤقت',
+    prompterTimerMinutes: 'د',
+    prompterTimerSeconds: 'ث',
+    prompterTimerSet: 'تعيين',
+    prompterTimerStart: 'بدء المؤقت',
+    prompterTimerPause: 'إيقاف المؤقت مؤقتاً',
+    prompterTimerReset: 'إعادة ضبط المؤقت',
+    prompterTimerEditDuration: 'تغيير المدة',
   },
   pt: {
     defaultScript:
       'Seu script vai aqui.\n\n' +
+      'E: editar texto\n' +
+      'T: temporizador do teleprompter\n' +
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
       'D: mostrar e baixar vídeos\n' +
       'C: controles do teleprompter\n' +
       'H: mostrar/ocultar teleprompter\n' +
       'I: controlar entradas\n\n' +
-      'Para usar a renderização e fonte Markdown, abra o painel de edição (T) e ative (M)\n\n' +
+      'Para usar a renderização e fonte Markdown, abra o painel de edição (E) e ative (M)\n\n' +
       'F: tela cheia\n' +
       'Y: fixar/desafixar do topo\n' +
       'P: destacar/embutir teleprompter',
@@ -1153,7 +1243,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Destacar',
     popInPrompter: 'Anexar',
-    pipEditHint: 'Para editar o texto, volte ao site e abra o painel do editor de texto (T).',
+    pipEditHint: 'Para editar o texto, volte ao site e abra o painel do editor de texto (E).',
     popOutOnlyChrome: 'O modo pop-out não é possível no Safari. Use o Chrome para melhor compatibilidade.',
     allowCameraAccess: 'Permitir acesso à câmera',
     braveBlockedMessage: 'O Brave bloqueou o acesso à câmera. Clique no ícone Shields ou no ícone de cadeado na barra de endereços para redefinir as permissões e desativar a proteção contra impressão digital para este site. Use o Chrome para melhor compatibilidade.',
@@ -1163,13 +1253,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Velocidade de rolagem automática',
     autoScrollSpeedTooltip: 'Palavras por minuto na rolagem automática',
     shortcutsMenu:
+      'E: editar texto\n' +
+      'T: temporizador do teleprompter\n' +
       'Espaço: reproduzir/pausar\n' +
       'R: gravar/parar gravação\n' +
       'D: mostrar e baixar vídeos\n' +
       'C: controles do teleprompter\n' +
       'H: mostrar/ocultar teleprompter\n' +
       'I: controlar entradas\n' +
-      'T: Editar texto\n' +
       'M: Ativar Markdown\n' +
       'V: rolagem automática\n' +
       'F: tela cheia\n' +
@@ -1181,17 +1272,27 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Sair do corte',
     audioSilentWarningMessage: 'Parece que nenhum áudio está chegando. Tente falar mais alto e, se esta mensagem não desaparecer, recarregue o navegador.',
     processingVideoTooltip: 'O vídeo está sendo processado, por favor aguarde um momento',
+    prompterTimer: 'Temporizador',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Seg',
+    prompterTimerSet: 'Definir',
+    prompterTimerStart: 'Iniciar temporizador',
+    prompterTimerPause: 'Pausar temporizador',
+    prompterTimerReset: 'Repor temporizador',
+    prompterTimerEditDuration: 'Alterar duração',
   },
   ru: {
     defaultScript:
       'Ваш текст здесь.\n\n' +
+      'E: редактировать текст\n' +
+      'T: таймер телесуфлёра\n' +
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
       'D: показать и скачать видео\n' +
       'C: управление телесуфлёром\n' +
       'H: скрыть/показать телесуфлёр\n' +
       'I: управление входами\n\n' +
-      'Чтобы использовать Markdown и шрифт, откройте панель редактирования (T) и включите (M)\n\n' +
+      'Чтобы использовать Markdown и шрифт, откройте панель редактирования (E) и включите (M)\n\n' +
       'V: Автопрокрутка\n\n' +
       'F: полный экран\n' +
       'Y: закрепить/открепить сверху\n' +
@@ -1271,7 +1372,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Открепить',
     popInPrompter: 'Прикрепить',
-    pipEditHint: 'Для редактирования текста вернитесь на сайт и откройте панель текстового редактора (T).',
+    pipEditHint: 'Для редактирования текста вернитесь на сайт и откройте панель текстового редактора (E).',
     popOutOnlyChrome: 'Вынос окна невозможен в Safari. Используйте Chrome для лучшей совместимости.',
     allowCameraAccess: 'Разрешить доступ к камере',
     braveBlockedMessage: 'Brave заблокировал доступ к камере. Нажмите на значок Shields или значок замка в адресной строке, чтобы сбросить разрешения и отключить защиту от цифровых отпечатков для этого сайта. Используйте Chrome для лучшей совместимости.',
@@ -1281,13 +1382,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Скорость автопрокрутки',
     autoScrollSpeedTooltip: 'Слов в минуту при автопрокрутке',
     shortcutsMenu:
+      'E: редактировать текст\n' +
+      'T: таймер телесуфлёра\n' +
       'Пробел: воспроизвести/пауза\n' +
       'R: запись/остановить запись\n' +
       'D: показать и скачать видео\n' +
       'C: управление телесуфлёром\n' +
       'H: скрыть/показать телесуфлёр\n' +
       'I: управление входами\n' +
-      'T: Редактировать текст\n' +
       'M: Включить Markdown\n' +
       'V: автопрокрутка\n' +
       'F: полный экран\n' +
@@ -1299,17 +1401,27 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Выход из обрезки',
     audioSilentWarningMessage: 'Похоже, звук не поступает. Попробуйте говорить громче, и если это сообщение не исчезнет, перезагрузите браузер.',
     processingVideoTooltip: 'Видео обрабатывается, пожалуйста, подождите немного',
+    prompterTimer: 'Таймер',
+    prompterTimerMinutes: 'Мин',
+    prompterTimerSeconds: 'Сек',
+    prompterTimerSet: 'Задать',
+    prompterTimerStart: 'Запустить таймер',
+    prompterTimerPause: 'Пауза таймера',
+    prompterTimerReset: 'Сбросить таймер',
+    prompterTimerEditDuration: 'Изменить длительность',
   },
   pl: {
     defaultScript:
       'Twój tekst tutaj.\n\n' +
+      'E: edytuj tekst\n' +
+      'T: timer telepromptera\n' +
       'Spacja: odtwarzaj/pauzuj\n' +
       'R: nagraj/zatrzymaj nagrywanie\n' +
       'D: pokaż i pobierz wideo\n' +
       'C: sterowanie teleprompterem\n' +
       'H: ukryj/pokaż teleprompter\n' +
       'I: sterowanie wejściami\n\n' +
-      'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (T) i włącz go (M)\n\n' +
+      'Aby używać renderowania i czcionki Markdown, otwórz panel edycji tekstu (E) i włącz go (M)\n\n' +
       'V: Automatyczne przewijanie\n\n' +
       'F: pełny ekran\n' +
       'Y: przypnij/odepnij od góry\n' +
@@ -1389,7 +1501,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     deleteKey: 'delete',
     popOutPrompter: 'Odepnij',
     popInPrompter: 'Przypnij',
-    pipEditHint: 'Aby edytować tekst, wróć do witryny i otwórz panel edytora tekstu (T).',
+    pipEditHint: 'Aby edytować tekst, wróć do witryny i otwórz panel edytora tekstu (E).',
     popOutOnlyChrome: 'Tryb wyskakującego okna nie jest możliwy w Safari. Używaj Chrome dla lepszej kompatybilności.',
     allowCameraAccess: 'Zezwól na dostęp do kamery',
     braveBlockedMessage: 'Brave zablokował dostęp do kamery. Kliknij ikonę Shields lub ikonę kłódki w pasku adresu, aby zresetować uprawnienia i wyłączyć ochronę przed pobieraniem odcisków palców dla tej witryny. Używaj Chrome dla lepszej kompatybilności.',
@@ -1399,13 +1511,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     autoScrollSpeed: 'Szybkość automatycznego przewijania',
     autoScrollSpeedTooltip: 'Słowa na minutę podczas automatycznego przewijania',
     shortcutsMenu:
+      'E: edytuj tekst\n' +
+      'T: timer telepromptera\n' +
       'Spacja: odtwarzaj/wstrzymaj\n' +
       'R: nagrywaj/zatrzymaj nagrywanie\n' +
       'D: pokaż i pobierz wideo\n' +
       'C: sterowanie teleprompterem\n' +
       'H: ukryj/pokaż teleprompter\n' +
       'I: sterowanie wejściami\n' +
-      'T: Edytuj tekst\n' +
       'M: Włącz Markdown\n' +
       'V: automatyczne przewijanie\n' +
       'F: pełny ekran\n' +
@@ -1417,6 +1530,14 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Wyjdź z przycinania',
     audioSilentWarningMessage: 'Wygląda na to, że żaden dźwięk nie dociera. Spróbuj mówić głośniej, a jeśli ta wiadomość nie zniknie, przeładuj przeglądarkę.',
     processingVideoTooltip: 'Wideo jest przetwarzane, proszę chwilę poczekać',
+    prompterTimer: 'Timer',
+    prompterTimerMinutes: 'Min',
+    prompterTimerSeconds: 'Sek',
+    prompterTimerSet: 'Ustaw',
+    prompterTimerStart: 'Uruchom timer',
+    prompterTimerPause: 'Wstrzymaj timer',
+    prompterTimerReset: 'Resetuj timer',
+    prompterTimerEditDuration: 'Zmień czas',
   },
 }
 
