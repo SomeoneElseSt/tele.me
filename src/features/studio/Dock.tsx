@@ -463,7 +463,7 @@ export function Dock({
             </>
           ) : (
             <>
-              <DockButton label={strings.text} shortcut="T" onClick={onOpenDrawer}>
+              <DockButton label={strings.text} shortcut="E" onClick={onOpenDrawer}>
                 <PenLine className="h-4 w-4" />
               </DockButton>
 

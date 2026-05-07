@@ -22,6 +22,7 @@ import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
 import { remuxVideo, trimVideo } from '../../lib/videoTrim'
+import { PROMPTER_TIMER_HOTKEY_EVENT } from './prompterHotkeys'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,
@@ -744,7 +745,11 @@ export function Studio() {
         } else {
           hotkeys.r = () => onToggleRecord()
           hotkeys.space = () => onTogglePrompter()
-          hotkeys.t = () => onToggleDrawer()
+          hotkeys.e = () => onToggleDrawer()
+          hotkeys.t = () => {
+            if (!prompterOpen) return
+            window.dispatchEvent(new CustomEvent(PROMPTER_TIMER_HOTKEY_EVENT))
+          }
           hotkeys.h = () => {
             tooltip.clear()
             if (prompterIsPip) return
