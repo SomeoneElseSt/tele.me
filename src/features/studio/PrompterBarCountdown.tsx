@@ -23,7 +23,10 @@ const MAX_TOTAL_SEC = 99 * 60 + 59
 /** Spring matches InputsPopover / locale dropdown — smooth width when the chip grows. */
 const TIMER_BUTTON_LAYOUT_SPRING = { type: 'spring' as const, stiffness: 520, damping: 38, mass: 0.7 }
 
-/** Crossfade / scale for hourglass ↔ digits; ~same pace as DownloadPopover tray mount (0.15 easeOut). */
+/** Hourglass fades out quickly before the chip widens. */
+const TIMER_ICON_EXIT_TRANSITION = { duration: 0.12, ease: 'easeOut' as const }
+
+/** Digits fade in after expansion starts; ~DownloadPopover tray ease. */
 const TIMER_CHIP_CONTENT_TRANSITION = { duration: 0.15, ease: 'easeOut' as const }
 
 function formatCountdownMs(ms: number) {
@@ -51,8 +54,35 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   const [secondsInput, setSecondsInput] = useState('0')
   const anchorRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const configuredRef = useRef(false)
 
   const configured = budgetMs != null && budgetMs > 0
+  configuredRef.current = configured
+
+  /** Narrow chip + hourglass until icon exit completes; then widen and show digits. */
+  const [chipExpanded, setChipExpanded] = useState(false)
+  const [hourglassInChip, setHourglassInChip] = useState(true)
+
+  useEffect(() => {
+    if (!configured) {
+      setChipExpanded(false)
+      setHourglassInChip(true)
+      return
+    }
+    setChipExpanded(false)
+    setHourglassInChip(true)
+    let raf1 = 0
+    let raf2 = 0
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        setHourglassInChip(false)
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+    }
+  }, [configured])
 
   useEffect(() => {
     if (!panel) return
@@ -155,7 +185,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
           onPointerDown={(e) => e.stopPropagation()}
           aria-label={strings.prompterTimer}
           className={cn(
-            configured
+            chipExpanded
               ? 'inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-2.5 text-white/85 outline-none tabular-nums'
               : 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
             'hover:bg-white/10 hover:text-white',
@@ -164,30 +194,37 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
           )}
           disabled={disabled}
         >
-          <AnimatePresence mode="sync" initial={false}>
-            {configured ? (
+          <AnimatePresence
+            mode="wait"
+            initial={false}
+            onExitComplete={() => {
+              if (!configuredRef.current) return
+              setChipExpanded(true)
+            }}
+          >
+            {hourglassInChip ? (
               <motion.span
-                key="digits"
-                className="text-[13px] font-semibold tracking-tight tabular-nums"
-                initial={{ opacity: 0, scale: 0.92 }}
+                key="hourglass-chip"
+                className="inline-flex shrink-0 items-center justify-center"
+                initial={false}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
+                exit={{ opacity: 0, scale: 0.88 }}
+                transition={TIMER_ICON_EXIT_TRANSITION}
+              >
+                <Hourglass className="h-4 w-4" />
+              </motion.span>
+            ) : chipExpanded ? (
+              <motion.span
+                key="timer-digits"
+                className="text-[13px] font-semibold tracking-tight tabular-nums"
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
                 transition={TIMER_CHIP_CONTENT_TRANSITION}
               >
                 {formatCountdownMs(remainingMs)}
               </motion.span>
-            ) : (
-              <motion.span
-                key="hourglass"
-                className="inline-flex shrink-0 items-center justify-center"
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.92 }}
-                transition={TIMER_CHIP_CONTENT_TRANSITION}
-              >
-                <Hourglass className="h-4 w-4" />
-              </motion.span>
-            )}
+            ) : null}
           </AnimatePresence>
         </motion.button>
       </Tooltip>
