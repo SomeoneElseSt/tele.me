@@ -239,7 +239,7 @@ export const STRINGS: Record<LocaleCode, Strings> = {
     exitTrim: 'Exit trim',
     audioSilentWarningMessage: "It seems no audio is coming through. Try speaking up, and if this message doesn't go away, reload your browser.",
     processingVideoTooltip: 'Video is being processed, please wait a moment',
-    prompterCountdown: 'countdown',
+    prompterCountdown: 'Countdown',
     prompterCountdownMinutes: 'Min',
     prompterCountdownSeconds: 'Sec',
     prompterCountdownSet: 'Set duration',
