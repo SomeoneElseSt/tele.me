@@ -45,6 +45,7 @@ type Props = {
   wpm: number
   onWpmChange: (value: number) => void
   forceCloseControls?: boolean
+  /** Whether the studio recorder is running; forwarded to the prompter timer for future use. */
   isRecording: boolean
 }
 

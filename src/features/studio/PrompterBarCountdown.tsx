@@ -13,6 +13,7 @@ type Props = {
   /** When true, the bar is at the top of the prompter and the popover opens downward. */
   expandPopoverDown: boolean
   open: boolean
+  /** Whether the studio recorder is running; passed through for future UX. The timer is not blocked when false. */
   isRecording: boolean
 }
 
@@ -61,7 +62,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   }, [panel])
 
   useEffect(() => {
-    if (!open || !wantsRun || !isRecording) return
+    if (!open || !wantsRun) return
     const id = window.setInterval(() => {
       setRemainingMs((prev) => {
         if (prev <= 0) return 0
@@ -69,7 +70,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
       })
     }, TICK_MS)
     return () => window.clearInterval(id)
-  }, [open, wantsRun, isRecording])
+  }, [open, wantsRun])
 
   useEffect(() => {
     if (remainingMs > 0) return
@@ -138,7 +139,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   }, [open, disabled, configured])
 
   return (
-    <div ref={anchorRef} className="relative">
+    <div ref={anchorRef} className="relative" data-recording={isRecording ? 'true' : 'false'}>
       <Tooltip enabled={!disabled} label={strings.prompterTimer} shortcut="T">
         <button
           type="button"
@@ -150,7 +151,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
               ? 'inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-2.5 text-white/85 outline-none tabular-nums'
               : 'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
             'hover:bg-white/10 hover:text-white',
-            wantsRun && isRecording && remainingMs > 0 && 'border-white/18 bg-white/10 text-white',
+            wantsRun && remainingMs > 0 && 'border-white/18 bg-white/10 text-white',
             disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
           )}
           disabled={disabled}
