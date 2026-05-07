@@ -10,7 +10,7 @@ import { useHotkeys } from '../../hooks/useHotkeys'
 import { useRafLoop } from '../../hooks/useRafLoop'
 import { usePointerDrag } from '../../hooks/usePointerDrag'
 import { usePointerResize } from '../../hooks/usePointerResize'
-import { PrompterBarCountdown } from './PrompterBarCountdown'
+import { PrompterBarCountdown, PROMPTER_TIMER_HOTKEY_EVENT } from './PrompterBarCountdown'
 import { PROMPTER_CONTROLS_MIN_WIDTH, PROMPTER_MIN_HEIGHT, PROMPTER_MIN_WIDTH, type PrompterFrame } from './types'
 import { useI18n, STRINGS } from './i18n'
 import { useSpeechRecognition } from '../../hooks/useSpeechRecognition'
@@ -998,6 +998,9 @@ export function FloatingPrompter(props: Props) {
             props.onControlsOpenChange?.(next)
             return next
           })
+        } else if (e.code === 'KeyT') {
+          if (isTypingTarget) return
+          window.dispatchEvent(new CustomEvent(PROMPTER_TIMER_HOTKEY_EVENT))
         }
       }
       pipWindowRef.current.addEventListener('keydown', handleKeyDown)
@@ -1921,7 +1924,7 @@ export function FloatingPrompter(props: Props) {
     <AnimatePresence>
       {open && (
         <motion.div
-          key={isPip ? 'pip' : 'normal'}
+          key="floating-prompter"
           className={cn(
             'fixed z-30 overflow-hidden flex flex-col pointer-events-auto',
             isPip
@@ -1989,7 +1992,7 @@ export function FloatingPrompter(props: Props) {
                   </Tooltip>
                 )}
                 <PrompterBarCountdown
-                  disabled={isPip}
+                  disabled={false}
                   expandPopoverDown={!fixedToTop || isPip}
                   open={open}
                   isRecording={isRecording}
@@ -2299,7 +2302,7 @@ export function FloatingPrompter(props: Props) {
                   </Tooltip>
                 )}
                 <PrompterBarCountdown
-                  disabled={isPip}
+                  disabled={false}
                   expandPopoverDown={false}
                   open={open}
                   isRecording={isRecording}

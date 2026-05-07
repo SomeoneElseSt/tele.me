@@ -93,9 +93,10 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
       if (anchorRef.current?.contains(target)) return
       setPanel(null)
     }
-    window.addEventListener('pointerdown', onPointerDown, true)
-    return () => window.removeEventListener('pointerdown', onPointerDown, true)
-  }, [panel])
+    const win = anchorRef.current?.ownerDocument?.defaultView ?? window
+    win.addEventListener('pointerdown', onPointerDown, true)
+    return () => win.removeEventListener('pointerdown', onPointerDown, true)
+  }, [panel, open])
 
   useEffect(() => {
     if (!open || !wantsRun) return
