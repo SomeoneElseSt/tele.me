@@ -1987,6 +1987,12 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <PrompterBarCountdown
+                  disabled={isPip}
+                  expandPopoverDown={!fixedToTop || isPip}
+                  open={open}
+                  isRecording={isRecording}
+                />
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
                     type="button"
@@ -2003,12 +2009,6 @@ export function FloatingPrompter(props: Props) {
                     <ArrowUp className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <PrompterBarCountdown
-                  disabled={isPip}
-                  expandPopoverDown={!fixedToTop || isPip}
-                  open={open}
-                  isRecording={isRecording}
-                />
                 <Tooltip enabled={!isPip} label={strings.controls} shortcut="C">
                   <button
                     type="button"
@@ -2297,6 +2297,12 @@ export function FloatingPrompter(props: Props) {
                     </button>
                   </Tooltip>
                 )}
+                <PrompterBarCountdown
+                  disabled={isPip}
+                  expandPopoverDown={false}
+                  open={open}
+                  isRecording={isRecording}
+                />
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"
@@ -2313,12 +2319,6 @@ export function FloatingPrompter(props: Props) {
                     <ArrowDown className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <PrompterBarCountdown
-                  disabled={isPip}
-                  expandPopoverDown={false}
-                  open={open}
-                  isRecording={isRecording}
-                />
                 <Tooltip enabled={!isPip} label={strings.controls} shortcut="C">
                   <button
                     type="button"
