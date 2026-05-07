@@ -190,7 +190,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                 <button
                   type="button"
                   onClick={applyDuration}
-                  className="rounded-lg border border-white/12 bg-white/10 py-1.5 text-xs font-medium text-white hover:bg-white/14"
+                  className="rounded-lg border border-white/12 bg-white/10 py-1.5 text-xs font-medium text-white outline-none hover:bg-white/14 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                 >
                   {strings.prompterCountdownSet}
                 </button>
@@ -202,7 +202,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={onPlay}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterCountdownStart}
                   >
                     <Play className="h-3.5 w-3.5" />
@@ -212,7 +212,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={onPause}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterCountdownPause}
                   >
                     <Pause className="h-3.5 w-3.5" />
@@ -222,7 +222,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={onReset}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterCountdownReset}
                   >
                     <RotateCcw className="h-3.5 w-3.5" />
@@ -232,7 +232,7 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
                   <button
                     type="button"
                     onClick={openSetupFromActions}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/80 outline-none hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25"
                     aria-label={strings.prompterCountdownEditDuration}
                   >
                     <Pencil className="h-3.5 w-3.5" />
