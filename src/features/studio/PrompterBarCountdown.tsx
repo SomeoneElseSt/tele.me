@@ -189,7 +189,6 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
               ? 'inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-2.5 text-white/85 outline-none tabular-nums'
               : 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
             'hover:bg-white/10 hover:text-white',
-            wantsRun && remainingMs > 0 && 'border-white/18 bg-white/10 text-white',
             disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
           )}
           disabled={disabled}
