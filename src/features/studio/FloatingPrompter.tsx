@@ -837,6 +837,11 @@ export function FloatingPrompter(props: Props) {
   const pipWindowRef = useRef<any>(null)
   const originalPositionRef = useRef<{ x: number; y: number } | null>(null)
 
+  /** Lives here (not in the portaled countdown) so duration survives PiP portal reparenting. */
+  const [prompterTimerBudgetMs, setPrompterTimerBudgetMs] = useState<number | null>(null)
+  const [prompterTimerRemainingMs, setPrompterTimerRemainingMs] = useState(0)
+  const [prompterTimerWantsRun, setPrompterTimerWantsRun] = useState(false)
+
   // Scrollbar state
   const [scrollbarThumbPosition, setScrollbarThumbPosition] = useState(0)
   const [scrollbarThumbHeight, setScrollbarThumbHeight] = useState(0.2) // 0-1, proportion of track
@@ -1996,6 +2001,12 @@ export function FloatingPrompter(props: Props) {
                   expandPopoverDown={!fixedToTop || isPip}
                   open={open}
                   isRecording={isRecording}
+                  budgetMs={prompterTimerBudgetMs}
+                  remainingMs={prompterTimerRemainingMs}
+                  wantsRun={prompterTimerWantsRun}
+                  onBudgetMsChange={setPrompterTimerBudgetMs}
+                  onRemainingMsChange={setPrompterTimerRemainingMs}
+                  onWantsRunChange={setPrompterTimerWantsRun}
                 />
                 <Tooltip enabled={!isPip} label={strings.fixToTop} shortcut="Y">
                   <button
@@ -2306,6 +2317,12 @@ export function FloatingPrompter(props: Props) {
                   expandPopoverDown={false}
                   open={open}
                   isRecording={isRecording}
+                  budgetMs={prompterTimerBudgetMs}
+                  remainingMs={prompterTimerRemainingMs}
+                  wantsRun={prompterTimerWantsRun}
+                  onBudgetMsChange={setPrompterTimerBudgetMs}
+                  onRemainingMsChange={setPrompterTimerRemainingMs}
+                  onWantsRunChange={setPrompterTimerWantsRun}
                 />
                 <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
                   <button

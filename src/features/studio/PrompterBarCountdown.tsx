@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 import { Hourglass, Pencil, Pause, Play, RotateCcw } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
@@ -15,6 +16,12 @@ type Props = {
   open: boolean
   /** Whether the studio recorder is running; passed through for future UX. The timer is not blocked when false. */
   isRecording: boolean
+  budgetMs: number | null
+  remainingMs: number
+  wantsRun: boolean
+  onBudgetMsChange: (value: number | null) => void
+  onRemainingMsChange: Dispatch<SetStateAction<number>>
+  onWantsRunChange: Dispatch<SetStateAction<boolean>>
 }
 
 const TICK_MS = 100
@@ -44,11 +51,19 @@ function parseTotalSeconds(minStr: string, secStr: string): number | null {
   return total
 }
 
-export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isRecording }: Props) {
+export function PrompterBarCountdown({
+  disabled,
+  expandPopoverDown,
+  open,
+  isRecording,
+  budgetMs,
+  remainingMs,
+  wantsRun,
+  onBudgetMsChange,
+  onRemainingMsChange,
+  onWantsRunChange,
+}: Props) {
   const { strings } = useI18n()
-  const [budgetMs, setBudgetMs] = useState<number | null>(null)
-  const [remainingMs, setRemainingMs] = useState(0)
-  const [wantsRun, setWantsRun] = useState(false)
   const [panel, setPanel] = useState<null | 'setup' | 'actions'>(null)
   const [minutesInput, setMinutesInput] = useState('5')
   const [secondsInput, setSecondsInput] = useState('0')
@@ -60,27 +75,34 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   configuredRef.current = configured
 
   /** Narrow chip + hourglass until icon exit completes; then widen and show digits. */
-  const [chipExpanded, setChipExpanded] = useState(false)
-  const [hourglassInChip, setHourglassInChip] = useState(true)
+  const [chipExpanded, setChipExpanded] = useState(() => configured)
+  const [hourglassInChip, setHourglassInChip] = useState(() => !configured)
+  const prevConfiguredRef = useRef(configured)
 
   useEffect(() => {
+    const wasConfigured = prevConfiguredRef.current
+    prevConfiguredRef.current = configured
+
     if (!configured) {
       setChipExpanded(false)
       setHourglassInChip(true)
       return
     }
-    setChipExpanded(false)
-    setHourglassInChip(true)
-    let raf1 = 0
-    let raf2 = 0
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        setHourglassInChip(false)
+
+    if (!wasConfigured && configured) {
+      setChipExpanded(false)
+      setHourglassInChip(true)
+      let raf1 = 0
+      let raf2 = 0
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          setHourglassInChip(false)
+        })
       })
-    })
-    return () => {
-      cancelAnimationFrame(raf1)
-      cancelAnimationFrame(raf2)
+      return () => {
+        cancelAnimationFrame(raf1)
+        cancelAnimationFrame(raf2)
+      }
     }
   }, [configured])
 
@@ -101,27 +123,27 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   useEffect(() => {
     if (!open || !wantsRun) return
     const id = window.setInterval(() => {
-      setRemainingMs((prev) => {
+      onRemainingMsChange((prev) => {
         if (prev <= 0) return 0
         return Math.max(0, prev - TICK_MS)
       })
     }, TICK_MS)
     return () => window.clearInterval(id)
-  }, [open, wantsRun])
+  }, [open, wantsRun, onRemainingMsChange])
 
   useEffect(() => {
     if (remainingMs > 0) return
     if (!wantsRun) return
-    setWantsRun(false)
-  }, [remainingMs, wantsRun])
+    onWantsRunChange(false)
+  }, [remainingMs, wantsRun, onWantsRunChange])
 
   const applyDuration = () => {
     const totalSec = parseTotalSeconds(minutesInput, secondsInput)
     if (totalSec == null) return
     const ms = totalSec * 1000
-    setBudgetMs(ms)
-    setRemainingMs(ms)
-    setWantsRun(false)
+    onBudgetMsChange(ms)
+    onRemainingMsChange(ms)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
@@ -145,20 +167,20 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
 
   const onPlay = () => {
     if (!configured || budgetMs == null) return
-    setRemainingMs((prev) => (prev <= 0 ? budgetMs : prev))
-    setWantsRun(true)
+    onRemainingMsChange((prev) => (prev <= 0 ? budgetMs : prev))
+    onWantsRunChange(true)
     setPanel(null)
   }
 
   const onPause = () => {
-    setWantsRun(false)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
   const onReset = () => {
     if (budgetMs == null) return
-    setRemainingMs(budgetMs)
-    setWantsRun(false)
+    onRemainingMsChange(budgetMs)
+    onWantsRunChange(false)
     setPanel(null)
   }
 
