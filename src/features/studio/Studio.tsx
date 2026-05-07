@@ -22,7 +22,7 @@ import { cn } from '../../lib/cn'
 import { I18nProvider, LOCALES, getStrings, type LocaleCode } from './i18n'
 import * as videoStorage from '../../lib/videoStorage'
 import { remuxVideo, trimVideo } from '../../lib/videoTrim'
-import { PROMPTER_TIMER_HOTKEY_EVENT } from './prompterHotkeys'
+import { PROMPTER_TIMER_HOTKEY_EVENT } from './PrompterBarCountdown'
 import {
   PROMPTER_CONTROLS_MIN_WIDTH,
   PROMPTER_FRAME_PADDING,

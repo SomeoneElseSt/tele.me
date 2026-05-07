@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { cn } from '../../lib/cn'
 import { Tooltip } from '../../components/Tooltip'
 import { useI18n } from './i18n'
-import { PROMPTER_TIMER_HOTKEY_EVENT } from './prompterHotkeys'
+
+/** Dispatched from Studio when the user presses T (timer) while the prompter is open. */
+export const PROMPTER_TIMER_HOTKEY_EVENT = 'teleme:prompter-timer-hotkey'
 
 type Props = {
   disabled: boolean
