@@ -20,6 +20,12 @@ type Props = {
 const TICK_MS = 100
 const MAX_TOTAL_SEC = 99 * 60 + 59
 
+/** Spring matches InputsPopover / locale dropdown — smooth width when the chip grows. */
+const TIMER_BUTTON_LAYOUT_SPRING = { type: 'spring' as const, stiffness: 520, damping: 38, mass: 0.7 }
+
+/** Crossfade / scale for hourglass ↔ digits; ~same pace as DownloadPopover tray mount (0.15 easeOut). */
+const TIMER_CHIP_CONTENT_TRANSITION = { duration: 0.15, ease: 'easeOut' as const }
+
 function formatCountdownMs(ms: number) {
   const secDisplay = ms <= 0 ? 0 : Math.ceil(ms / 1000)
   const m = Math.floor(secDisplay / 60)
@@ -141,27 +147,49 @@ export function PrompterBarCountdown({ disabled, expandPopoverDown, open, isReco
   return (
     <div ref={anchorRef} className="relative" data-recording={isRecording ? 'true' : 'false'}>
       <Tooltip enabled={!disabled} label={strings.prompterTimer} shortcut="T">
-        <button
+        <motion.button
           type="button"
+          layout
+          transition={TIMER_BUTTON_LAYOUT_SPRING}
           onClick={onMainClick}
           onPointerDown={(e) => e.stopPropagation()}
           aria-label={strings.prompterTimer}
           className={cn(
             configured
               ? 'inline-flex h-10 min-w-[4.25rem] items-center justify-center gap-1.5 rounded-2xl border border-white/10 bg-white/6 px-2.5 text-white/85 outline-none tabular-nums'
-              : 'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
+              : 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/6 text-white/70 outline-none',
             'hover:bg-white/10 hover:text-white',
             wantsRun && remainingMs > 0 && 'border-white/18 bg-white/10 text-white',
             disabled && 'opacity-40 cursor-not-allowed pointer-events-none'
           )}
           disabled={disabled}
         >
-          {configured ? (
-            <span className="text-[13px] font-semibold tracking-tight">{formatCountdownMs(remainingMs)}</span>
-          ) : (
-            <Hourglass className="h-4 w-4" />
-          )}
-        </button>
+          <AnimatePresence mode="sync" initial={false}>
+            {configured ? (
+              <motion.span
+                key="digits"
+                className="text-[13px] font-semibold tracking-tight tabular-nums"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={TIMER_CHIP_CONTENT_TRANSITION}
+              >
+                {formatCountdownMs(remainingMs)}
+              </motion.span>
+            ) : (
+              <motion.span
+                key="hourglass"
+                className="inline-flex shrink-0 items-center justify-center"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={TIMER_CHIP_CONTENT_TRANSITION}
+              >
+                <Hourglass className="h-4 w-4" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </Tooltip>
 
       <AnimatePresence>
