@@ -670,10 +670,15 @@ export function Studio() {
     // Mark as processing and remux in background
     setProcessingTakeIds((prev) => new Set(prev).add(takeId))
 
+    const pipelineStart = performance.now()
     fetch(url)
       .then(response => response.blob())
-      .then(blob => remuxVideo(blob, mimeType))
+      .then(blob => {
+        console.log(`[Studio] Fetched blob in ${(performance.now() - pipelineStart).toFixed(0)}ms, starting remux...`)
+        return remuxVideo(blob, mimeType)
+      })
       .then(remuxedBlob => {
+        console.log(`[Studio] Remux complete, total pipeline time: ${(performance.now() - pipelineStart).toFixed(0)}ms`)
         const remuxedUrl = URL.createObjectURL(remuxedBlob)
         setTakes((prev) => prev.map(t => t.id === takeId ? { ...t, url: remuxedUrl } : t))
 

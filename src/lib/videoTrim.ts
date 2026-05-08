@@ -38,13 +38,23 @@ export function remuxVideo(
   mimeType = 'video/mp4'
 ): Promise<Blob> {
   return enqueue(async () => {
+    const overallStart = performance.now()
     const id = jobId++
     const ext = getExtension(mimeType)
     const inputFile = `remux_in_${id}.${ext}`
     const outputFile = `remux_out_${id}.${ext}`
+    
+    console.log(`[Remux] Starting job ${id}, input size: ${(blob.size / 1024 / 1024).toFixed(2)}MB`)
+    
+    const loadStart = performance.now()
     const ffmpeg = await getFFmpeg()
+    console.log(`[Remux] FFmpeg ready in ${(performance.now() - loadStart).toFixed(0)}ms`)
 
+    const writeStart = performance.now()
     await ffmpeg.writeFile(inputFile, await fetchFile(blob))
+    console.log(`[Remux] File written in ${(performance.now() - writeStart).toFixed(0)}ms`)
+    
+    const encodeStart = performance.now()
     await ffmpeg.exec([
       '-i', inputFile,
       '-map', '0:v:0', '-map', '0:a:0',
@@ -53,13 +63,18 @@ export function remuxVideo(
       '-movflags', '+faststart',
       outputFile,
     ])
+    console.log(`[Remux] Encoding complete in ${(performance.now() - encodeStart).toFixed(0)}ms`)
 
+    const readStart = performance.now()
     const data = await ffmpeg.readFile(outputFile)
     const result = new Blob([(data as Uint8Array).slice()], { type: mimeType })
+    console.log(`[Remux] File read in ${(performance.now() - readStart).toFixed(0)}ms`)
 
     await ffmpeg.deleteFile(inputFile)
     await ffmpeg.deleteFile(outputFile)
 
+    console.log(`[Remux] TOTAL TIME: ${(performance.now() - overallStart).toFixed(0)}ms, output size: ${(result.size / 1024 / 1024).toFixed(2)}MB`)
+    
     return result
   })
 }

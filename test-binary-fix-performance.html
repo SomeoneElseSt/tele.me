@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Binary Fix Performance Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; max-width: 800px; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; }
+    .result { margin: 10px 0; padding: 10px; background: #f0f0f0; }
+    .timing { font-weight: bold; color: #0066cc; }
+    .error { color: #cc0000; }
+  </style>
+</head>
+<body>
+  <h1>Binary Fix vs FFmpeg Performance Test</h1>
+  
+  <div>
+    <h2>Test Setup</h2>
+    <p>This test will measure the actual time difference between:</p>
+    <ol>
+      <li><strong>Binary Fix:</strong> injectFullFrameRateIntent() - rewrites MP4 timestamps in-memory</li>
+      <li><strong>FFmpeg Remux:</strong> Full re-encode with libx264</li>
+    </ol>
+  </div>
+
+  <div>
+    <button onclick="testBinaryFix()">Test Binary Fix (No Re-encode)</button>
+    <button onclick="testFFmpegRemux()">Test FFmpeg Remux (Full Re-encode)</button>
+    <button onclick="runBothTests()">Run Both Tests</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script type="module">
+    import { injectFullFrameRateIntent } from './src/lib/mp4FullFrameRate.ts';
+    import { remuxVideo } from './src/lib/videoTrim.ts';
+
+    window.testBinaryFix = async function() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML += '<div class="result">🔬 Testing Binary Fix...</div>';
+      
+      try {
+        // Create a test MediaRecorder blob
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 1920, height: 1080 }, 
+          audio: true 
+        });
+        
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+        
+        recorder.ondataavailable = e => chunks.push(e.data);
+        
+        await new Promise((resolve) => {
+          recorder.onstop = resolve;
+          recorder.start(250); // Same timeslice as app
+          
+          setTimeout(() => {
+            recorder.stop();
+            stream.getTracks().forEach(t => t.stop());
+          }, 5000); // 5 second recording
+        });
+        
+        const originalBlob = new Blob(chunks, { type: recorder.mimeType });
+        const originalSize = (originalBlob.size / 1024 / 1024).toFixed(2);
+        
+        resultsDiv.innerHTML += `<div class="result">📹 Recorded ${originalSize}MB video</div>`;
+        
+        // Test binary fix
+        const startBinary = performance.now();
+        const arrayBuffer = await originalBlob.arrayBuffer();
+        const fixed = injectFullFrameRateIntent(new Uint8Array(arrayBuffer));
+        const fixedBlob = new Blob([fixed], { type: originalBlob.type });
+        const endBinary = performance.now();
+        
+        const binaryTime = (endBinary - startBinary).toFixed(0);
+        const fixedSize = (fixedBlob.size / 1024 / 1024).toFixed(2);
+        
+        resultsDiv.innerHTML += `
+          <div class="result">
+            ✅ <strong>Binary Fix Complete</strong><br>
+            Time: <span class="timing">${binaryTime}ms</span><br>
+            Original: ${originalSize}MB → Fixed: ${fixedSize}MB<br>
+            Size delta: ${((fixedBlob.size - originalBlob.size) / 1024).toFixed(1)}KB
+          </div>
+        `;
+        
+        // Create download link to test
+        const url = URL.createObjectURL(fixedBlob);
+        resultsDiv.innerHTML += `
+          <div class="result">
+            <a href="${url}" download="binary-fixed-test.mp4">Download Binary-Fixed Video</a><br>
+            <small>Test in QuickTime Player to verify playback</small>
+          </div>
+        `;
+        
+      } catch (err) {
+        resultsDiv.innerHTML += `<div class="result error">❌ Error: ${err.message}</div>`;
+      }
+    };
+
+    window.testFFmpegRemux = async function() {
+      const resultsDiv = document.getElementById('results');
+      resultsDiv.innerHTML += '<div class="result">🔬 Testing FFmpeg Remux...</div>';
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: 1920, height: 1080 }, 
+          audio: true 
+        });
+        
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+        
+        recorder.ondataavailable = e => chunks.push(e.data);
+        
+        await new Promise((resolve) => {
+          recorder.onstop = resolve;
+          recorder.start(250);
+          
+          setTimeout(() => {
+            recorder.stop();
+            stream.getTracks().forEach(t => t.stop());
+          }, 5000); // 5 second recording
+        });
+        
+        const originalBlob = new Blob(chunks, { type: recorder.mimeType });
+        const originalSize = (originalBlob.size / 1024 / 1024).toFixed(2);
+        
+        resultsDiv.innerHTML += `<div class="result">📹 Recorded ${originalSize}MB video</div>`;
+        
+        // Test FFmpeg remux
+        const startFFmpeg = performance.now();
+        const remuxedBlob = await remuxVideo(originalBlob, recorder.mimeType);
+        const endFFmpeg = performance.now();
+        
+        const ffmpegTime = ((endFFmpeg - startFFmpeg) / 1000).toFixed(1);
+        const remuxedSize = (remuxedBlob.size / 1024 / 1024).toFixed(2);
+        
+        resultsDiv.innerHTML += `
+          <div class="result">
+            ✅ <strong>FFmpeg Remux Complete</strong><br>
+            Time: <span class="timing">${ffmpegTime}s</span><br>
+            Original: ${originalSize}MB → Remuxed: ${remuxedSize}MB<br>
+            Size delta: ${((remuxedBlob.size - originalBlob.size) / 1024 / 1024).toFixed(2)}MB
+          </div>
+        `;
+        
+        const url = URL.createObjectURL(remuxedBlob);
+        resultsDiv.innerHTML += `
+          <div class="result">
+            <a href="${url}" download="ffmpeg-remuxed-test.mp4">Download FFmpeg-Remuxed Video</a><br>
+            <small>Test in QuickTime Player to verify playback</small>
+          </div>
+        `;
+        
+      } catch (err) {
+        resultsDiv.innerHTML += `<div class="result error">❌ Error: ${err.message}</div>`;
+      }
+    };
+
+    window.runBothTests = async function() {
+      document.getElementById('results').innerHTML = '<h2>Running Comparison Tests...</h2>';
+      await window.testBinaryFix();
+      await window.testFFmpegRemux();
+      
+      document.getElementById('results').innerHTML += `
+        <div class="result" style="background: #ffffcc; font-size: 18px; margin-top: 20px;">
+          <strong>⚡ Performance Comparison</strong><br>
+          Check the timing results above to see the difference!
+        </div>
+      `;
+    };
+  </script>
+</body>
+</html>
