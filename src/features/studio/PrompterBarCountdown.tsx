@@ -182,7 +182,6 @@ export function PrompterBarCountdown({
     if (budgetMs == null) return
     onRemainingMsChange(budgetMs)
     onWantsRunChange(false)
-    setPanel(null)
   }
 
   const ACTION_BTN = 'inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-white/70 outline-none hover:border-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white/25'
