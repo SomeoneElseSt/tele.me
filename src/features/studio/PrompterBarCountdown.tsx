@@ -248,10 +248,11 @@ export function PrompterBarCountdown({
               'absolute left-0 z-[80] rounded-xl border border-white/10 bg-black/90 p-1.5 shadow-glow backdrop-blur',
               expandPopoverDown ? 'top-full mt-2' : 'bottom-full mb-2'
             )}
-            initial={{ opacity: 0, y: expandPopoverDown ? -4 : 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: expandPopoverDown ? -4 : 4 }}
-            transition={{ duration: 0.12, ease: 'easeOut' }}
+            style={{ originY: expandPopoverDown ? 0 : 1 }}
+            initial={{ opacity: 0, y: expandPopoverDown ? -6 : 6, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: expandPopoverDown ? -6 : 6, scale: 0.96 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
             onPointerDown={(e) => e.stopPropagation()}
           >
             {panel === 'setup' && (
