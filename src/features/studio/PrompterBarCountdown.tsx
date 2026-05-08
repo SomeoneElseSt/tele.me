@@ -176,7 +176,6 @@ export function PrompterBarCountdown({
 
   const onPause = () => {
     onWantsRunChange(false)
-    closePanelAfterTooltip()
   }
 
   const onReset = () => {
