@@ -1995,6 +1995,7 @@ export function FloatingPrompter(props: Props) {
                 )}
                 <PrompterBarCountdown
                   expandPopoverDown={!fixedToTop || isPip}
+                  isPip={isPip}
                   open={open}
                   budgetMs={timerBudgetMs}
                   onBudgetMsChange={setTimerBudgetMs}
@@ -2273,7 +2274,7 @@ export function FloatingPrompter(props: Props) {
               style={{ height: PROMPTER_HEADER_HEIGHT_PX }}
               onPointerDown={drag.onPointerDown}
             >
-              <Tooltip enabled={!isPip} label={strings.hidePrompter} shortcut="H">
+              <Tooltip enabled={!isPip} side="bottom" label={strings.hidePrompter} shortcut="H">
                 <button
                   type="button"
                   onClick={onClose}
@@ -2291,7 +2292,7 @@ export function FloatingPrompter(props: Props) {
               </Tooltip>
               <div className="flex items-center gap-1">
                 {isPip && (
-                  <Tooltip enabled={!isPip} label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
+                  <Tooltip enabled={!isPip} side="bottom" label={playing ? strings.pausePrompter : strings.playPrompter} shortcut="Space">
                     <button
                       type="button"
                       onClick={onTogglePlaying}
@@ -2309,6 +2310,7 @@ export function FloatingPrompter(props: Props) {
                 )}
                 <PrompterBarCountdown
                   expandPopoverDown={false}
+                  isPip={isPip}
                   open={open}
                   budgetMs={timerBudgetMs}
                   onBudgetMsChange={setTimerBudgetMs}
@@ -2317,7 +2319,7 @@ export function FloatingPrompter(props: Props) {
                   wantsRun={timerWantsRun}
                   onWantsRunChange={setTimerWantsRun}
                 />
-                <Tooltip enabled={!isPip} label={strings.unfixFromTop} shortcut="Y">
+                <Tooltip enabled={!isPip} side="bottom" label={strings.unfixFromTop} shortcut="Y">
                   <button
                     type="button"
                     onClick={onUnfixFromTop}
@@ -2333,7 +2335,7 @@ export function FloatingPrompter(props: Props) {
                     <ArrowDown className="h-4 w-4" />
                   </button>
                 </Tooltip>
-                <Tooltip enabled={!isPip} label={strings.controls} shortcut="C">
+                <Tooltip enabled={!isPip} side="bottom" label={strings.controls} shortcut="C">
                   <button
                     type="button"
                     onClick={() => {
@@ -2359,7 +2361,7 @@ export function FloatingPrompter(props: Props) {
                   const label = isSafari ? strings.popOutOnlyChrome : (isPip ? strings.popInPrompter : strings.popOutPrompter)
 
                   return (
-                    <Tooltip enabled={!isPip} label={label} shortcut={isSafari ? undefined : "P"}>
+                    <Tooltip enabled={!isPip} side="bottom" label={label} shortcut={isSafari ? undefined : "P"}>
                       <button
                         type="button"
                         onClick={isSafari ? undefined : togglePip}
@@ -2378,7 +2380,7 @@ export function FloatingPrompter(props: Props) {
                     </Tooltip>
                   )
                 })()}
-                <Tooltip enabled={!isPip} label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
+                <Tooltip enabled={!isPip} side="bottom" label={strings.drag} tooltipId={DRAG_TOOLTIP_ID}>
                   <span
                     className={cn(
                       'inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/6',

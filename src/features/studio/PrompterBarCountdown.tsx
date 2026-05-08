@@ -11,6 +11,7 @@ export const PROMPTER_TIMER_HOTKEY_EVENT = 'teleme:prompter-timer-hotkey'
 type Props = {
   /** When true, the bar is at the top of the prompter and the popover opens downward. */
   expandPopoverDown: boolean
+  isPip: boolean
   open: boolean
   // Lifted to FloatingPrompter so state survives PiP window transitions
   budgetMs: number | null
@@ -45,6 +46,7 @@ function parseTotalSeconds(minStr: string, secStr: string): number | null {
 
 export function PrompterBarCountdown({
   expandPopoverDown,
+  isPip,
   open,
   budgetMs,
   onBudgetMsChange,
@@ -188,7 +190,7 @@ export function PrompterBarCountdown({
 
   return (
     <div ref={anchorRef} className="relative">
-      <Tooltip label={strings.prompterTimer} shortcut="T">
+      <Tooltip enabled={!isPip} side={expandPopoverDown ? 'top' : 'bottom'} label={strings.prompterTimer} shortcut="T">
         <motion.button
           type="button"
           layout
