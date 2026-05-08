@@ -289,7 +289,7 @@ export function PrompterBarCountdown({
             )}
             {panel === 'actions' && configured && (
               <div className="flex items-center gap-1">
-                <Tooltip enabled={!suppressActionTooltips} label={wantsRun ? strings.prompterTimerPause : strings.prompterTimerStart}>
+                <Tooltip enabled={!suppressActionTooltips} side={expandPopoverDown ? 'bottom' : 'top'} label={wantsRun ? strings.prompterTimerPause : strings.prompterTimerStart}>
                   <button
                     type="button"
                     onClick={wantsRun ? onPause : onPlay}
@@ -310,12 +310,12 @@ export function PrompterBarCountdown({
                     </AnimatePresence>
                   </button>
                 </Tooltip>
-                <Tooltip label={strings.prompterTimerReset}>
+                <Tooltip side={expandPopoverDown ? 'bottom' : 'top'} label={strings.prompterTimerReset}>
                   <button type="button" onClick={onReset} className={ACTION_BTN} aria-label={strings.prompterTimerReset}>
                     <RotateCcw className="h-3.5 w-3.5" />
                   </button>
                 </Tooltip>
-                <Tooltip label={strings.prompterTimerEditDuration}>
+                <Tooltip side={expandPopoverDown ? 'bottom' : 'top'} label={strings.prompterTimerEditDuration}>
                   <button type="button" onClick={openSetupFromActions} className={ACTION_BTN} aria-label={strings.prompterTimerEditDuration}>
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
